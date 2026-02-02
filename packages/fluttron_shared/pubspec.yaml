@@ -1,6 +1,6 @@
 name: fluttron_shared
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
+description: Shared definitions and protocols for Fluttron Host and Renderer.
+version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
 environment:
@@ -9,7 +9,10 @@ environment:
 # Add regular dependencies here.
 dependencies:
   # path: ^1.9.0
+  json_annotation: ^4.10.0
 
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.25.6
+  json_serializable: ^6.12.0
+  build_runner: ^2.10.5
