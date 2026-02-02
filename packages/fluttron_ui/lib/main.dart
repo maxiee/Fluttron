@@ -1,86 +1,117 @@
 import 'package:flutter/material.dart';
-
-import 'src/bridge/renderer_bridge.dart';
+import 'fluttron/fluttron_client.dart';
 
 void main() {
-  runApp(const FluttronApp());
+  runApp(const FluttronUiApp());
 }
 
-class FluttronApp extends StatelessWidget {
-  const FluttronApp({super.key});
+class FluttronUiApp extends StatelessWidget {
+  const FluttronUiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fluttron Renderer',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-        useMaterial3: true,
-      ),
-      home: const _Home(),
+      title: 'Fluttron UI',
+      home: const DemoPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class _Home extends StatefulWidget {
-  const _Home();
+class DemoPage extends StatefulWidget {
+  const DemoPage({super.key});
 
   @override
-  State<_Home> createState() => _HomeState();
+  State<DemoPage> createState() => _DemoPageState();
 }
 
-class _HomeState extends State<_Home> {
-  final _bridge = RendererBridge();
+class _DemoPageState extends State<DemoPage> {
+  final _client = FluttronClient();
 
-  String _status = 'Waiting for Host...';
-  bool _loading = false;
+  String _platform = '-';
+  String _kvValue = '-';
+  String _log = '';
 
-  Future<void> _getPlatform() async {
-    setState(() {
-      _loading = true;
-      _status = 'Calling Host...';
-    });
+  void _setLog(String s) {
+    setState(() => _log = s);
+  }
 
+  Future<void> _onGetPlatform() async {
     try {
-      final result = await _bridge.invoke('system.getPlatform', {});
-      setState(() {
-        _status = 'OK: $result';
-      });
+      final p = await _client.getPlatform();
+      setState(() => _platform = p);
+      _setLog('getPlatform => $p');
     } catch (e) {
-      setState(() {
-        _status = 'ERROR: $e';
-      });
-    } finally {
-      setState(() {
-        _loading = false;
-      });
+      _setLog('getPlatform ERROR: $e');
+    }
+  }
+
+  Future<void> _onKvSet() async {
+    try {
+      await _client.kvSet('hello', 'world');
+      _setLog('kvSet hello=world => ok');
+    } catch (e) {
+      _setLog('kvSet ERROR: $e');
+    }
+  }
+
+  Future<void> _onKvGet() async {
+    try {
+      final v = await _client.kvGet('hello');
+      setState(() => _kvValue = v ?? '(null)');
+      _setLog('kvGet hello => ${v ?? "(null)"}');
+    } catch (e) {
+      _setLog('kvGet ERROR: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      appBar: AppBar(title: const Text('Fluttron UI Demo')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.layers, size: 80, color: Colors.blueAccent),
-            const SizedBox(height: 20),
-            const Text(
-              'Hello from Fluttron Renderer!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              'I am a Flutter Web app running inside...',
-              style: TextStyle(color: Colors.grey),
+            Text('Platform: $_platform', style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 8),
+            Text(
+              'KV("hello"): $_kvValue',
+              style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: _loading ? null : _getPlatform,
-              child: Text(_loading ? 'Loading...' : 'system.getPlatform'),
+            Wrap(
+              spacing: 12,
+              children: [
+                ElevatedButton(
+                  onPressed: _onGetPlatform,
+                  child: const Text('Get Platform'),
+                ),
+                ElevatedButton(
+                  onPressed: _onKvSet,
+                  child: const Text('Set KV'),
+                ),
+                ElevatedButton(
+                  onPressed: _onKvGet,
+                  child: const Text('Get KV'),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            Chip(label: Text(_status)),
+            const Text('Log:'),
+            const SizedBox(height: 8),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SingleChildScrollView(child: Text(_log)),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,13 +1,11 @@
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:fluttron_host/src/services/service_registry.dart';
 import 'package:fluttron_shared/fluttron_shared.dart';
 
-import '../services/system_service.dart';
-
 class HostBridge {
-  HostBridge({SystemService? systemService})
-    : _systemService = systemService ?? SystemService();
+  HostBridge({required this.registry});
 
-  final SystemService _systemService;
+  final ServiceRegistry registry;
 
   void attach(InAppWebViewController controller) {
     controller.addJavaScriptHandler(
@@ -32,14 +30,8 @@ class HostBridge {
         }
 
         try {
-          switch (req.method) {
-            case 'system.getPlatform':
-              final result = await _systemService.getPlatform();
-              return FluttronResponse.ok(req.id, result).toJson();
-
-            default:
-              return FluttronResponse.err(req.id, 'method_not_found').toJson();
-          }
+          final result = await registry.dispatch(req.method, req.params);
+          return FluttronResponse.ok(req.id, result).toJson();
         } catch (e) {
           return FluttronResponse.err(req.id, 'internal_error:$e').toJson();
         }

@@ -3,11 +3,15 @@ import 'package:flutter/services.dart'; // for rootBundle
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:fluttron_host/src/bridge/host_bridge.dart';
 import 'package:fluttron_host/src/services/service_registry.dart';
+import 'package:fluttron_host/src/services/storage_service.dart';
+import 'package:fluttron_host/src/services/system_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final registry = ServiceRegistry();
+  final registry = ServiceRegistry()
+    ..register(SystemService())
+    ..register(StorageService());
 
   runApp(FluttronHostApp(registry: registry));
 }
@@ -42,7 +46,7 @@ class _FluttronBrowserState extends State<FluttronBrowser> {
 
   @override
   Widget build(BuildContext context) {
-    final hostBridge = HostBridge();
+    final hostBridge = HostBridge(registry: widget.registry);
 
     return Scaffold(
       body: InAppWebView(
