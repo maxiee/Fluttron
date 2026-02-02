@@ -17,6 +17,10 @@
 - 宿主部分和渲染部分通过 Bridge 通信，初期可通过 webview_flutter 底层机制通信，未来封装类型安全的代码生成器方案
 - 泛跨端：改方案既支持桌面端，也支持移动端。初期先开发桌面端。
 
+## 编码规范
+
+- 所有注释使用英文
+
 ## 当下目标
 
 在最短时间内做出一个可运行的 Fluttron MVP，具备“可演示、可扩展、可迭代”的最小平台能力。
@@ -68,9 +72,14 @@
 
 ### 包目录结构
 
-- packages/fluttron_shared/ (核心协议层)
-	- Shared definitions and protocols for Fluttron Host and Renderer.
-	- lib/src/manifest.dart: 定义 App 的配置结构。
+- packages/
+	- fluttron_shared/ (核心协议层)
+		- Shared definitions and protocols for Fluttron Host and Renderer.
+		- pubspec.yaml: 定义 Dart 依赖。
+		- lib/fluttron_shared.dart: 导出文件。
+		- lib/src/manifest.dart: 定义 App 的配置结构。
+	- fluttron_host/（Flutter Desktop 应用）
+		- “浏览器”外壳。
 
 ## Backlog (未来)
 
