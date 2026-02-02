@@ -2,27 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // for rootBundle
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:fluttron_host/src/bridge/host_bridge.dart';
+import 'package:fluttron_host/src/services/service_registry.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const FluttronHostApp());
+
+  final registry = ServiceRegistry();
+
+  runApp(FluttronHostApp(registry: registry));
 }
 
 class FluttronHostApp extends StatelessWidget {
-  const FluttronHostApp({super.key});
+  const FluttronHostApp({super.key, required this.registry});
+
+  final ServiceRegistry registry;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fluttron Host',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const FluttronBrowser(),
+      home: FluttronBrowser(registry: registry),
     );
   }
 }
 
 class FluttronBrowser extends StatefulWidget {
-  const FluttronBrowser({super.key});
+  const FluttronBrowser({super.key, required this.registry});
+
+  final ServiceRegistry registry;
 
   @override
   State<FluttronBrowser> createState() => _FluttronBrowserState();
