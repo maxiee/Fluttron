@@ -19,6 +19,7 @@
 
 ## 编码规范
 
+- 遵循 Flutter、Dart 官方编码规范
 - 所有注释使用英文
 
 ## 当下目标
@@ -80,6 +81,9 @@
 		- lib/src/manifest.dart: 定义 App 的配置结构。
 	- fluttron_host/（Flutter Desktop 应用）
 		- “浏览器”外壳。
+	- fluttron_ui/
+		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
+		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
 
 ## Backlog (未来)
 
