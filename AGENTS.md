@@ -33,7 +33,7 @@
 3. 定义 core 模块：宿主 core 定义各种服务，渲染 core 定义各种与宿主通信能力，分别集成在两个模板里
 4. 开发脚手架工程：能够进行新项目创建，构建运行（先构建 Flutter Web，嵌入进宿主再编译运行 Host）
 5. 以 webview_flutter 底层机制通信打通 Host 和渲染部分
-6. 跑通 Hello World
+6. 跑通 Hello World：基于脚手架创建 fluttron 工程，编译后由 fluttron 跑起来
 7. 宿主形成可扩展的服务层
 8. 在 GitHub Repo 内创建文档站点
 9. 按照 build in public 方式，边开发边借助自媒体营销
