@@ -1,5 +1,3 @@
-import 'package:fluttron_shared/fluttron_shared.dart';
-
 abstract class FluttronService {
   /// e.g. "system", "storage"
   String get namespace;
