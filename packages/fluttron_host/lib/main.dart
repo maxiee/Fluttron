@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // for rootBundle
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 void main() {
@@ -27,23 +28,71 @@ class FluttronBrowser extends StatefulWidget {
 }
 
 class _FluttronBrowserState extends State<FluttronBrowser> {
-  InAppWebViewController? webViewController;
+  // Define scheme name
+  static const String schemeName = 'fluttron';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: InAppWebView(
-        initialUrlRequest: URLRequest(url: WebUri("https://flutter.dev")),
+        // 1. Change entry point to custom protocol
+        initialUrlRequest: URLRequest(
+          url: WebUri("$schemeName://local/index.html"),
+        ),
+
         initialSettings: InAppWebViewSettings(
           isInspectable: true,
-          allowFileAccessFromFileURLs: true,
-          allowUniversalAccessFromFileURLs: true,
+          // 2. Register custom protocol
+          resourceCustomSchemes: [schemeName],
         ),
-        onWebViewCreated: (controller) {
-          webViewController = controller;
-        },
-        onLoadStop: (controller, url) {
-          debugPrint("Fluttron: Page loaded: $url");
+
+        // 3. Core: Intercept request, return local Asset
+        onLoadResourceWithCustomScheme: (controller, request) async {
+          if (request.url.scheme == schemeName) {
+            try {
+              // Parse path: fluttron://local/index.html -> assets/www/index.html
+              // request.url.path will have leading /, e.g. /index.html
+              var path = request.url.path;
+              if (path.isEmpty || path == "/") path = "/index.html";
+
+              final assetPath = "assets/www$path";
+
+              // Read binary data from Flutter Assets
+              final data = await rootBundle.load(assetPath);
+              final bytes = data.buffer.asUint8List();
+
+              // Simple MIME type detection (MVP simplified version, production should use mime package)
+              String contentType = "text/plain";
+              if (assetPath.endsWith(".html")) {
+                contentType = "text/html";
+              } else if (assetPath.endsWith(".js")) {
+                contentType = "application/javascript";
+              } else if (assetPath.endsWith(".css")) {
+                contentType = "text/css";
+              } else if (assetPath.endsWith(".png")) {
+                contentType = "image/png";
+              } else if (assetPath.endsWith(".json")) {
+                contentType = "application/json";
+                // Flutter Web needs to load fonts and icons
+              } else if (assetPath.endsWith(".ttf")) {
+                contentType = "font/ttf";
+              } else if (assetPath.endsWith(".woff")) {
+                contentType = "font/woff";
+              }
+
+              // Return to WebView
+              return CustomSchemeResponse(
+                data: bytes,
+                contentType: contentType,
+                contentEncoding: "utf-8",
+              );
+            } catch (e) {
+              debugPrint("Fluttron Load Error: $e");
+              // Return null for 404 - the WebView will handle it as a network error
+              return null;
+            }
+          }
+          return null;
         },
       ),
     );

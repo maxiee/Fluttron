@@ -29,4 +29,6 @@ flutter:
     - assets/www/
     - assets/www/assets/
     - assets/www/assets/fonts/
+    - assets/www/assets/packages/cupertino_icons/assets/
+    - assets/www/canvaskit/
 

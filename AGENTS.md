@@ -81,6 +81,7 @@
 		- lib/src/manifest.dart: 定义 App 的配置结构。
 	- fluttron_host/（Flutter Desktop 应用）
 		- “浏览器”外壳。
+        - Web 构建产物位于 assets/www 下
 	- fluttron_ui/
 		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
 		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
