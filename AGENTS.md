@@ -15,7 +15,7 @@
 	- UI 使用 Flutter Web 开发，100% 在 WebView 内
 	- 充分利用 Flutter Web 集成 Web 生态能力，打通 Web 技术栈
 - 宿主部分和渲染部分通过 Bridge 通信，初期可通过 webview_flutter 底层机制通信，未来封装类型安全的代码生成器方案
-- 泛跨端：改方案既支持桌面端，也支持移动端。初期先开发桌面端。
+- 泛跨端：改方案既支持桌面端（macOS），也支持移动端（Android、iOS）。初期先开发桌面端。
 
 ## 编码规范
 
