@@ -1,3 +1,5 @@
+assets/www/*
+
 # Miscellaneous
 *.class
 *.log
