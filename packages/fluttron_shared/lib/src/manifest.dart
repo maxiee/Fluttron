@@ -4,19 +4,19 @@ part 'manifest.g.dart';
 
 @JsonSerializable()
 class FluttronManifest {
-  // 应用名称
+  // App name
   final String appName;
 
-  // 应用唯一标识 (e.g., com.example.app)
+  // App unique identifier (e.g., com.example.app)
   final String appId;
 
-  // 版本号
+  // Version
   final String version;
 
-  // 入口文件 (Flutter Web 编译产物的相对路径，默认 index.html)
+  // Entry point (relative path to Flutter Web build output, defaults to index.html)
   final String entryPoint;
 
-  // 窗口配置 (桌面端优先)
+  // Window configuration (desktop priority)
   final WindowConfig window;
 
   FluttronManifest({
