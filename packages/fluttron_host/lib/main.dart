@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // for rootBundle
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:fluttron_host/src/bridge/host_bridge.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,8 @@ class _FluttronBrowserState extends State<FluttronBrowser> {
 
   @override
   Widget build(BuildContext context) {
+    final hostBridge = HostBridge();
+
     return Scaffold(
       body: InAppWebView(
         // 1. Change entry point to custom protocol
@@ -45,6 +48,10 @@ class _FluttronBrowserState extends State<FluttronBrowser> {
           // 2. Register custom protocol
           resourceCustomSchemes: [schemeName],
         ),
+
+        onWebViewCreated: (controller) {
+          hostBridge.attach(controller);
+        },
 
         // 3. Core: Intercept request, return local Asset
         onLoadResourceWithCustomScheme: (controller, request) async {

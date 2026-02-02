@@ -57,11 +57,10 @@
 
 ###  重要限制（防止你跑偏）
 
-- 不要给我“泛泛而谈”的架构图；我要的是可以开始写代码的清单
-- 不要一次性引入太多组件；能跑 > 完美
 - 不要默认我会多平台同时做；优先关注桌面平台
-- 不要提出需要大量外部依赖/复杂 DevOps 的方案；越轻越好
+- 不要提出需要大量外部依赖/复杂 DevOps 的方案；越轻越好，KISS
 - 不要一次性给我太多代码，控制在一次 Commit 的范围内，每次提交一个完整功能点
+- **如果存在不确定的点，优先考虑询问用户，而不是在不确定下匆忙给出方案**
 
 ## 关键架构共识（不可改变）
 
@@ -74,21 +73,7 @@
 ### 包目录结构
 
 - packages/
-	- fluttron_shared/ (核心协议层)
-		- Shared definitions and protocols for Fluttron Host and Renderer.
-		- pubspec.yaml: 定义 Dart 依赖。
-		- lib/fluttron_shared.dart: 导出文件。
-		- lib/src/manifest.dart: 定义 App 的配置结构。
-	- fluttron_host/（Flutter Desktop 应用）
-		- “浏览器”外壳。
-        - Web 构建产物位于 assets/www 下
-	- fluttron_ui/
-		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
-		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
+	- fluttron_shared：核心协议层，Shared definitions and protocols for Fluttron Host and Renderer.
+	- fluttron_host：（Flutter Desktop 应用，“浏览器”外壳，Web 构建产物位于 assets/www 下
+	- fluttron_ui：渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
 
-## Backlog (未来)
-
-- [P0] fluttron_host：搭建包含 WebView 的 Flutter Desktop 工程。
-- [P0] fluttron_ui：搭建 Flutter Web 基础模版。
-- [P1] CLI 工具：自动读取 YAML 并启动工程（目前先手动）。
-- [P2] Bridge 通信机制实现。
