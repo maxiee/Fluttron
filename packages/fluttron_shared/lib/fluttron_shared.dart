@@ -1,3 +1,3 @@
-library fluttron_shared;
+library;
 
 export 'src/manifest.dart';

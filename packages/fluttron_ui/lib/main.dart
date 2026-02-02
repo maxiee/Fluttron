@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// 引入 shared 证明连接成功（虽然暂未使用其中的类）
-import 'package:fluttron_shared/fluttron_shared.dart';
 
 void main() {
   runApp(const FluttronApp());
