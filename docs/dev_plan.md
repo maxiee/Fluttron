@@ -177,6 +177,7 @@ Host 端:
 - v0010：抽取 fluttron_host / fluttron_ui 入口为可复用库，新增 runFluttronHost / runFluttronUi 并导出核心 API
 - v0011：定义模板结构与 `fluttron.json` 规格文档，补充 `templates/` 的最小占位结构
 - v0012：补齐可运行的 Host/UI 模板工程（基于 flutter create，补上 `pubspec.yaml` + `lib/main.dart`），并为 Host 提供最小可加载的 `assets/www/index.html`；已验证 UI 的 `flutter run -d chrome`，已验证 Host 的 `flutter run -d macos`，均可运行
+- v0013：使用 `dart create` 创建 `fluttron_cli`，并完成 CLI 最小骨架（create/build/run 命令入口、参数定义、`fluttron.json` 校验与路径检查）
 
 ## Backlog (未来)
 
@@ -187,7 +188,7 @@ Host 端:
 
 ## 当前任务
 
-准备 CLI 工具最小骨架（create / build / run 的最小入口与参数定义）
+实现 CLI 的最小可用功能：`create` 支持模板拷贝（先支持本地模板路径），`build` 支持构建 UI 并复制到 Host 资产目录，`run` 支持启动 Host（macOS）
 
 ## 我的问题
 
