@@ -176,18 +176,18 @@ Host 端:
 - v0009：基于 GitHub Action 搭建文档站点，位于 `website` 目录下，是一个 Docusaurus 工程，线上地址是：https://maxiee.github.io/Fluttron/
 - v0010：抽取 fluttron_host / fluttron_ui 入口为可复用库，新增 runFluttronHost / runFluttronUi 并导出核心 API
 - v0011：定义模板结构与 `fluttron.json` 规格文档，补充 `templates/` 的最小占位结构
+- v0012：补齐可运行的 Host/UI 模板工程（基于 flutter create，补上 `pubspec.yaml` + `lib/main.dart`），并为 Host 提供最小可加载的 `assets/www/index.html`；已验证 UI 的 `flutter run -d chrome`，已验证 Host 的 `flutter run -d macos`，均可运行
 
 ## Backlog (未来)
 
-- [P0] 生成可运行的 Host/UI 模板工程（含 `pubspec.yaml` 与 `lib/main.dart`）
-- [P1] CLI 工具：读取 `fluttron.json` 并创建/构建/运行工程
+- [P0] CLI 工具：读取 `fluttron.json` 并创建/构建/运行工程
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
 - TODO：CLI 创建/构建链路（先支持本地模板路径）
 - TODO：实现构建链路（先 build UI，再复制到 Host assets，再运行 Host）
 
 ## 当前任务
 
-无
+准备 CLI 工具最小骨架（create / build / run 的最小入口与参数定义）
 
 ## 我的问题
 
