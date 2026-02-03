@@ -23,7 +23,19 @@
 
 在最短时间内做出一个可运行的 Fluttron MVP，具备“可演示、可扩展、可迭代”的最小平台能力。
 
-**MVP 成功标准（验收点）**：
+### 北极星目标
+
+我想基于 Fluttron 创建我的新项目，目前有一系列要求尚未达到：
+
+1. 我希望能通过 CLI 脚手架创建一个新的 Fluttron 项目
+2. 我希望能通过 CLI 构建并运行这个项目
+3. 需要有这么一个 CLI 工具
+4. 需要定义 Fluttron 项目的结构模板
+5. Fluttron 项目结构包含：一个 Flutter 宿主工程，一个 Flutter Web 渲染工程，一个全局 Manifest 文件
+6. fluttron_host、fluttron_ui 需要变成库，在模板工程中作为依赖引入
+7. fluttron_host、fluttron_ui 包含所有平台能力，创建出的 Flutter 宿主工程开发者只用于扩充服务，创建出的 Flutter Web 渲染工程开发者只用于开发 UI 和业务逻辑
+
+### **MVP 成功标准（验收点）**：
 
 1. 定义一种类似 package.json 的 manifest 格式
 2. 定义模版工程：宿主模版工程，渲染模板工程
@@ -149,6 +161,7 @@ Host 端:
 - v0006：Bridge 通信协议，把 flutter_inappwebview 的 callHandler ↔ addJavaScriptHandler 跑通：Renderer 调 system.getPlatform，Host 回 {platform:"macos"}，Renderer 显示出来。已经调通。
 - v0007：fluttron_host 引入 ServiceRegistry，并引入 FluttronService 基类形成注册表模式。并沉淀两个服务，SystemService（获取系统平台）、StorageService（基于内存的KV存储）
 - v0008：创建项目 README 第一版本
+- v0009：基于 GitHub Action 搭建文档站点，位于 `website` 目录下，是一个 Docusaurus 工程，线上地址是：https://maxiee.github.io/Fluttron/
 
 ## Backlog (未来)
 
@@ -163,4 +176,4 @@ Host 端:
 
 ## 我的问题
 
-现在缺少 README，请帮我创建一个 README。由于我没给你详细代码，关于怎么安装怎么运行、内部架构的内容可以忽略，我们重点介绍 Why 和 What 层面。
+我现在距离北极星目标，还有差距，如果我通过迭代去追齐，我下一步最小可执行任务是什么？
