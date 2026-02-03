@@ -179,19 +179,19 @@ Host 端:
 - v0012：补齐可运行的 Host/UI 模板工程（基于 flutter create，补上 `pubspec.yaml` + `lib/main.dart`），并为 Host 提供最小可加载的 `assets/www/index.html`；已验证 UI 的 `flutter run -d chrome`，已验证 Host 的 `flutter run -d macos`，均可运行
 - v0013：使用 `dart create` 创建 `fluttron_cli`，并完成 CLI 最小骨架（create/build/run 命令入口、参数定义、`fluttron.json` 校验与路径检查）
 - v0014：完善 CLI `create`，支持模板目录拷贝，并在创建时覆写 `fluttron.json` 的 name/window.title
+- v0015：实现 CLI `build`，在 UI 工程执行 `flutter build web` 并将产物复制到 Host 资产目录
 
 ## Backlog (未来)
 
 - [P0] CLI 工具：读取 `fluttron.json` 并创建/构建/运行工程
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
-- TODO：CLI 创建/构建链路（先支持本地模板路径）
-- TODO：实现构建链路（先 build UI，再复制到 Host assets，再运行 Host）
+- TODO：实现运行链路（先 build UI，再运行 Host）
 - 风险：模板内 pubspec.yaml 依赖路径仍指向仓库内 packages/，若在仓库外创建项目会失效。
 - Backlog（未来）：模板依赖路径重写与远程模板支持。
 
 ## 当前任务
 
-实现 CLI 的最小可用功能：`build` 支持构建 UI 并复制到 Host 资产目录，`run` 支持启动 Host（macOS）
+实现 CLI 的最小可用功能：`run` 支持启动 Host（macOS）
 
 ## 我的问题
 
