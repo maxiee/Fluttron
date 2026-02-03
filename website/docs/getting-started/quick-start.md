@@ -1,85 +1,54 @@
 # Quick Start
 
-This guide will help you create and run your first Fluttron application in minutes.
+This guide creates and runs a Fluttron app using the CLI.
 
-## Create a Fluttron Project
-
-Currently, Fluttron uses a manual project setup. In the future, a CLI tool will automate this process.
-
-For now, use the monorepo template:
+## 1. Create a Project
 
 ```bash
-# Clone the repository
-git clone https://github.com/fluttron/fluttron.git
-cd fluttron
-
-# The repository structure serves as your template:
-# - packages/fluttron_host/  -> Host layer template
-# - packages/fluttron_ui/    -> Renderer layer template
-# - packages/fluttron_shared/ -> Shared protocol definitions
+fluttron create ./hello_fluttron --name HelloFluttron
 ```
 
-## Build and Run
-
-### Step 1: Build the Renderer (Flutter Web)
+If you are not using the global CLI, run:
 
 ```bash
-cd packages/fluttron_ui
-./build.sh
+dart run packages/fluttron_cli/bin/fluttron.dart create ./hello_fluttron --name HelloFluttron
 ```
 
-This command:
-- Builds the Flutter Web application
-- Copies the compiled artifacts to `../fluttron_host/assets/www`
+This generates:
+- `fluttron.json`
+- `host/` (Flutter Desktop app)
+- `ui/` (Flutter Web app)
 
-### Step 2: Run the Host
+## 2. Build the UI
 
 ```bash
-cd ../fluttron_host
-./run.sh
+fluttron build -p ./hello_fluttron
 ```
 
-This will launch the Fluttron Host application, which loads the Flutter Web app from `assets/www`.
+## 3. Run the Host
+
+```bash
+fluttron run -p ./hello_fluttron
+```
+
+Optional flags:
+- `--device <id>` to target a specific Flutter device
+- `--no-build` to skip rebuilding the UI
 
 ## What You See
 
-The demo page demonstrates:
+The default demo includes:
+- **System Service**: `system.getPlatform`
+- **Storage Service**: `storage.kvSet` / `storage.kvGet`
+- **Bridge Communication**: JSON IPC between Host and Renderer
 
-- **System Service**: Retrieve platform information (e.g., "macos")
-- **Storage Service**: Key-value storage operations (kvSet/kvGet)
-- **Bridge Communication**: Real-time communication between Renderer and Host
+## Notes
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────┐
-│   Fluttron Host (Desktop App)      │
-│   ┌─────────────────────────────┐   │
-│   │  ServiceRegistry           │   │
-│   │  - SystemService          │   │
-│   │  - StorageService         │   │
-│   └─────────────┬─────────────┘   │
-│                 │ Bridge IPC       │
-│   ┌─────────────▼─────────────┐   │
-│   │  WebView Container         │   │
-│   └─────────────┬─────────────┘   │
-└─────────────────┼───────────────────┘
-                  │
-┌─────────────────▼───────────────────┐
-│   Fluttron UI (Flutter Web)        │
-│   ┌─────────────────────────────┐   │
-│   │  FluttronClient           │   │
-│   │  - getPlatform()          │   │
-│   │  - kvSet() / kvGet()      │   │
-│   └─────────────────────────────┘   │
-│   ┌─────────────────────────────┐   │
-│   │  DemoPage (UI)            │   │
-│   └─────────────────────────────┘   │
-└─────────────────────────────────────┘
-```
+The default templates depend on local Fluttron packages. The CLI rewrites
+template `pubspec.yaml` paths to your repo so the project can build locally.
 
 ## Next Steps
 
-- [Project Structure](./project-structure.md) - Learn about the monorepo organization
+- [Project Structure](./project-structure.md) - Learn repo and template layout
 - [Architecture Overview](../architecture/overview.md) - Deep dive into Fluttron architecture
 - [API Reference](../api/services.md) - Explore available services

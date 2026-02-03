@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fluttron_host/src/services/service.dart';
+import 'package:fluttron_shared/fluttron_shared.dart';
 
 class SystemService extends FluttronService {
   @override
@@ -8,8 +9,16 @@ class SystemService extends FluttronService {
 
   @override
   Future<dynamic> handle(String method, Map<String, dynamic> params) async {
-    return <String, dynamic>{
-      'platform': Platform.operatingSystem, // "macos"
-    };
+    switch (method) {
+      case 'getPlatform':
+        return <String, dynamic>{
+          'platform': Platform.operatingSystem,
+        };
+      default:
+        throw FluttronError(
+          'METHOD_NOT_FOUND',
+          'system.$method not implemented',
+        );
+    }
   }
 }

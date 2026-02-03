@@ -23,16 +23,20 @@ class RendererBridge {
 
     final JSObject flutterInappwebview = flutterInappwebviewAny as JSObject;
 
-    // InAppWebView 注入：window.flutter_inappwebview.callHandler(...)
-    // - 参数 1: 'fluttron'
-    // - 参数 2: req.toJson() -> JS value via jsify()
+    // InAppWebView injection: window.flutter_inappwebview.callHandler(...)
+    // - arg 1: 'fluttron'
+    // - arg 2: req.toJson() -> JS value via jsify()
     final JSAny? promiseAny = flutterInappwebview.callMethodVarArgs<JSAny?>(
       'callHandler'.toJS,
       <JSAny?>[
         'fluttron'.toJS,
-        req.toJson().jsify() ?? JSObject(), // 兜底：确保不传 null
+        req.toJson().jsify() ?? JSObject(), // Ensure a non-null payload.
       ],
     );
+
+    if (promiseAny == null) {
+      throw StateError('callHandler returned null (unexpected)');
+    }
 
     final JSPromise<JSAny?> promise = promiseAny as JSPromise<JSAny?>;
 

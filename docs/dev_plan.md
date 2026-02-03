@@ -181,20 +181,20 @@ Host 端:
 - v0014：完善 CLI `create`，支持模板目录拷贝，并在创建时覆写 `fluttron.json` 的 name/window.title
 - v0015：实现 CLI `build`，在 UI 工程执行 `flutter build web` 并将产物复制到 Host 资产目录
 - v0016：实现 CLI `run` 完整链路：构建 UI、拷贝产物到 Host 资产目录、执行 `flutter run -d macos`
+- v0017：CLI `run` 支持 `--device`/`--no-build`；`create` 自动重写模板内 `pubspec.yaml` 依赖路径；Host Bridge 规范化错误返回；文档站点同步更新
 
 ## Backlog (未来)
 
 - [P0] CLI 工具：读取 `fluttron.json` 并创建/构建/运行工程
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
-- TODO：实现运行链路（先 build UI，再运行 Host）
-- 风险：模板内 pubspec.yaml 依赖路径仍指向仓库内 packages/，若在仓库外创建项目会失效。
-- Backlog（未来）：模板依赖路径重写与远程模板支持。
+- 风险：模板依赖路径由 CLI 重写为本地绝对路径，仍需保持本地仓库可用。
+- Backlog（未来）：远程模板支持与依赖来源策略（本地/远程切换）。
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
-- 完整端到端验证（create → build → run）并补充文档。
+- 完整端到端验证（create → build → run）并补充运行记录。
 
 ## 当前任务
 
-完善 CLI `run`：支持可选 `--device`/`--no-build`
+本地端到端验证（create → build → run），记录结果与问题
 
 ## 我的问题
 

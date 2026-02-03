@@ -55,6 +55,10 @@ class CreateCommand extends Command<int> {
         manifestFile: File(p.join(targetDir.path, 'fluttron.json')),
         projectName: name,
       );
+      _rewritePubspecPaths(
+        projectDir: targetDir,
+        templateDir: templateDir,
+      );
     } on FileSystemException catch (error) {
       stderr.writeln(error.message);
       return 2;
@@ -124,5 +128,50 @@ class CreateCommand extends Command<int> {
     }
     final encoder = const JsonEncoder.withIndent('  ');
     manifestFile.writeAsStringSync('${encoder.convert(decoded)}\n');
+  }
+
+  void _rewritePubspecPaths({
+    required Directory projectDir,
+    required Directory templateDir,
+  }) {
+    final packagesDir = Directory(p.join(templateDir.parent.path, 'packages'));
+    if (!packagesDir.existsSync()) {
+      return;
+    }
+
+    final normalizedPackages = p.normalize(packagesDir.path);
+    _rewritePubspecFile(
+      File(p.join(projectDir.path, 'host', 'pubspec.yaml')),
+      normalizedPackages,
+    );
+    _rewritePubspecFile(
+      File(p.join(projectDir.path, 'ui', 'pubspec.yaml')),
+      normalizedPackages,
+    );
+  }
+
+  void _rewritePubspecFile(File file, String packagesPath) {
+    if (!file.existsSync()) {
+      return;
+    }
+
+    final original = file.readAsStringSync();
+    var updated = original
+        .replaceAll(
+          'path: ../../packages/fluttron_host',
+          'path: ${p.join(packagesPath, 'fluttron_host')}',
+        )
+        .replaceAll(
+          'path: ../../packages/fluttron_ui',
+          'path: ${p.join(packagesPath, 'fluttron_ui')}',
+        )
+        .replaceAll(
+          'path: ../../packages/fluttron_shared',
+          'path: ${p.join(packagesPath, 'fluttron_shared')}',
+        );
+
+    if (updated != original) {
+      file.writeAsStringSync(updated);
+    }
   }
 }

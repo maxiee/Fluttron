@@ -32,6 +32,11 @@ class HostBridge {
         try {
           final result = await registry.dispatch(req.method, req.params);
           return FluttronResponse.ok(req.id, result).toJson();
+        } on FluttronError catch (e) {
+          return FluttronResponse.err(
+            req.id,
+            '${e.code}:${e.message}',
+          ).toJson();
         } catch (e) {
           return FluttronResponse.err(req.id, 'internal_error:$e').toJson();
         }

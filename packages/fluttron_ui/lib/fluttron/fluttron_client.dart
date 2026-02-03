@@ -27,7 +27,7 @@ class FluttronClient {
       'callHandler'.toJS,
       <JSAny?>[
         'fluttron'.toJS,
-        req.toJson().jsify() ?? JSObject(), // 兜底：不传 null
+        req.toJson().jsify() ?? JSObject(), // Ensure a non-null payload.
       ],
     );
 

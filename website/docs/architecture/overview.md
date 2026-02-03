@@ -1,135 +1,77 @@
 # Architecture Overview
 
-Fluttron adopts a dual-layer architecture similar to Electron or mini-program containers, combining the stability of native host applications with the flexibility of web rendering.
+Fluttron uses a dual-layer model: a native Host (Flutter Desktop) and a Renderer (Flutter Web) running inside a WebView.
 
 ## Core Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   Fluttron Host                          │
-│              (Flutter Desktop Application)                  │
-│                                                           │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              ServiceRegistry                      │   │
-│  │  • SystemService (platform info)                │   │
-│  │  • StorageService (key-value storage)           │   │
-│  │  • FileService (file system access)             │   │
-│  │  • DatabaseService (SQLite)                     │   │
-│  └───────────────────┬─────────────────────────────┘   │
-│                      │                                   │
-│  ┌───────────────────▼─────────────────────────────┐   │
-│  │            Host Bridge (Dart)                   │   │
-│  │  • JavaScriptHandler: 'fluttron'              │   │
-│  │  • Request/Response routing                   │   │
-│  └───────────────────┬─────────────────────────────┘   │
-└──────────────────────┼──────────────────────────────────┘
-                       │ IPC Channel
-                       │ (JSON over JS Handler)
+┌────────────────────────────────────────────────────┐
+│                 Fluttron Host                      │
+│             (Flutter Desktop App)                  │
+│                                                    │
+│  ┌──────────────────────────────────────────────┐  │
+│  │ ServiceRegistry                              │  │
+│  │  • SystemService (platform info)             │  │
+│  │  • StorageService (in-memory KV)             │  │
+│  └───────────────────┬──────────────────────────┘  │
+│                      │                             │
+│  ┌───────────────────▼──────────────────────────┐  │
+│  │ Host Bridge (Dart)                           │  │
+│  │  • JavaScriptHandler: 'fluttron'             │  │
+│  │  • Request/response routing                  │  │
+│  └───────────────────┬──────────────────────────┘  │
+└──────────────────────┼─────────────────────────────┘
+                       │ IPC (JSON over JS Handler)
                        │
-┌──────────────────────▼──────────────────────────────────┐
-│                 WebView Container                        │
-│                                                       │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │            Fluttron UI                        │    │
-│  │         (Flutter Web Application)               │    │
-│  │                                                  │    │
-│  │  ┌─────────────────────────────────────────┐    │    │
-│  │  │       Renderer Bridge (Dart JS interop) │    │    │
-│  │  │  • callHandler('fluttron', request)   │    │    │
-│  │  │  • Promise <-> Future conversion        │    │    │
-│  │  └───────────────┬───────────────────────┘    │    │
-│  │                  │                              │    │
-│  │  ┌───────────────▼───────────────────────┐    │    │
-│  │  │      FluttronClient (High-level API)  │    │    │
-│  │  │  • getPlatform()                    │    │    │
-│  │  │  • kvSet(key, value)                │    │    │
-│  │  │  • kvGet(key)                      │    │    │
-│  │  └───────────────┬───────────────────────┘    │    │
-│  │                  │                              │    │
-│  │  ┌──────────────▼────────────────────────┐    │    │
-│  │  │   Business Logic & UI Components      │    │    │
-│  │  └───────────────────────────────────────┘    │    │
-│  └─────────────────────────────────────────────────┘    │
-└───────────────────────────────────────────────────────────┘
+┌──────────────────────▼─────────────────────────────┐
+│                 Renderer (Flutter Web)             │
+│                                                    │
+│  ┌──────────────────────────────────────────────┐  │
+│  │ Renderer Bridge (dart:js_interop)            │  │
+│  │  • callHandler('fluttron', request)          │  │
+│  │  • Promise <-> Future                         │  │
+│  └───────────────────┬──────────────────────────┘  │
+│                      │                             │
+│  ┌───────────────────▼──────────────────────────┐  │
+│  │ FluttronClient                                │  │
+│  │  • getPlatform()                              │  │
+│  │  • kvSet() / kvGet()                          │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
 ```
 
 ## Layer Responsibilities
 
-### Host Layer (Native Dart)
+### Host Layer (Flutter Desktop)
 
-The Host layer is built with Flutter Desktop and is responsible for:
-
-- **Window Management**: Creating, resizing, and managing application windows
-- **Lifecycle Management**: Application startup, shutdown, and background tasks
-- **Service Exposure**: Providing native capabilities through ServiceRegistry
-- **Security**: Sandbox isolation between UI and system resources
-- **Resource Management**: Memory, CPU, and system resource allocation
-
-### Runtime Layer (WebView Runtime)
-
-The Runtime layer is the execution environment within WebView:
-
-- **JavaScript Injection**: Loading preload scripts and initializing JS APIs
-- **Message Routing**: IPC mechanism between Host and Renderer
-- **Module Loading Protocol**: Loading and managing Web modules/apps
-- **Security Enforcements**: Restricting access to certain JavaScript APIs
+- Creates the native window and WebView
+- Loads Web assets from `assets/www`
+- Exposes services through `ServiceRegistry`
+- Handles IPC requests from the Renderer
 
 ### Renderer Layer (Flutter Web)
 
-The Renderer layer is a standard Flutter Web application:
-
-- **UI Rendering**: All user interface and visual components
-- **Business Logic**: Application code, state management, and data flow
-- **Web Ecosystem Integration**: Seamless access to Web APIs and libraries
-- **Host Communication**: Invoking services via FluttronClient
-
-## Design Principles
-
-### Full-Stack Dart
-
-Both Host and Renderer use Dart, eliminating language switching:
-- Host services written in Dart
-- UI components written in Dart (Flutter Web)
-- No Node.js vs JavaScript context switching
-
-### Service-Oriented Architecture
-
-Host exposes capabilities through registered services:
-- Services are registered at startup
-- Each service has a namespace and methods
-- Easy to extend with custom services
-
-### Web Ecosystem
-
-Renderer is essentially Web, enjoying:
-- Flutter's fast rendering
-- Access to entire Web ecosystem
-- Seamless integration with Web APIs
-
-### Sandbox Isolation
-
-Clear separation between system and UI:
-- Host has full system access
-- Renderer runs in controlled WebView
-- Secure by design
+- Renders UI and runs business logic
+- Calls host services through `FluttronClient`
+- Uses Dart JS interop to access the bridge
 
 ## Communication Protocol
 
-All communication between Host and Renderer uses JSON-based protocol defined in `fluttron_shared`:
+The protocol is defined in `fluttron_shared`:
 
 **Request:**
 ```json
 {
-  "id": "unique-request-id",
+  "id": "req-123",
   "method": "system.getPlatform",
   "params": {}
 }
 ```
 
-**Response:**
+**Response (success):**
 ```json
 {
-  "id": "unique-request-id",
+  "id": "req-123",
   "ok": true,
   "result": {
     "platform": "macos"
@@ -138,16 +80,23 @@ All communication between Host and Renderer uses JSON-based protocol defined in 
 }
 ```
 
+**Response (error):**
+```json
+{
+  "id": "req-123",
+  "ok": false,
+  "result": null,
+  "error": "METHOD_NOT_FOUND: system.foo not implemented"
+}
+```
+
 ## Cross-Platform Support
 
-Fluttron supports multiple platforms:
-
-- **Desktop**: macOS, Linux, Windows (using Flutter Desktop)
-- **Mobile**: Android, iOS (using Flutter mobile + WebView)
-- **Initial Focus**: macOS development
+- **Desktop**: macOS (initial focus), Windows/Linux planned
+- **Mobile**: Android/iOS planned
 
 ## Next Steps
 
-- [Host Layer Details](./host-layer.md) - Deep dive into Host architecture
-- [Renderer Layer Details](./renderer-layer.md) - Learn about Renderer architecture
-- [Bridge Communication](./bridge-communication.md) - IPC mechanism details
+- [Host Layer](./host-layer.md) - Host internals
+- [Renderer Layer](./renderer-layer.md) - Renderer internals
+- [Bridge Communication](./bridge-communication.md) - IPC details
