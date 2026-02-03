@@ -138,7 +138,9 @@ Host 端:
 		- lib/fluttron_shared.dart - 包入口文件，导出所有核心协议类型
 	- fluttron_host/（Flutter Desktop 应用）
 		- “浏览器”外壳。Web 构建产物位于 assets/www 下。
-		- main.dart - 应用入口点，初始化 ServiceRegistry 并创建加载 Flutter Web 的宿主浏览器窗口
+		- lib/fluttron_host.dart - Host 库入口，导出 runFluttronHost 和服务相关 API
+		- lib/src/host_app.dart - Host 应用核心，包含 runFluttronHost 与 UI 容器
+		- main.dart - 应用入口点，调用 runFluttronHost
 		- host_bridge.dart - Host 与 WebView 之间的通信桥接，通过 JavaScriptHandler 接收来自渲染端的请求并转发给服务注册中心
 		- service.dart - 服务抽象基类，定义了所有宿主服务必须实现的 namespace 和 handle 接口
 		- service_registry.dart - 服务注册与调度中心，管理所有服务的注册并根据 "namespace.method" 格式路由请求到对应服务
@@ -147,7 +149,9 @@ Host 端:
 	- fluttron_ui/
 		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
 		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
-		- lib/main.dart - Flutter Web 应用入口，定义 DemoPage 演示页面，提供测试 FluttronClient 的 UI（获取平台信息、KV 存储操作）。
+		- lib/fluttron_ui.dart - UI 库入口，导出 runFluttronUi 与 FluttronClient
+		- lib/src/ui_app.dart - UI 应用核心，包含 runFluttronUi 与 DemoPage
+		- lib/main.dart - Flutter Web 应用入口，调用 runFluttronUi
 		- lib/fluttron/fluttron_client.dart - Fluttron 客户端核心类，封装了通过 WebView Bridge 调用宿主服务的 invoke 方法及具体业务 API（getPlatform、kvSet、kvGet）。
 		- lib/bridge/renderer_bridge.dart - 渲染层 Bridge 通信底层实现，负责通过 JS 互操作调用 webview_flutter 的 callHandler 与宿主通信。
 
@@ -162,6 +166,7 @@ Host 端:
 - v0007：fluttron_host 引入 ServiceRegistry，并引入 FluttronService 基类形成注册表模式。并沉淀两个服务，SystemService（获取系统平台）、StorageService（基于内存的KV存储）
 - v0008：创建项目 README 第一版本
 - v0009：基于 GitHub Action 搭建文档站点，位于 `website` 目录下，是一个 Docusaurus 工程，线上地址是：https://maxiee.github.io/Fluttron/
+- v0010：抽取 fluttron_host / fluttron_ui 入口为可复用库，新增 runFluttronHost / runFluttronUi 并导出核心 API
 
 ## Backlog (未来)
 
@@ -169,6 +174,9 @@ Host 端:
 - [P0] fluttron_ui：搭建 Flutter Web 基础模版。
 - [P1] CLI 工具：自动读取 YAML 并启动工程（目前先手动）。
 - [P2] Bridge 通信机制实现。
+- 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
+- TODO：定义模板目录结构与 fluttron.json 的落盘位置与字段约束。
+- TODO：CLI 创建/构建链路（先支持本地模板路径）。
 
 ## 当前任务
 
