@@ -1,0 +1,24 @@
+{
+  "id": "architecture/renderer-layer",
+  "title": "Renderer Layer",
+  "description": "The Renderer layer is a Flutter Web application running in WebView, responsible for UI rendering and business logic.",
+  "source": "@site/docs/architecture/renderer-layer.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/renderer-layer",
+  "permalink": "/zh-CN/docs/architecture/renderer-layer",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/architecture/renderer-layer.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Host Layer",
+    "permalink": "/zh-CN/docs/architecture/host-layer"
+  },
+  "next": {
+    "title": "Bridge Communication",
+    "permalink": "/zh-CN/docs/architecture/bridge-communication"
+  }
+}

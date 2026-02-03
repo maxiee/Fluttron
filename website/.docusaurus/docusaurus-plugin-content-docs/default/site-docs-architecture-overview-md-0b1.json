@@ -1,0 +1,24 @@
+{
+  "id": "architecture/overview",
+  "title": "Architecture Overview",
+  "description": "Fluttron adopts a dual-layer architecture similar to Electron or mini-program containers, combining the stability of native host applications with the flexibility of web rendering.",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/zh-CN/docs/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/architecture/overview.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Project Structure",
+    "permalink": "/zh-CN/docs/getting-started/project-structure"
+  },
+  "next": {
+    "title": "Architecture Overview",
+    "permalink": "/zh-CN/docs/architecture/overview"
+  }
+}

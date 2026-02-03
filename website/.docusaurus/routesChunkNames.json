@@ -1,0 +1,62 @@
+{
+  "/zh-CN/docs-88c": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/zh-CN/docs-4e5": {
+    "__comp": "a7bd4aaa",
+    "__props": "bd2f4411"
+  },
+  "/zh-CN/docs-560": {
+    "__comp": "a94703ab"
+  },
+  "/zh-CN/docs/api/services-e83": {
+    "__comp": "17896441",
+    "content": "cb9ff28f"
+  },
+  "/zh-CN/docs/architecture/bridge-communication-e09": {
+    "__comp": "17896441",
+    "content": "d2a8dd61"
+  },
+  "/zh-CN/docs/architecture/host-layer-023": {
+    "__comp": "17896441",
+    "content": "b964ed0c"
+  },
+  "/zh-CN/docs/architecture/overview-c14": {
+    "__comp": "17896441",
+    "content": "0b1ac180"
+  },
+  "/zh-CN/docs/architecture/renderer-layer-cd0": {
+    "__comp": "17896441",
+    "content": "53a947d2"
+  },
+  "/zh-CN/docs/examples/hello-world-982": {
+    "__comp": "17896441",
+    "content": "a8b2a833"
+  },
+  "/zh-CN/docs/getting-started/installation-10b": {
+    "__comp": "17896441",
+    "content": "54f44165"
+  },
+  "/zh-CN/docs/getting-started/project-structure-1da": {
+    "__comp": "17896441",
+    "content": "4c515ec3"
+  },
+  "/zh-CN/docs/getting-started/quick-start-0a7": {
+    "__comp": "17896441",
+    "content": "588bd741"
+  },
+  "/zh-CN/docs/intro-1c9": {
+    "__comp": "17896441",
+    "content": "0e384e19"
+  },
+  "/zh-CN/-42a": {
+    "__comp": "c4f5d8e4",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  }
+}

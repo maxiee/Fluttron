@@ -1,0 +1,20 @@
+{
+  "id": "examples/hello-world",
+  "title": "Hello World Example",
+  "description": "This is a complete Hello World example demonstrating the basic Fluttron setup and communication between Host and Renderer.",
+  "source": "@site/docs/examples/hello-world.md",
+  "sourceDirName": "examples",
+  "slug": "/examples/hello-world",
+  "permalink": "/zh-CN/docs/examples/hello-world",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/examples/hello-world.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Services API Reference",
+    "permalink": "/zh-CN/docs/api/services"
+  }
+}

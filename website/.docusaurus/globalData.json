@@ -1,0 +1,78 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/zh-CN/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/zh-CN/docs",
+          "mainDocId": "intro",
+          "docs": [
+            {
+              "id": "api/services",
+              "path": "/zh-CN/docs/api/services",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/bridge-communication",
+              "path": "/zh-CN/docs/architecture/bridge-communication",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/host-layer",
+              "path": "/zh-CN/docs/architecture/host-layer",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/zh-CN/docs/architecture/overview",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "architecture/renderer-layer",
+              "path": "/zh-CN/docs/architecture/renderer-layer",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "examples/hello-world",
+              "path": "/zh-CN/docs/examples/hello-world",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started/installation",
+              "path": "/zh-CN/docs/getting-started/installation",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started/project-structure",
+              "path": "/zh-CN/docs/getting-started/project-structure",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started/quick-start",
+              "path": "/zh-CN/docs/getting-started/quick-start",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "intro",
+              "path": "/zh-CN/docs/intro",
+              "sidebar": "tutorialSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "tutorialSidebar": {
+              "link": {
+                "path": "/zh-CN/docs/intro",
+                "label": "intro"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

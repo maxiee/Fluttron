@@ -1,0 +1,24 @@
+{
+  "id": "api/services",
+  "title": "Services API Reference",
+  "description": "This document describes all available services in Fluttron and their APIs.",
+  "source": "@site/docs/api/services.md",
+  "sourceDirName": "api",
+  "slug": "/api/services",
+  "permalink": "/zh-CN/docs/api/services",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/api/services.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Bridge Communication",
+    "permalink": "/zh-CN/docs/architecture/bridge-communication"
+  },
+  "next": {
+    "title": "Services API Reference",
+    "permalink": "/zh-CN/docs/api/services"
+  }
+}
