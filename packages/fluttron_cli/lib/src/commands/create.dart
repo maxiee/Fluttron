@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
+
+import '../utils/template_copy.dart';
 
 class CreateCommand extends Command<int> {
   @override
@@ -31,6 +34,7 @@ class CreateCommand extends Command<int> {
     final targetPath = _readSingleRest('target directory');
     final targetDir = Directory(targetPath);
     final normalizedTarget = p.normalize(targetDir.path);
+    final templateDir = _resolveTemplateDir();
 
     if (targetDir.existsSync()) {
       final entries = targetDir.listSync();
@@ -40,20 +44,29 @@ class CreateCommand extends Command<int> {
       }
     }
 
-    stdout.writeln('Create command is ready.');
-    stdout.writeln('Target: $normalizedTarget');
-
-    final name = argResults?['name'] as String?;
-    if (name != null && name.trim().isNotEmpty) {
-      stdout.writeln('Name: $name');
+    final name = _resolveProjectName(normalizedTarget);
+    try {
+      final copier = TemplateCopier();
+      await copier.copyContents(
+        sourceDir: templateDir,
+        destinationDir: targetDir,
+      );
+      _updateManifest(
+        manifestFile: File(p.join(targetDir.path, 'fluttron.json')),
+        projectName: name,
+      );
+    } on FileSystemException catch (error) {
+      stderr.writeln(error.message);
+      return 2;
+    } on FormatException catch (error) {
+      stderr.writeln('Invalid fluttron.json: ${error.message}');
+      return 2;
     }
 
-    final template = argResults?['template'] as String?;
-    if (template != null && template.trim().isNotEmpty) {
-      stdout.writeln('Template: ${p.normalize(template)}');
-    }
-
-    stdout.writeln('Next step: scaffold templates into the target directory.');
+    stdout.writeln('Project created: $normalizedTarget');
+    stdout.writeln('Template: ${p.normalize(templateDir.path)}');
+    stdout.writeln('Name: $name');
+    stdout.writeln('Next step: run `fluttron build` in the project directory.');
     return 0;
   }
 
@@ -66,5 +79,50 @@ class CreateCommand extends Command<int> {
       throw UsageException('Too many arguments.', usage);
     }
     return rest.first;
+  }
+
+  Directory _resolveTemplateDir() {
+    final templateArg = argResults?['template'] as String?;
+    final templatePath = templateArg?.trim();
+    final resolvedPath = templatePath != null && templatePath.isNotEmpty
+        ? templatePath
+        : p.join(Directory.current.path, 'templates');
+    final dir = Directory(p.normalize(resolvedPath));
+    if (!dir.existsSync()) {
+      throw UsageException(
+        'Template directory not found: ${p.normalize(resolvedPath)}',
+        usage,
+      );
+    }
+    return dir;
+  }
+
+  String _resolveProjectName(String normalizedTarget) {
+    final name = argResults?['name'] as String?;
+    if (name != null && name.trim().isNotEmpty) {
+      return name.trim();
+    }
+    return p.basename(normalizedTarget);
+  }
+
+  void _updateManifest({
+    required File manifestFile,
+    required String projectName,
+  }) {
+    if (!manifestFile.existsSync()) {
+      return;
+    }
+    final contents = manifestFile.readAsStringSync();
+    final decoded = jsonDecode(contents);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('fluttron.json must be a JSON object.');
+    }
+    decoded['name'] = projectName;
+    final window = decoded['window'];
+    if (window is Map<String, dynamic>) {
+      window['title'] = projectName;
+    }
+    final encoder = const JsonEncoder.withIndent('  ');
+    manifestFile.writeAsStringSync('${encoder.convert(decoded)}\n');
   }
 }
