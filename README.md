@@ -19,7 +19,7 @@ Fluttron 采用了类似 Electron 或小程序容器的双层架构（Host & Ren
 
 ```mermaid
 graph TD
-    subgraph Host [Fluttron Host (Native Dart)]
+    subgraph Host ["Fluttron Host (Native Dart)"]
         HostMain[主入口]
         ServiceRegistry[服务注册中心]
         Sys[系统服务]
@@ -27,7 +27,7 @@ graph TD
         BridgeHost[宿主 Bridge]
     end
 
-    subgraph Renderer [Fluttron UI (Flutter Web)]
+    subgraph Renderer ["Fluttron UI (Flutter Web)"]
         WebMain[Web 入口]
         Client[Fluttron 客户端 SDK]
         UI[业务 UI]
