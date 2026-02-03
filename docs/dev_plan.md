@@ -180,6 +180,7 @@ Host 端:
 - v0013：使用 `dart create` 创建 `fluttron_cli`，并完成 CLI 最小骨架（create/build/run 命令入口、参数定义、`fluttron.json` 校验与路径检查）
 - v0014：完善 CLI `create`，支持模板目录拷贝，并在创建时覆写 `fluttron.json` 的 name/window.title
 - v0015：实现 CLI `build`，在 UI 工程执行 `flutter build web` 并将产物复制到 Host 资产目录
+- v0016：实现 CLI `run` 完整链路：构建 UI、拷贝产物到 Host 资产目录、执行 `flutter run -d macos`
 
 ## Backlog (未来)
 
@@ -188,10 +189,12 @@ Host 端:
 - TODO：实现运行链路（先 build UI，再运行 Host）
 - 风险：模板内 pubspec.yaml 依赖路径仍指向仓库内 packages/，若在仓库外创建项目会失效。
 - Backlog（未来）：模板依赖路径重写与远程模板支持。
+- 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
+- 完整端到端验证（create → build → run）并补充文档。
 
 ## 当前任务
 
-实现 CLI 的最小可用功能：`run` 支持启动 Host（macOS）
+完善 CLI `run`：支持可选 `--device`/`--no-build`
 
 ## 我的问题
 
