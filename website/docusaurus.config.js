@@ -4,11 +4,11 @@ const config = {
   tagline: 'Dart-native Cross-Platform Container OS',
   favicon: 'img/favicon.ico',
 
-  url: 'https://fluttron.github.io',
-  baseUrl: '/fluttron/',
+  url: 'https://maxiee.github.io',
+  baseUrl: '/Fluttron/',
 
-  organizationName: 'fluttron',
-  projectName: 'fluttron',
+  organizationName: 'maxiee',
+  projectName: 'Fluttron',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
