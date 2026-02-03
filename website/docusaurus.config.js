@@ -4,8 +4,8 @@ const config = {
   tagline: 'Dart-native Cross-Platform Container OS',
   favicon: 'img/favicon.ico',
 
-  url: 'https://fluttron.dev',
-  baseUrl: '/',
+  url: 'https://fluttron.github.io',
+  baseUrl: '/fluttron/',
 
   organizationName: 'fluttron',
   projectName: 'fluttron',
