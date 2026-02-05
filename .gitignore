@@ -8,6 +8,7 @@
 .history
 
 website/node_modules/
+playground/
 
 # Flutter repo-specific
 /bin/cache/

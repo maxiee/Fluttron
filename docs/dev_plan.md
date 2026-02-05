@@ -193,6 +193,7 @@ Host 端:
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - 完整端到端验证（create → build → run）并补充运行记录。
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
+- TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
 
 ## 当前任务
 
@@ -200,4 +201,9 @@ Host 端:
 
 ## 我的问题
 
-我在本地端到端验证的时候，能够成功执行 `create` 和 `build`，但是在执行 `run --no-build -d macos` 的时候，应用启动后只展示了一个白屏。请帮我分析可能的原因，并进行修复，我的预期是能够看到 Flutter Web 渲染的 Demo 页面。
+v0018 中启动是个白屏，经过我的分析，我发现一个 Bug，我们在 host 的模板中，macOS 的 DebugProfile.entitlements 文件中，缺少了对网络权限的声明，导致 WebView 无法加载远程资源。需要加上以下内容：
+
+```xml
+	<key>com.apple.security.network.client</key>
+	<true/>
+```
