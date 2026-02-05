@@ -22,7 +22,7 @@ function HomepageHeader() {
           </Link>
           <Link
             className="button button--outline button--lg"
-            to="https://github.com/fluttron/fluttron">
+            to="https://github.com/maxiee/Fluttron">
             GitHub
           </Link>
         </div>

@@ -25,7 +25,7 @@ const config = {
        ({
          docs: {
            sidebarPath: require.resolve('./sidebars.js'),
-           editUrl: 'https://github.com/fluttron/fluttron/tree/main/website/',
+           editUrl: 'https://github.com/maxiee/Fluttron/tree/main/website/',
          },
          theme: {
            customCss: require.resolve('./src/css/custom.css'),
@@ -52,7 +52,7 @@ const config = {
             label: 'Documentation',
           },
           {
-            href: 'https://github.com/fluttron/fluttron',
+            href: 'https://github.com/maxiee/Fluttron',
             label: 'GitHub',
             position: 'right',
           },
@@ -83,7 +83,7 @@ const config = {
              items: [
                {
                  label: 'GitHub',
-                 href: 'https://github.com/fluttron/fluttron',
+                 href: 'https://github.com/maxiee/Fluttron',
                },
                {
                  label: 'Discord',

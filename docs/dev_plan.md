@@ -182,7 +182,7 @@ Host 端:
 - v0015：实现 CLI `build`，在 UI 工程执行 `flutter build web` 并将产物复制到 Host 资产目录
 - v0016：实现 CLI `run` 完整链路：构建 UI、拷贝产物到 Host 资产目录、执行 `flutter run -d macos`
 - v0017：CLI `run` 支持 `--device`/`--no-build`；`create` 自动重写模板内 `pubspec.yaml` 依赖路径；Host Bridge 规范化错误返回；文档站点同步更新
-- v0018：本地端到端验证（create → build → run）执行记录：`create` 成功；`build` 成功；`run --no-build -d macos` 能够启动应用，但是展示一个白屏。
+- v0018：本地端到端验证（create → build → run）执行记录：`create` 成功；`build` 成功；`run --no-build -d macos` 运行成功。
 
 ## Backlog (未来)
 
@@ -201,9 +201,4 @@ Host 端:
 
 ## 我的问题
 
-v0018 中启动是个白屏，经过我的分析，我发现一个 Bug，我们在 host 的模板中，macOS 的 DebugProfile.entitlements 文件中，缺少了对网络权限的声明，导致 WebView 无法加载远程资源。需要加上以下内容：
-
-```xml
-	<key>com.apple.security.network.client</key>
-	<true/>
-```
+暂无
