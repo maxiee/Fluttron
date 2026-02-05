@@ -182,6 +182,7 @@ Host 端:
 - v0015：实现 CLI `build`，在 UI 工程执行 `flutter build web` 并将产物复制到 Host 资产目录
 - v0016：实现 CLI `run` 完整链路：构建 UI、拷贝产物到 Host 资产目录、执行 `flutter run -d macos`
 - v0017：CLI `run` 支持 `--device`/`--no-build`；`create` 自动重写模板内 `pubspec.yaml` 依赖路径；Host Bridge 规范化错误返回；文档站点同步更新
+- v0018：本地端到端验证（create → build → run）执行记录：`create` 成功；`build` 成功；`run --no-build -d macos` 能够启动应用，但是展示一个白屏。
 
 ## Backlog (未来)
 
@@ -191,11 +192,12 @@ Host 端:
 - Backlog（未来）：远程模板支持与依赖来源策略（本地/远程切换）。
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - 完整端到端验证（create → build → run）并补充运行记录。
+- TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 
 ## 当前任务
 
-本地端到端验证（create → build → run），记录结果与问题
+无
 
 ## 我的问题
 
-我现在距离北极星目标，还有差距，如果我通过迭代去追齐，我下一步最小可执行任务是什么？
+我在本地端到端验证的时候，能够成功执行 `create` 和 `build`，但是在执行 `run --no-build -d macos` 的时候，应用启动后只展示了一个白屏。请帮我分析可能的原因，并进行修复，我的预期是能够看到 Flutter Web 渲染的 Demo 页面。
