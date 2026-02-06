@@ -195,9 +195,62 @@ Host 端:
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
 
-## 当前任务
+## Plan: 统一 Manifest 模型 + 清理冗余代码（v0019）
 
-无
+**TL;DR** — MVP 核心链路（v0001–v0018）已全部跑通，但代码中存在两套互不兼容的 Manifest 模型（`FluttronManifest` vs `ManifestData`）、一处完全重复的 Bridge 实现（`RendererBridge` vs `FluttronClient`），以及过期的 README/Backlog 状态标注。本迭代的目标是将 Manifest 统一收敛到 `fluttron_shared`，删除死代码，更新文档标记，使项目从"能跑"进化到"可维护、可迭代"。
+
+---
+
+**Steps**
+
+### Part A: 统一 Manifest 模型
+
+1. **重写 `FluttronManifest`**：修改 manifest.dart，将字段从 `appName`/`appId`/`entryPoint` 改为与 fluttron.json 一致的嵌套结构：
+   - 顶层字段：`name`, `version`, `entry`, `window`
+   - 新增 `EntryConfig` 类（`@JsonSerializable`）：`uiProjectPath`, `hostAssetPath`, `index`
+   - 保留 `WindowConfig`，字段不变（已一致）
+   - 删除 `appName`、`appId`、`entryPoint` 字段
+
+2. **重新生成序列化代码**：运行 `dart run build_runner build` 重新生成 manifest.g.dart
+
+3. **CLI 依赖 `fluttron_shared`**：修改 pubspec.yaml，添加对 `fluttron_shared` 的 path 依赖
+
+4. **用 `FluttronManifest` 替换 `ManifestData`**：
+   - 修改 manifest_loader.dart：`ManifestLoader.load()` 改为返回 `FluttronManifest`（使用 `FluttronManifest.fromJson` 反序列化），保留 `ManifestException`，删除 `ManifestData` 类。额外记录 `manifestPath`（可作为返回值的一部分或单独返回）
+   - 更新 build.dart：将 `manifest.uiProjectPath` → `manifest.entry.uiProjectPath`，`manifest.hostAssetPath` → `manifest.entry.hostAssetPath` 等
+   - 更新 run.dart：同上字段替换
+   - 更新 create.dart：`_updateManifest` 可改为使用 `FluttronManifest` 的 `toJson` 序列化写回，替代手动 `jsonDecode`/`jsonEncode`
+
+### Part B: 清理 RendererBridge 重复代码
+
+5. **删除 `RendererBridge`**：删除 renderer_bridge.dart（已确认无人使用、未导出）
+
+6. **清理目录**：如果 `bridge/` 目录删空则删除整个目录
+
+### Part C: 更新文档标记
+
+7. **更新 README**：将 README.md 中 `[ ] CLI 脚手架工具 (开发中)` 改为 `[x] CLI 脚手架工具`
+
+8. **更新 Backlog**：在 dev_plan.md 的 Backlog 区域将已完成的 P0 项标记为已完成或移除（`CLI 工具`、`端到端验证`）
+
+9. **补充迭代记录**：在 dev_plan.md 中新增 v0019 迭代记录，描述本次 Manifest 统一 + 清理工作
+
+---
+
+**Verification**
+
+- 在 fluttron_shared 下运行 `dart run build_runner build` 确认代码生成成功
+- 在 fluttron_cli 下运行 `dart analyze` 确认无编译错误
+- 在 fluttron_ui 下运行 `dart analyze` 确认删除 `RendererBridge` 后无引用断裂
+- 端到端验证：用 CLI 执行 `fluttron create test_app && cd test_app && fluttron build && fluttron run` 确认功能不回退
+
+**Decisions**
+
+- **选择以 `fluttron.json` 格式为权威**：因为模板和 CLI 已实际使用该格式，`FluttronManifest` 应适配它，而非反过来
+- **`manifestPath` 处理方式**：在 `ManifestLoader` 中返回一个 record 或 tuple `(FluttronManifest, String manifestPath)` 而非将路径塞入 model，保持 model 纯净
+- **保留 `FluttronClient` 而非 `RendererBridge`**：因为 `FluttronClient` 有业务 API 且已被导出和使用，`RendererBridge` 是完全冗余的死代码
+
+## 当前任务
 
 ## 我的问题
 
