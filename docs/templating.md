@@ -12,8 +12,10 @@ This document defines the minimal template structure and the `fluttron.json` man
     pubspec.yaml
     assets/www/
   ui/
+    frontend/src/
     lib/main.dart
     pubspec.yaml
+    web/ext/
     build/web/
 ```
 
@@ -21,7 +23,11 @@ This document defines the minimal template structure and the `fluttron.json` man
 
 - `host/` is a Flutter desktop app that embeds a WebView and loads assets from `host/assets/www/`.
 - `ui/` is a Flutter Web app that builds to `ui/build/web/`.
+- `ui/frontend/src/` stores frontend source files for web ecosystem integration.
+- `ui/web/ext/` stores runtime JavaScript assets loaded by `ui/web/index.html`.
 - The build step should copy `ui/build/web/` into `host/assets/www/`.
+- In v0021, frontend build is manual (`pnpm run js:build`).
+- In v0022/v0023, CLI build pipeline will use `ui/frontend/src/` as JS input and `ui/web/ext/` as JS output before Flutter asset copy.
 
 ## fluttron.json
 

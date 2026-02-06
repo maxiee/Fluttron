@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Frontend/Node related
+node_modules/
+.pnpm-store/
+pnpm-debug.log*
