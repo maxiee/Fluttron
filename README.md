@@ -56,7 +56,7 @@ graph TD
 - [x] 完成 Host 与 Renderer 分层架构
 - [x] 跑通 Bridge 通信协议 (Host <-> WebView)
 - [x] 实现基础服务注册中心 (System & KV Storage)
-- [ ] CLI 脚手架工具 (开发中)
+- [x] CLI 脚手架工具
 - [ ] 插件系统
 
 ## 🤝 参与共建

@@ -8,10 +8,9 @@ part of 'manifest.dart';
 
 FluttronManifest _$FluttronManifestFromJson(Map<String, dynamic> json) =>
     FluttronManifest(
-      appName: json['appName'] as String,
-      appId: json['appId'] as String,
+      name: json['name'] as String,
       version: json['version'] as String,
-      entryPoint: json['entryPoint'] as String? ?? 'index.html',
+      entry: EntryConfig.fromJson(json['entry'] as Map<String, dynamic>),
       window: json['window'] == null
           ? const WindowConfig()
           : WindowConfig.fromJson(json['window'] as Map<String, dynamic>),
@@ -19,11 +18,23 @@ FluttronManifest _$FluttronManifestFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$FluttronManifestToJson(FluttronManifest instance) =>
     <String, dynamic>{
-      'appName': instance.appName,
-      'appId': instance.appId,
+      'name': instance.name,
       'version': instance.version,
-      'entryPoint': instance.entryPoint,
-      'window': instance.window,
+      'entry': instance.entry.toJson(),
+      'window': instance.window.toJson(),
+    };
+
+EntryConfig _$EntryConfigFromJson(Map<String, dynamic> json) => EntryConfig(
+  uiProjectPath: json['uiProjectPath'] as String,
+  hostAssetPath: json['hostAssetPath'] as String,
+  index: json['index'] as String? ?? 'index.html',
+);
+
+Map<String, dynamic> _$EntryConfigToJson(EntryConfig instance) =>
+    <String, dynamic>{
+      'uiProjectPath': instance.uiProjectPath,
+      'hostAssetPath': instance.hostAssetPath,
+      'index': instance.index,
     };
 
 WindowConfig _$WindowConfigFromJson(Map<String, dynamic> json) => WindowConfig(

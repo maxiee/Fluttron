@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:path/path.dart' as p;
 
 import '../utils/template_copy.dart';
@@ -55,10 +56,7 @@ class CreateCommand extends Command<int> {
         manifestFile: File(p.join(targetDir.path, 'fluttron.json')),
         projectName: name,
       );
-      _rewritePubspecPaths(
-        projectDir: targetDir,
-        templateDir: templateDir,
-      );
+      _rewritePubspecPaths(projectDir: targetDir, templateDir: templateDir);
     } on FileSystemException catch (error) {
       stderr.writeln(error.message);
       return 2;
@@ -121,13 +119,28 @@ class CreateCommand extends Command<int> {
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('fluttron.json must be a JSON object.');
     }
-    decoded['name'] = projectName;
-    final window = decoded['window'];
-    if (window is Map<String, dynamic>) {
-      window['title'] = projectName;
+
+    FluttronManifest manifest;
+    try {
+      manifest = FluttronManifest.fromJson(decoded);
+    } catch (error) {
+      throw FormatException('Invalid fluttron.json schema: $error');
     }
+
+    manifest = FluttronManifest(
+      name: projectName,
+      version: manifest.version,
+      entry: manifest.entry,
+      window: WindowConfig(
+        title: projectName,
+        width: manifest.window.width,
+        height: manifest.window.height,
+        resizable: manifest.window.resizable,
+      ),
+    );
+
     final encoder = const JsonEncoder.withIndent('  ');
-    manifestFile.writeAsStringSync('${encoder.convert(decoded)}\n');
+    manifestFile.writeAsStringSync('${encoder.convert(manifest.toJson())}\n');
   }
 
   void _rewritePubspecPaths({

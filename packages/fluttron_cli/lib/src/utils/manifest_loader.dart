@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:path/path.dart' as p;
 
 class ManifestException implements Exception {
@@ -12,28 +13,12 @@ class ManifestException implements Exception {
   String toString() => message;
 }
 
-class ManifestData {
-  ManifestData({
-    required this.name,
-    required this.version,
-    required this.uiProjectPath,
-    required this.hostAssetPath,
-    required this.index,
-    required this.manifestPath,
-  });
-
-  final String name;
-  final String version;
-  final String uiProjectPath;
-  final String hostAssetPath;
-  final String index;
-  final String manifestPath;
-}
+typedef LoadedManifest = ({FluttronManifest manifest, String manifestPath});
 
 class ManifestLoader {
   static const String fileName = 'fluttron.json';
 
-  static ManifestData load(Directory projectDir) {
+  static LoadedManifest load(Directory projectDir) {
     final manifestPath = p.join(projectDir.path, fileName);
     final manifestFile = File(manifestPath);
     if (!manifestFile.existsSync()) {
@@ -44,22 +29,10 @@ class ManifestLoader {
 
     final contents = manifestFile.readAsStringSync();
     final json = _decodeJson(contents, manifestPath);
+    final manifest = _decodeManifest(json, manifestPath);
+    _validateManifest(manifest, manifestPath);
 
-    final name = _readString(json, 'name', manifestPath);
-    final version = _readString(json, 'version', manifestPath);
-    final entry = _readMap(json, 'entry', manifestPath);
-    final uiProjectPath = _readString(entry, 'uiProjectPath', manifestPath);
-    final hostAssetPath = _readString(entry, 'hostAssetPath', manifestPath);
-    final index = _readString(entry, 'index', manifestPath);
-
-    return ManifestData(
-      name: name,
-      version: version,
-      uiProjectPath: uiProjectPath,
-      hostAssetPath: hostAssetPath,
-      index: index,
-      manifestPath: manifestPath,
-    );
+    return (manifest: manifest, manifestPath: manifestPath);
   }
 
   static Map<String, dynamic> _decodeJson(
@@ -81,31 +54,48 @@ class ManifestLoader {
     }
   }
 
-  static Map<String, dynamic> _readMap(
-    Map<String, dynamic> source,
-    String key,
+  static FluttronManifest _decodeManifest(
+    Map<String, dynamic> json,
     String manifestPath,
   ) {
-    final value = source[key];
-    if (value is Map<String, dynamic>) {
-      return value;
+    try {
+      return FluttronManifest.fromJson(json);
+    } catch (error) {
+      throw ManifestException(
+        'Invalid manifest schema in ${p.normalize(manifestPath)}: $error',
+      );
     }
-    throw ManifestException(
-      'Missing or invalid "$key" in ${p.normalize(manifestPath)}',
-    );
   }
 
-  static String _readString(
-    Map<String, dynamic> source,
-    String key,
+  static void _validateManifest(
+    FluttronManifest manifest,
     String manifestPath,
   ) {
-    final value = source[key];
-    if (value is String && value.trim().isNotEmpty) {
-      return value;
+    _requireNonEmpty(manifest.name, 'name', manifestPath);
+    _requireNonEmpty(manifest.version, 'version', manifestPath);
+    _requireNonEmpty(
+      manifest.entry.uiProjectPath,
+      'entry.uiProjectPath',
+      manifestPath,
+    );
+    _requireNonEmpty(
+      manifest.entry.hostAssetPath,
+      'entry.hostAssetPath',
+      manifestPath,
+    );
+    _requireNonEmpty(manifest.entry.index, 'entry.index', manifestPath);
+  }
+
+  static void _requireNonEmpty(
+    String value,
+    String fieldPath,
+    String manifestPath,
+  ) {
+    if (value.trim().isNotEmpty) {
+      return;
     }
     throw ManifestException(
-      'Missing or invalid "$key" in ${p.normalize(manifestPath)}',
+      'Missing or invalid "$fieldPath" in ${p.normalize(manifestPath)}',
     );
   }
 }

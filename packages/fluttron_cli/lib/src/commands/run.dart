@@ -43,9 +43,10 @@ class RunCommand extends Command<int> {
     final projectDir = Directory(p.normalize(projectPath));
 
     try {
-      final manifest = ManifestLoader.load(projectDir);
+      final loaded = ManifestLoader.load(projectDir);
+      final manifest = loaded.manifest;
       final hostAssetsDir = Directory(
-        p.join(projectDir.path, manifest.hostAssetPath),
+        p.join(projectDir.path, manifest.entry.hostAssetPath),
       );
       if (!hostAssetsDir.existsSync()) {
         stderr.writeln(
@@ -62,10 +63,12 @@ class RunCommand extends Command<int> {
         return 2;
       }
 
-      stdout.writeln('Manifest: ${p.normalize(manifest.manifestPath)}');
+      stdout.writeln('Manifest: ${p.normalize(loaded.manifestPath)}');
       stdout.writeln('Host assets: ${p.normalize(hostAssetsDir.path)}');
       if (shouldBuild) {
-        final uiDir = Directory(p.join(projectDir.path, manifest.uiProjectPath));
+        final uiDir = Directory(
+          p.join(projectDir.path, manifest.entry.uiProjectPath),
+        );
         if (!uiDir.existsSync()) {
           stderr.writeln('UI project not found: ${p.normalize(uiDir.path)}');
           return 2;
@@ -88,7 +91,9 @@ class RunCommand extends Command<int> {
           return 2;
         }
 
-        final indexFile = File(p.join(buildOutputDir.path, manifest.index));
+        final indexFile = File(
+          p.join(buildOutputDir.path, manifest.entry.index),
+        );
         if (!indexFile.existsSync()) {
           stderr.writeln(
             'Entry file not found: ${p.normalize(indexFile.path)}',
@@ -105,7 +110,9 @@ class RunCommand extends Command<int> {
           destinationDir: hostAssetsDir,
         );
       } else {
-        final indexFile = File(p.join(hostAssetsDir.path, manifest.index));
+        final indexFile = File(
+          p.join(hostAssetsDir.path, manifest.entry.index),
+        );
         if (!indexFile.existsSync()) {
           stderr.writeln(
             'Entry file not found in host assets: ${p.normalize(indexFile.path)}',

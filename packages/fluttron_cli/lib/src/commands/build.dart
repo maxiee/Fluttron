@@ -30,15 +30,18 @@ class BuildCommand extends Command<int> {
     final projectDir = Directory(p.normalize(projectPath));
 
     try {
-      final manifest = ManifestLoader.load(projectDir);
-      final uiDir = Directory(p.join(projectDir.path, manifest.uiProjectPath));
+      final loaded = ManifestLoader.load(projectDir);
+      final manifest = loaded.manifest;
+      final uiDir = Directory(
+        p.join(projectDir.path, manifest.entry.uiProjectPath),
+      );
       if (!uiDir.existsSync()) {
         stderr.writeln('UI project not found: ${p.normalize(uiDir.path)}');
         return 2;
       }
 
       final hostAssetsDir = Directory(
-        p.join(projectDir.path, manifest.hostAssetPath),
+        p.join(projectDir.path, manifest.entry.hostAssetPath),
       );
       if (!hostAssetsDir.existsSync()) {
         stderr.writeln(
@@ -47,7 +50,7 @@ class BuildCommand extends Command<int> {
         return 2;
       }
 
-      stdout.writeln('Manifest: ${p.normalize(manifest.manifestPath)}');
+      stdout.writeln('Manifest: ${p.normalize(loaded.manifestPath)}');
       stdout.writeln('UI project: ${p.normalize(uiDir.path)}');
       stdout.writeln('Host assets: ${p.normalize(hostAssetsDir.path)}');
       stdout.writeln('Building Flutter Web...');
@@ -66,11 +69,9 @@ class BuildCommand extends Command<int> {
         return 2;
       }
 
-      final indexFile = File(p.join(buildOutputDir.path, manifest.index));
+      final indexFile = File(p.join(buildOutputDir.path, manifest.entry.index));
       if (!indexFile.existsSync()) {
-        stderr.writeln(
-          'Entry file not found: ${p.normalize(indexFile.path)}',
-        );
+        stderr.writeln('Entry file not found: ${p.normalize(indexFile.path)}');
         return 2;
       }
 

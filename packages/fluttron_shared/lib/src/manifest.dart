@@ -2,34 +2,40 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'manifest.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class FluttronManifest {
-  // App name
-  final String appName;
-
-  // App unique identifier (e.g., com.example.app)
-  final String appId;
-
-  // Version
+  final String name;
   final String version;
-
-  // Entry point (relative path to Flutter Web build output, defaults to index.html)
-  final String entryPoint;
-
-  // Window configuration (desktop priority)
+  final EntryConfig entry;
   final WindowConfig window;
 
-  FluttronManifest({
-    required this.appName,
-    required this.appId,
+  const FluttronManifest({
+    required this.name,
     required this.version,
-    this.entryPoint = 'index.html',
+    required this.entry,
     this.window = const WindowConfig(),
   });
 
   factory FluttronManifest.fromJson(Map<String, dynamic> json) =>
       _$FluttronManifestFromJson(json);
   Map<String, dynamic> toJson() => _$FluttronManifestToJson(this);
+}
+
+@JsonSerializable()
+class EntryConfig {
+  final String uiProjectPath;
+  final String hostAssetPath;
+  final String index;
+
+  const EntryConfig({
+    required this.uiProjectPath,
+    required this.hostAssetPath,
+    this.index = 'index.html',
+  });
+
+  factory EntryConfig.fromJson(Map<String, dynamic> json) =>
+      _$EntryConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$EntryConfigToJson(this);
 }
 
 @JsonSerializable()
