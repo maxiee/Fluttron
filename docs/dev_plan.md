@@ -51,12 +51,13 @@
 | 服务注册机制 (SystemService, StorageService) | ✅ |
 | Flutter Web 编译 → Host 加载 | ✅ |
 | playground 端到端可运行 | ✅ |
+| HtmlElementView 嵌入外部 HTML/JS | ✅（仅 playground 已验证） |
 
 #### 距北极星的 4 层差距
 
 | # | 缺失能力 | 说明 |
 |---|----------|------|
-| **1** | **Flutter Web 嵌入外部 HTML/JS** | 当前 UI 是纯 Flutter Widget，未验证 `HtmlElementView` 嵌入 Web 内容的模式 |
+| **1** | **Flutter Web 嵌入外部 HTML/JS（模板化）** | playground 已完成 `HtmlElementView` 验证，但 `templates/ui` 与新建工程默认 UI 仍未带上该能力示例 |
 | **2** | **前端包管理 (npm/pnpm)** | UI 模板没有 `package.json`，无法安装 Milkdown 等 JS 依赖 |
 | **3** | **JS 编译/打包流水线** | CLI `build` 只执行 `flutter build web`，没有 JS bundler（esbuild/vite）步骤 |
 | **4** | **JS 资源搬运与加载** | 打包后的 JS 产物没有机制跟随 Flutter Web 产物一同进入 `host/assets/www` |
@@ -198,36 +199,37 @@ Host 端:
 - v0017：CLI `run` 支持 `--device`/`--no-build`；`create` 自动重写模板内 `pubspec.yaml` 依赖路径；Host Bridge 规范化错误返回；文档站点同步更新
 - v0018：本地端到端验证（create → build → run）执行记录：`create` 成功；`build` 成功；`run --no-build -d macos` 运行成功。
 - v0019：统一 Manifest 模型（`FluttronManifest` 对齐 `fluttron.json`，新增 `EntryConfig`），CLI 改为直接依赖 `fluttron_shared` 并移除 `ManifestData`；删除冗余 `RendererBridge`；同步更新 README 与 Backlog 状态。
+- v0020：已在 `playground/ui` 完成 `HtmlElementView` 嵌入外部 HTML/JS 的最小验证：`index.html` 内联 JS 创建 DOM，Dart 侧通过 `dart:ui_web` 的 `platformViewRegistry.registerViewFactory` + `HtmlElementView` 成功渲染；`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过。**注意：本次仅验证 playground，未同步模板与脚手架默认产物。**
 
 ## Backlog (未来)
 
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
 - 风险：模板依赖路径由 CLI 重写为本地绝对路径，仍需保持本地仓库可用。
+- 风险：v0020 仅在 playground 生效；通过 `fluttron create` 创建的新工程仍是旧 UI 模板，不包含 HtmlElementView 嵌入示例与对应 JS 工厂。
 - Backlog（未来）：远程模板支持与依赖来源策略（本地/远程切换）。
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
+- TODO：在 `templates/ui` 与 `packages/fluttron_ui` 设计“可选嵌入外部 HTML/JS”的最小示例（保持默认模板简洁，不强制业务耦合）。
+- TODO：定义从 playground 验证代码回收为模板能力的策略（示例开关、入口文件组织、文档说明）。
 
 ## 当前任务
 
-**v0020：在 playground UI 验证 HtmlElementView 嵌入外部 HTML/JS 的能力**
+**v0021：把前端能力沉淀到模板链路（先基础设施，后业务集成）**
 
-这是整条链路中**技术风险最高、依赖最少**的一环。不引入任何新工具链，只用 Flutter Web 已有能力做一个最小验证：
+### v0020 已完成（结论）
 
-1. 在 index.html 中内联一段简单的 JS（创建一个 `<div>` 渲染富文本内容）
-2. 在 playground UI 的 Dart 代码中，使用 `dart:ui_web` 的 `platformViewRegistry.registerViewFactory` + `HtmlElementView` 嵌入该 JS 创建的 DOM 元素
-3. 验证 Flutter Widget 树中能正确显示由 JS 渲染的内容
+- 已在 playground 验证：Flutter Web 可通过 `HtmlElementView` 稳定嵌入由外部 JS 创建的 DOM。
+- 当前缺口：该能力未进入 `templates/ui`，所以 `fluttron create` 新项目默认不具备这部分进展。
 
-**为什么是这个任务：**
-- 如果 Flutter Web 无法顺畅嵌入 JS 内容，后续所有工作（npm、bundler、Milkdown）都没有意义
-- 零外部依赖，playground 项目内即可完成
-- 一次 commit 范围，可在 30 分钟内验收
+### v0021 范围（本轮规划）
 
-**验收方法：**
-- `fluttron build -p playground && fluttron run -p playground --no-build -d macos` 运行后，页面上能看到一个由 JS 渲染的 HTML 元素（如带样式的 `contenteditable` div）嵌入在 Flutter Widget 中
+1. 将“外部 HTML/JS 嵌入能力”的最小示例沉淀到模板体系（`templates/ui`，必要时同步 `packages/fluttron_ui` 的可复用入口）。
+2. 为模板引入前端依赖管理基础设施（`package.json` + pnpm），但不在本轮直接接入 Milkdown。
+3. 明确 JS 产物目录约定，为 v0022 CLI 构建集成提供输入输出边界。
 
 **后续迭代路线（本轮不做）：**
-- v0021: UI 模板引入 `package.json` + pnpm，安装 Milkdown。注意不是 playground。我们需要先把模板改好，然后重新创建 playground。
+- v0021.x: 仅完成模板前端基础设施与嵌入示例沉淀（不做 Milkdown）。
 - v0022: CLI `build` 增加前端构建步骤（esbuild 打包 JS），用户对前端生态熟悉，请选择最流行、成熟的方案。
 - v0023: JS 产物自动搬运到 Flutter Web build output
 - v0024: playground 集成 Milkdown，实现一个 Markdown 编辑器
