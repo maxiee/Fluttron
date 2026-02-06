@@ -25,27 +25,14 @@
 
 ### 北极星目标
 
-我想基于 Fluttron 创建我的新项目，目前有一系列要求尚未达到：
+目前，我已经具备基于 CLI 创建/构建/运行 Fluttron 项目的能力。并且成功创建了 playground 测试 App。
 
-1. 我希望能通过 CLI 脚手架创建一个新的 Fluttron 项目
-2. 我希望能通过 CLI 构建并运行这个项目
-3. 需要有这么一个 CLI 工具
-4. 需要定义 Fluttron 项目的结构模板
-5. Fluttron 项目结构包含：一个 Flutter 宿主工程，一个 Flutter Web 渲染工程，一个全局 Manifest 文件
-6. fluttron_host、fluttron_ui 需要变成库，在模板工程中作为依赖引入
-7. fluttron_host、fluttron_ui 包含所有平台能力，创建出的 Flutter 宿主工程开发者只用于扩充服务，创建出的 Flutter Web 渲染工程开发者只用于开发 UI 和业务逻辑
+下一个北极星目标时，我们设想一个场景：
 
-### **MVP 成功标准（验收点）**：
-
-1. 定义一种类似 package.json 的 manifest 格式
-2. 定义模版工程：宿主模版工程，渲染模板工程
-3. 定义 core 模块：宿主 core 定义各种服务，渲染 core 定义各种与宿主通信能力，分别集成在两个模板里
-4. 开发脚手架工程：能够进行新项目创建，构建运行（先构建 Flutter Web，嵌入进宿主再编译运行 Host）
-5. 以 webview_flutter 底层机制通信打通 Host 和渲染部分
-6. 跑通 Hello World：基于脚手架创建 fluttron 工程，编译后由 fluttron 跑起来
-7. 宿主形成可扩展的服务层
-8. 在 GitHub Repo 内创建文档站点
-9. 按照 build in public 方式，边开发边借助自媒体营销
+- 在 playground 的 ui 包（Flutter Web），基于 Flutter Web 嵌入 Web 的能力，集成 Milkdown 编辑器
+- 但目前 Fluttron 的 ui 模版不具备前端能力，需要集成一种前端包管理方案（如 npm/yarn/pnpm）
+- 集成的前端包管理方案，cli 要能够支持 JavaScript 编译以及资源搬运，最终放到 host 产物下实现加载
+- 北极星概括来说：迭代 Fluttron，使 playground 能实现 Milkdown Markdown 编辑器
 
 ## 工作方式（你必须遵守的协作协议）
 
