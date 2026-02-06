@@ -9,6 +9,7 @@
 
 website/node_modules/
 playground/
+.mcp_servers/
 
 # Flutter repo-specific
 /bin/cache/

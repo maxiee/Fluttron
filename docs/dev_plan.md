@@ -34,6 +34,34 @@
 - 集成的前端包管理方案，cli 要能够支持 JavaScript 编译以及资源搬运，最终放到 host 产物下实现加载
 - 北极星概括来说：迭代 Fluttron，使 playground 能实现 Milkdown Markdown 编辑器
 
+### 差距分析
+
+基于对代码的全面审查，以下是当前状态与北极星目标之间的差距：
+
+```
+北极星：playground 实现 Milkdown Markdown 编辑器
+```
+
+#### 当前已具备
+
+| 能力 | 状态 |
+|------|------|
+| CLI create/build/run 全链路 | ✅ |
+| Bridge 通信 (Host ↔ UI) | ✅ |
+| 服务注册机制 (SystemService, StorageService) | ✅ |
+| Flutter Web 编译 → Host 加载 | ✅ |
+| playground 端到端可运行 | ✅ |
+
+#### 距北极星的 4 层差距
+
+| # | 缺失能力 | 说明 |
+|---|----------|------|
+| **1** | **Flutter Web 嵌入外部 HTML/JS** | 当前 UI 是纯 Flutter Widget，未验证 `HtmlElementView` 嵌入 Web 内容的模式 |
+| **2** | **前端包管理 (npm/pnpm)** | UI 模板没有 `package.json`，无法安装 Milkdown 等 JS 依赖 |
+| **3** | **JS 编译/打包流水线** | CLI `build` 只执行 `flutter build web`，没有 JS bundler（esbuild/vite）步骤 |
+| **4** | **JS 资源搬运与加载** | 打包后的 JS 产物没有机制跟随 Flutter Web 产物一同进入 `host/assets/www` |
+
+
 ## 工作方式（你必须遵守的协作协议）
 
 ### 输出优先级
@@ -181,6 +209,28 @@ Host 端:
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
 
 ## 当前任务
+
+**v0020：在 playground UI 验证 HtmlElementView 嵌入外部 HTML/JS 的能力**
+
+这是整条链路中**技术风险最高、依赖最少**的一环。不引入任何新工具链，只用 Flutter Web 已有能力做一个最小验证：
+
+1. 在 index.html 中内联一段简单的 JS（创建一个 `<div>` 渲染富文本内容）
+2. 在 playground UI 的 Dart 代码中，使用 `dart:ui_web` 的 `platformViewRegistry.registerViewFactory` + `HtmlElementView` 嵌入该 JS 创建的 DOM 元素
+3. 验证 Flutter Widget 树中能正确显示由 JS 渲染的内容
+
+**为什么是这个任务：**
+- 如果 Flutter Web 无法顺畅嵌入 JS 内容，后续所有工作（npm、bundler、Milkdown）都没有意义
+- 零外部依赖，playground 项目内即可完成
+- 一次 commit 范围，可在 30 分钟内验收
+
+**验收方法：**
+- `fluttron build -p playground && fluttron run -p playground --no-build -d macos` 运行后，页面上能看到一个由 JS 渲染的 HTML 元素（如带样式的 `contenteditable` div）嵌入在 Flutter Widget 中
+
+**后续迭代路线（本轮不做）：**
+- v0021: UI 模板引入 `package.json` + pnpm，安装 Milkdown。注意不是 playground。我们需要先把模板改好，然后重新创建 playground。
+- v0022: CLI `build` 增加前端构建步骤（esbuild 打包 JS），用户对前端生态熟悉，请选择最流行、成熟的方案。
+- v0023: JS 产物自动搬运到 Flutter Web build output
+- v0024: playground 集成 Milkdown，实现一个 Markdown 编辑器
 
 ## 我的问题
 
