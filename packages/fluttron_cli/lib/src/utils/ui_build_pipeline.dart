@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'file_ops.dart';
 import 'frontend_builder.dart';
+import 'js_asset_validator.dart';
 
 typedef DirectoryClearFn = Future<void> Function(Directory directory);
 typedef DirectoryCopyFn =
@@ -19,13 +20,15 @@ class UiBuildPipeline {
     ProcessCommandRunner? commandRunner,
     DirectoryClearFn? clearDirectoryFn,
     DirectoryCopyFn? copyDirectoryFn,
+    JsAssetValidator? jsAssetValidator,
     LogWriter? writeOut,
     LogWriter? writeErr,
   }) : _writeOut = writeOut ?? _defaultStdoutWriter,
        _writeErr = writeErr ?? _defaultStderrWriter,
        _commandRunner = commandRunner ?? defaultProcessCommandRunner,
        _clearDirectory = clearDirectoryFn ?? clearDirectory,
-       _copyDirectoryContents = copyDirectoryFn ?? copyDirectoryContents {
+       _copyDirectoryContents = copyDirectoryFn ?? copyDirectoryContents,
+       _jsAssetValidator = jsAssetValidator ?? const JsAssetValidator() {
     _frontendBuilder =
         frontendBuilder ??
         FrontendBuilder(commandRunner: _commandRunner, writeOut: _writeOut);
@@ -36,6 +39,7 @@ class UiBuildPipeline {
   final ProcessCommandRunner _commandRunner;
   final DirectoryClearFn _clearDirectory;
   final DirectoryCopyFn _copyDirectoryContents;
+  final JsAssetValidator _jsAssetValidator;
   late final FrontendBuildStep _frontendBuilder;
 
   static void _defaultStdoutWriter(String message) => stdout.writeln(message);
@@ -78,6 +82,35 @@ class UiBuildPipeline {
       return error.exitCode;
     }
 
+    final sourceWebDir = Directory(p.join(uiDir.path, 'web'));
+    final sourceIndexFile = File(
+      p.join(sourceWebDir.path, manifest.entry.index),
+    );
+    late final List<JsScriptAsset> scriptAssets;
+    try {
+      scriptAssets = _jsAssetValidator.collectLocalScriptAssets(
+        indexFile: sourceIndexFile,
+        webRootDir: sourceWebDir,
+      );
+    } on JsAssetValidationException catch (error) {
+      _writeErr(error.message);
+      return 2;
+    }
+
+    final sourceAssetLabel = p.normalize(
+      p.join(manifest.entry.uiProjectPath, 'web'),
+    );
+    final sourceAssets = scriptAssets.where(
+      (asset) => !asset.isFlutterGenerated,
+    );
+    if (!_validateJsAssets(
+      stageLabel: sourceAssetLabel,
+      rootDir: sourceWebDir,
+      assets: sourceAssets,
+    )) {
+      return 2;
+    }
+
     _writeOut('Building Flutter Web...');
     final flutterBuild = await _commandRunner(
       'flutter',
@@ -106,6 +139,17 @@ class UiBuildPipeline {
       return 2;
     }
 
+    final buildAssetLabel = p.normalize(
+      p.join(manifest.entry.uiProjectPath, 'build', 'web'),
+    );
+    if (!_validateJsAssets(
+      stageLabel: buildAssetLabel,
+      rootDir: buildOutputDir,
+      assets: scriptAssets,
+    )) {
+      return 2;
+    }
+
     _writeOut('Clearing host assets directory...');
     await _clearDirectory(hostAssetsDir);
 
@@ -115,7 +159,60 @@ class UiBuildPipeline {
       destinationDir: hostAssetsDir,
     );
 
+    final hostAssetLabel = p.normalize(manifest.entry.hostAssetPath);
+    if (!_validateJsAssets(
+      stageLabel: hostAssetLabel,
+      rootDir: hostAssetsDir,
+      assets: scriptAssets,
+    )) {
+      return 2;
+    }
+
     _writeOut('Build complete.');
     return 0;
+  }
+
+  bool _validateJsAssets({
+    required String stageLabel,
+    required Directory rootDir,
+    required Iterable<JsScriptAsset> assets,
+  }) {
+    final assetList = assets.toList();
+    if (assetList.isEmpty) {
+      _writeOut('JS asset validation ($stageLabel): no local script assets.');
+      return true;
+    }
+
+    final missingPaths = _jsAssetValidator.findMissingAssetPaths(
+      rootDir: rootDir,
+      assets: assetList,
+    );
+    if (missingPaths.isEmpty) {
+      _writeOut(
+        'JS asset validation ($stageLabel): ${assetList.length} file(s) OK.',
+      );
+      return true;
+    }
+
+    _writeErr(
+      _buildMissingJsAssetsMessage(
+        stageLabel: stageLabel,
+        missingPaths: missingPaths,
+      ),
+    );
+    return false;
+  }
+
+  String _buildMissingJsAssetsMessage({
+    required String stageLabel,
+    required List<String> missingPaths,
+  }) {
+    final buffer = StringBuffer();
+    buffer.writeln('JS asset validation failed at $stageLabel.');
+    buffer.writeln('Missing files:');
+    for (final missingPath in missingPaths) {
+      buffer.writeln('- ${p.normalize(missingPath)}');
+    }
+    return buffer.toString().trimRight();
   }
 }

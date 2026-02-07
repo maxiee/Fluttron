@@ -26,10 +26,15 @@ This document defines the minimal template structure and the `fluttron.json` man
 - `ui/frontend/src/` stores frontend source files for web ecosystem integration.
 - `ui/web/ext/` stores runtime JavaScript assets loaded by `ui/web/index.html`.
 - CLI build pipeline runs `pnpm run js:build` before `flutter build web` when `package.json` has `scripts["js:build"]`.
+- If `scripts["js:clean"]` exists, CLI runs `pnpm run js:clean` before `js:build`.
 - If `package.json` or `scripts["js:build"]` is missing, frontend build is skipped.
 - If Node.js/pnpm/frontend build fails, CLI exits with readable errors.
 - The build step copies `ui/build/web/` into `host/assets/www/`.
-- In v0023, JS asset validation and sync rules will be further strengthened.
+- CLI parses local `<script src="...">` entries from `ui/web/index.html` and validates JS assets in three stages:
+  - source stage: `ui/web/` (excluding Flutter-generated scripts such as `flutter_bootstrap.js`)
+  - Flutter build stage: `ui/build/web/`
+  - host sync stage: `host/assets/www/`
+- Any JS asset validation failure is treated as a hard error and stops the build pipeline.
 
 ## fluttron.json
 

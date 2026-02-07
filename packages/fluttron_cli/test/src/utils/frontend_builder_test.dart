@@ -174,11 +174,12 @@ void main() {
       expect(runner.calls[2].streamOutput, isTrue);
     });
 
-    test('runs node/pnpm checks then js:build when configured', () async {
+    test('runs js:clean before js:build when js:clean is configured', () async {
       _writePackageJson(uiDir, '''
 {
   "name": "test-ui",
   "scripts": {
+    "js:clean": "node scripts/build-frontend.mjs --clean",
     "js:build": "node scripts/build-frontend.mjs"
   }
 }
@@ -193,6 +194,11 @@ void main() {
           'pnpm --version': const ProcessCommandResult(
             exitCode: 0,
             stdout: '10.0.0',
+            stderr: '',
+          ),
+          'pnpm run js:clean': const ProcessCommandResult(
+            exitCode: 0,
+            stdout: 'cleaned',
             stderr: '',
           ),
           'pnpm run js:build': const ProcessCommandResult(
@@ -212,10 +218,108 @@ void main() {
         <String>[
           'node --version|false',
           'pnpm --version|false',
+          'pnpm run js:clean|true',
           'pnpm run js:build|true',
         ],
       );
     });
+
+    test('throws with command exit code when js:clean fails', () async {
+      _writePackageJson(uiDir, '''
+{
+  "name": "test-ui",
+  "scripts": {
+    "js:clean": "node scripts/build-frontend.mjs --clean",
+    "js:build": "node scripts/build-frontend.mjs"
+  }
+}
+''');
+      final runner = _StubRunner(
+        responses: <String, ProcessCommandResult>{
+          'node --version': const ProcessCommandResult(
+            exitCode: 0,
+            stdout: 'v24.8.0',
+            stderr: '',
+          ),
+          'pnpm --version': const ProcessCommandResult(
+            exitCode: 0,
+            stdout: '10.0.0',
+            stderr: '',
+          ),
+          'pnpm run js:clean': const ProcessCommandResult(
+            exitCode: 7,
+            stdout: '',
+            stderr: 'clean failed',
+          ),
+        },
+      );
+      final builder = FrontendBuilder(commandRunner: runner.run);
+
+      await expectLater(
+        builder.build(uiDir),
+        throwsA(
+          isA<FrontendBuildException>()
+              .having((error) => error.exitCode, 'exitCode', 7)
+              .having(
+                (error) => error.message,
+                'message',
+                contains('Frontend clean failed'),
+              ),
+        ),
+      );
+
+      expect(runner.calls.map((call) => call.commandKey).toList(), <String>[
+        'node --version',
+        'pnpm --version',
+        'pnpm run js:clean',
+      ]);
+    });
+
+    test(
+      'runs node/pnpm checks then js:build when js:clean is not configured',
+      () async {
+        _writePackageJson(uiDir, '''
+{
+  "name": "test-ui",
+  "scripts": {
+    "js:build": "node scripts/build-frontend.mjs"
+  }
+}
+''');
+        final runner = _StubRunner(
+          responses: <String, ProcessCommandResult>{
+            'node --version': const ProcessCommandResult(
+              exitCode: 0,
+              stdout: 'v24.8.0',
+              stderr: '',
+            ),
+            'pnpm --version': const ProcessCommandResult(
+              exitCode: 0,
+              stdout: '10.0.0',
+              stderr: '',
+            ),
+            'pnpm run js:build': const ProcessCommandResult(
+              exitCode: 0,
+              stdout: 'ok',
+              stderr: '',
+            ),
+          },
+        );
+        final builder = FrontendBuilder(commandRunner: runner.run);
+
+        final result = await builder.build(uiDir);
+
+        expect(result.status, FrontendBuildStatus.built);
+        expect(
+          runner.calls.map((call) => '${call.commandKey}|${call.streamOutput}'),
+          <String>[
+            'node --version|false',
+            'pnpm --version|false',
+            'pnpm run js:build|true',
+          ],
+        );
+      },
+    );
   });
 }
 

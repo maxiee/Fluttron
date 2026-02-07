@@ -127,7 +127,8 @@ class FrontendBuilder implements FrontendBuildStep {
       return const FrontendBuildResult.skipped('package.json not found.');
     }
 
-    final hasBuildScript = _hasJsBuildScript(packageJsonFile);
+    final scripts = _readScripts(packageJsonFile);
+    final hasBuildScript = scripts.containsKey('js:build');
     if (!hasBuildScript) {
       return const FrontendBuildResult.skipped(
         'scripts["js:build"] not configured in package.json.',
@@ -154,6 +155,24 @@ class FrontendBuilder implements FrontendBuildStep {
       throw FrontendBuildException(_buildPnpmUnavailableMessage(pnpmCheck));
     }
 
+    if (scripts.containsKey('js:clean')) {
+      _writeOut('Cleaning frontend assets with `pnpm run js:clean`...');
+      final frontendClean = await _commandRunner(
+        'pnpm',
+        const ['run', 'js:clean'],
+        workingDirectory: uiDir.path,
+        streamOutput: true,
+      );
+      if (!frontendClean.isSuccess) {
+        throw FrontendBuildException(
+          'Frontend clean failed with exit code ${frontendClean.exitCode}.\n'
+          'Fix `scripts["js:clean"]` in ${p.normalize(packageJsonFile.path)} and retry.',
+          exitCode: frontendClean.exitCode == 0 ? 2 : frontendClean.exitCode,
+        );
+      }
+      _writeOut('Frontend clean complete.');
+    }
+
     _writeOut('Building frontend assets with `pnpm run js:build`...');
     final frontendBuild = await _commandRunner(
       'pnpm',
@@ -174,7 +193,7 @@ class FrontendBuilder implements FrontendBuildStep {
     return const FrontendBuildResult.built();
   }
 
-  bool _hasJsBuildScript(File packageJsonFile) {
+  Map<String, String> _readScripts(File packageJsonFile) {
     final packageJsonPath = p.normalize(packageJsonFile.path);
     final rawContents = packageJsonFile.readAsStringSync();
 
@@ -195,10 +214,23 @@ class FrontendBuilder implements FrontendBuildStep {
 
     final scripts = decoded['scripts'];
     if (scripts is! Map) {
-      return false;
+      return const <String, String>{};
     }
-    final jsBuild = scripts['js:build'];
-    return jsBuild is String && jsBuild.trim().isNotEmpty;
+
+    final normalizedScripts = <String, String>{};
+    for (final entry in scripts.entries) {
+      final key = entry.key;
+      final value = entry.value;
+      if (key is! String || value is! String) {
+        continue;
+      }
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      normalizedScripts[key] = trimmed;
+    }
+    return normalizedScripts;
   }
 
   String _buildNodeUnavailableMessage(ProcessCommandResult result) {

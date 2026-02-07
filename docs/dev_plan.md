@@ -54,13 +54,13 @@
 | HtmlElementView 嵌入外部 HTML/JS（模板化） | ✅ |
 | 前端包管理 (pnpm) | ✅ |
 | JS 编译/打包流水线（esbuild + CLI 接入） | ✅（v0022） |
+| JS 产物自动搬运与三阶段校验 | ✅（v0023） |
 
 #### 距北极星的剩余差距
 
 | # | 缺失能力 | 说明 |
 |---|----------|------|
-| **1** | **JS 资源搬运与校验增强** | 当前已接入前端构建，但 JS 产物同步策略仍需在 v0023 进一步强化（校验/脏产物治理） |
-| **2** | **playground 集成 Milkdown** | 需要在现有前端构建链路上真正接入编辑器并验证运行时行为（计划 v0024） |
+| **1** | **playground 集成 Milkdown** | 需要在现有前端构建链路上真正接入编辑器并验证运行时行为（计划 v0024） |
 
 
 ## 工作方式（你必须遵守的协作协议）
@@ -202,6 +202,7 @@ Host 端:
 - v0020：已在 `playground/ui` 完成 `HtmlElementView` 嵌入外部 HTML/JS 的最小验证：`index.html` 内联 JS 创建 DOM，Dart 侧通过 `dart:ui_web` 的 `platformViewRegistry.registerViewFactory` + `HtmlElementView` 成功渲染；`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过。**注意：本次仅验证 playground，未同步模板与脚手架默认产物。**
 - v0021：已将前端能力沉淀到模板链路（仅模板层，不改 `packages/fluttron_ui`）：`templates/ui/lib/main.dart` 内置 `HtmlElementView` + JS 工厂接入示例；新增 `package.json` + `pnpm-lock.yaml` 与 `frontend/src -> web/ext` 目录约定；新增 `scripts/build-frontend.mjs` 占位构建脚本；`web/ext/main.js` 作为默认可运行产物，保证 `fluttron create` 后零额外命令可 `build/run`。
 - v0022：CLI `build/run` 已接入前端构建：当 `ui/package.json` 存在 `scripts["js:build"]` 时，自动执行 `pnpm run js:build` 后再执行 `flutter build web`；模板脚本已切换为 esbuild bundling；Node/pnpm 不可用与前端构建失败时提供可读错误；`build` 与 `run --build` 复用统一的 UI 构建流水线。
+- v0023：CLI `build/run --build` 已完成 JS 产物自动搬运与校验增强：解析 `ui/web/index.html` 的本地 script 引用，执行 `ui/web → ui/build/web → host/assets/www` 三阶段校验；当 `scripts["js:clean"]` 存在时自动先执行 `pnpm run js:clean`；任一 JS 资源缺失或校验失败立即中止构建并输出缺失路径。
 
 ## Backlog (未来)
 
@@ -212,28 +213,26 @@ Host 端:
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
-- TODO：v0023 将 JS 产物搬运流程自动化（与 Flutter Web 产物一起同步到 Host 资产目录）。
 - 风险：目前 templates/ui/lib/main.dart 将 runFluttronUi 的实现复制到模板中，架空了 runFluttronUi，实际是希望核心逻辑收敛进 fluttron_ui 包，模板默认生成的工程中，开发者主要通过 fluttron_ui、runFluttronUi 提供的能力进行扩展、调用。因此未来可能需要调整，将平台话逻辑重新下沉至 fluttron_ui。
 
 ## 当前任务
 
-**v0022：CLI 构建链路接入前端构建（esbuild）✅ 已完成**
+**v0023：JS 产物自动搬运与校验增强 ✅ 已完成**
 
-### v0022 完成结果
+### v0023 完成结果
 
-- UI 模板 `scripts/build-frontend.mjs` 已从文件复制升级为 esbuild 构建脚本，默认输出 `web/ext/main.js` 与 sourcemap。
-- CLI `build` 与 `run --build` 已接入自动前端构建，并统一复用同一条 UI 构建流水线（frontend build → flutter build → host assets copy）。
-- 兼容策略已落地：无 `package.json` 或无 `scripts["js:build"]` 的项目自动跳过前端构建，不影响历史工程。
-- 错误提示已增强：Node/pnpm 不可用、`pnpm run js:build` 失败时会直接中止并输出可读错误信息。
+- CLI `build` 与 `run --build` 在前端构建后新增 JS 资源校验：解析 `ui/web/index.html` 的本地 script 引用并执行三阶段校验（`ui/web`、`ui/build/web`、`host/assets/www`）。
+- 严格失败策略已落地：任一阶段检测到 JS 资源缺失时，构建立即失败并输出缺失文件路径，避免脏产物进入 Host 资产目录。
+- Frontend 构建新增预清理：当 `package.json` 含 `scripts["js:clean"]` 时，CLI 自动执行 `pnpm run js:clean` 后再执行 `pnpm run js:build`。
+- CLI 单元测试已补强：覆盖 script 解析/缺失校验、防越界路径、`js:clean` 顺序与失败短路、以及 host 拷贝后缺失资源失败路径。
 
-### 下一轮（v0023）建议范围
+### 下一轮（v0024）建议范围
 
-1. 增强 JS 产物校验与搬运策略，避免资源缺失或脏产物进入 `host/assets/www`。
-2. 增补更完整的 CLI 端到端测试（模板创建后构建/运行链路）。
-3. 基于该链路在 playground 尝试 Milkdown 集成（进入 v0024 前置验证）。
+1. 在 playground 的 `ui` 包集成 Milkdown，并基于当前 JS 构建链路输出到 `web/ext/`。
+2. 验证 Milkdown 在 Host WebView 内的运行时交互（初始化、编辑、事件回传）。
+3. 沉淀一份可复用的 Flutter Web + Web 生态集成示例文档，作为模板演进依据。
 
 **后续迭代路线（本轮不做）：**
-- v0023: JS 产物自动搬运与校验增强
 - v0024: playground 集成 Milkdown，实现 Markdown 编辑器
 
 ## 我的问题
