@@ -206,6 +206,7 @@ Host 端:
 - v0024：已在 `playground/ui` 集成 Milkdown Markdown 编辑器（CommonMark + Nord + Listener），并保持 `frontend/src -> web/ext` 构建链路；Dart 侧完成 `HtmlElementView` 工厂升级（传入 `initialMarkdown`）、监听浏览器 `CustomEvent`（`fluttron.playground.milkdown.change`）实现 JS -> Flutter 状态回传；同时接入 Host `storage.kvGet/kvSet` 完成“启动读取 + 手动保存 + 回读校验”闭环。`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过（基于本轮产物）。
 - v0025：已完成模板阻塞修复（`pubspec.yaml + CSS 构建脚本`）：`templates/host/pubspec.yaml` 新增 `assets/www/ext/` 声明；`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile`，`cleanFrontend()` 同步清理 `main.css` 与 sourcemap；新增模板契约回归测试 `packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`。验收通过：`dart test`（`packages/fluttron_cli`）全绿，`create + build` smoke 验证 Host 侧产物 `assets/www/ext/main.js` 可用，且 `js:clean` 在 CSS 缺失场景下保持幂等成功。
 - v0026：已完成核心库 `FluttronHtmlView` 封装并下沉 `HtmlElementView` 注册逻辑：新增 `packages/fluttron_ui/lib/src/html_view.dart`（三态 UI + 可选 `loadingBuilder/errorBuilder`）、`html_view_platform_web.dart`（`platformViewRegistry` 去重注册 + `globalContext.callMethodVarArgs` 工厂调用 + `viewType` 冲突严格报错 + `jsFactoryArgs` 类型校验）、`html_view_platform_stub.dart`（非 Web 错误兜底）；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronHtmlView`。playground 已改为使用 `FluttronHtmlView` 替代手写 `registerViewFactory`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
+- v0027：已完成核心库 `FluttronEventBridge` JS→Flutter 事件桥下沉：新增 `packages/fluttron_ui/lib/src/event_bridge.dart`、`event_bridge_platform_web.dart`、`event_bridge_platform_stub.dart`；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronEventBridge`；playground 已将手写 `addEventListener/removeEventListener + CustomEvent.detail` 解析替换为 `FluttronEventBridge` + `StreamSubscription`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 
 ## Backlog (未来)
 
@@ -220,16 +221,17 @@ Host 端:
 
 ## 当前任务
 
-**v0026：核心库 `FluttronHtmlView` 完整组件封装 ✅ 已完成**
+**v0027：核心库 `FluttronEventBridge` JS→Flutter 事件桥 ✅ 已完成**
 
-### v0026 完成结果
+### v0027 完成结果
 
-- 新增核心组件：`packages/fluttron_ui/lib/src/html_view.dart`，提供 `FluttronHtmlView(viewType, jsFactoryName, jsFactoryArgs, loadingBuilder, errorBuilder)`，内置 `loading/ready/error` 三态。
+- 新增核心事件桥：`packages/fluttron_ui/lib/src/event_bridge.dart`，提供 `FluttronEventBridge.on(eventName)` 与 `dispose()`。
 - 新增平台实现：
-  - `packages/fluttron_ui/lib/src/html_view_platform_web.dart`：封装 `platformViewRegistry.registerViewFactory` 注册、JS 工厂调用、`viewType` 冲突检测与 `jsFactoryArgs` JSON-like 类型校验。
-  - `packages/fluttron_ui/lib/src/html_view_platform_stub.dart`：非 Web 平台返回可读错误，避免崩溃。
-- 核心库入口导出已补齐：`packages/fluttron_ui/lib/fluttron_ui.dart` 新增 `export 'src/html_view.dart'`。
-- playground 迁移完成：`playground/ui/lib/main.dart` 已用 `FluttronHtmlView` 替代手写 `registerViewFactory + HtmlElementView` 路径，保持 bootstrap 和事件监听逻辑不变。
+  - `packages/fluttron_ui/lib/src/event_bridge_platform_web.dart`：封装 `addEventListener/removeEventListener` 管理、`event.detail.dartify()` 转换、`Map<String, dynamic>` 规范化、同名事件复用 broadcast Stream。
+  - `packages/fluttron_ui/lib/src/event_bridge_platform_stub.dart`：非 Web 平台显式抛出 `UnsupportedError`，避免静默失败。
+- 核心库入口导出已补齐：`packages/fluttron_ui/lib/fluttron_ui.dart` 新增 `export 'src/event_bridge.dart'`。
+- playground 迁移完成：`playground/ui/lib/main.dart` 已移除手写 JS listener 管理，改为 `FluttronEventBridge + StreamSubscription`，状态更新行为保持一致。
+- 新增契约测试：`packages/fluttron_ui/test/event_bridge_test.dart`，覆盖 `eventName` 空值校验、`dispose` 后调用、非 Web `UnsupportedError`。
 - 验收链路：
   - `flutter analyze`（工作目录 `packages/fluttron_ui`）通过。
   - `flutter test`（工作目录 `packages/fluttron_ui`）通过。
@@ -237,7 +239,7 @@ Host 端:
 
 ### 下一步
 
-- v0027：核心库 `FluttronEventBridge` JS→Flutter 事件桥（将 playground 中手写 `addEventListener/removeEventListener` + `CustomEvent.detail` 解析逻辑下沉到 `fluttron_ui`）。
+- v0028：核心库 `runFluttronUi` 可配置入口（将 `runFluttronUi` 从硬编码 `DemoPage` 改为可传入 `home`）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -251,7 +253,7 @@ Host 端:
 | 1 | ✅ Template Host pubspec.yaml 已补齐 `assets/www/ext/` 声明（v0025） | templates/host/pubspec.yaml | 已完成 |
 | 2 | ✅ Template build-frontend.mjs 已支持 CSS 产物清理（v0025） | templates/ui/scripts/build-frontend.mjs | 已完成 |
 | 3 | ✅ `fluttron_ui` 已提供 `FluttronHtmlView` 组件封装（v0026） | `packages/fluttron_ui/lib/src/html_view.dart` | 已完成 |
-| 4 | `fluttron_ui` 无 JS→Flutter `CustomEvent` 事件桥 | 同上 | 高 |
+| 4 | ✅ `fluttron_ui` 已提供 JS→Flutter `CustomEvent` 事件桥（v0027） | `packages/fluttron_ui/lib/src/event_bridge.dart` | 已完成 |
 | 5 | `runFluttronUi` 被模板架空，不可扩展 | ui_app.dart | 中 |
 | 6 | Template UI main.dart 自行实现全部逻辑，未复用核心库 | main.dart | 中 |
 | 7 | Template Host 无自定义服务扩展演示 | main.dart | 低 |
@@ -277,15 +279,15 @@ Host 端:
 4. ✅ 验收通过：`packages/fluttron_ui` 完成 `flutter analyze` + `flutter test`，`playground/ui` 完成 `flutter analyze`；playground 已用 `FluttronHtmlView` 替代手写 `HtmlElementView` 注册逻辑。
 
 ---
-**v0027 — 核心库：`FluttronEventBridge` JS→Flutter 事件桥**
+**v0027 — 核心库：`FluttronEventBridge` JS→Flutter 事件桥 ✅ 已完成**
 将 playground 中手写的 `addEventListener` / `removeEventListener` + `CustomEvent` 解析逻辑抽象为通用工具：
-1. 新增文件 `packages/fluttron_ui/lib/src/event_bridge.dart`，包含：
+1. ✅ 新增文件 `packages/fluttron_ui/lib/src/event_bridge.dart`，包含：
    - `FluttronEventBridge` — 管理对指定 `CustomEvent` 名称的监听
    - 核心 API：`Stream<Map<String, dynamic>> on(String eventName)` — 返回一个 broadcast Stream，每当浏览器触发同名 `CustomEvent` 时，自动提取 `event.detail`、`dartify()` 为 `Map<String, dynamic>` 并推入 Stream
    - `dispose()` 方法：自动 `removeEventListener` 并关闭所有 StreamController
    - 内部使用 `dart:js_interop` + `dart:js_interop_unsafe`，与 playground 的实现对齐
-2. 在 fluttron_ui.dart 中添加导出
-3. 验收：在 playground 中将手写 listener 逻辑替换为 `FluttronEventBridge`，行为一致
+2. ✅ 在 fluttron_ui.dart 中添加导出
+3. ✅ 验收：在 playground 中将手写 listener 逻辑替换为 `FluttronEventBridge`，行为一致
 
 ---
 **v0028 — 核心库：`runFluttronUi` 可配置入口**
