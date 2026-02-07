@@ -166,7 +166,7 @@ Host 端:
 		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
 		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
 		- lib/fluttron_ui.dart - UI 库入口，导出 runFluttronUi 与 FluttronClient
-		- lib/src/ui_app.dart - UI 应用核心，包含 runFluttronUi 与 DemoPage
+		- lib/src/ui_app.dart - UI 应用核心，包含 runFluttronUi 与 FluttronUiApp
 		- lib/main.dart - Flutter Web 应用入口，调用 runFluttronUi
 		- lib/fluttron/fluttron_client.dart - Fluttron 客户端核心类，封装了通过 WebView Bridge 调用宿主服务的 invoke 方法及具体业务 API（getPlatform、kvSet、kvGet），并负责 JS 互操作调用 callHandler。
 
@@ -207,6 +207,7 @@ Host 端:
 - v0025：已完成模板阻塞修复（`pubspec.yaml + CSS 构建脚本`）：`templates/host/pubspec.yaml` 新增 `assets/www/ext/` 声明；`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile`，`cleanFrontend()` 同步清理 `main.css` 与 sourcemap；新增模板契约回归测试 `packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`。验收通过：`dart test`（`packages/fluttron_cli`）全绿，`create + build` smoke 验证 Host 侧产物 `assets/www/ext/main.js` 可用，且 `js:clean` 在 CSS 缺失场景下保持幂等成功。
 - v0026：已完成核心库 `FluttronHtmlView` 封装并下沉 `HtmlElementView` 注册逻辑：新增 `packages/fluttron_ui/lib/src/html_view.dart`（三态 UI + 可选 `loadingBuilder/errorBuilder`）、`html_view_platform_web.dart`（`platformViewRegistry` 去重注册 + `globalContext.callMethodVarArgs` 工厂调用 + `viewType` 冲突严格报错 + `jsFactoryArgs` 类型校验）、`html_view_platform_stub.dart`（非 Web 错误兜底）；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronHtmlView`。playground 已改为使用 `FluttronHtmlView` 替代手写 `registerViewFactory`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 - v0027：已完成核心库 `FluttronEventBridge` JS→Flutter 事件桥下沉：新增 `packages/fluttron_ui/lib/src/event_bridge.dart`、`event_bridge_platform_web.dart`、`event_bridge_platform_stub.dart`；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronEventBridge`；playground 已将手写 `addEventListener/removeEventListener + CustomEvent.detail` 解析替换为 `FluttronEventBridge` + `StreamSubscription`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
+- v0028：已完成核心库 `runFluttronUi` 可配置入口：`packages/fluttron_ui/lib/src/ui_app.dart` 已将 `runFluttronUi` 升级为 `void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`，`FluttronUiApp` 支持透传 `title/home/debugBanner` 到 `MaterialApp`；核心库已移除 `DemoPage`，并将演示页面迁移到 `packages/fluttron_ui/lib/main.dart` 的 `PackageDemoPage`；新增测试 `packages/fluttron_ui/test/ui_app_test.dart` 覆盖入口配置与启动行为，并删除空模板测试 `packages/fluttron_ui/test/widget_test.dart`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过。
 
 ## Backlog (未来)
 
@@ -221,25 +222,23 @@ Host 端:
 
 ## 当前任务
 
-**v0027：核心库 `FluttronEventBridge` JS→Flutter 事件桥 ✅ 已完成**
+**v0028：核心库 `runFluttronUi` 可配置入口 ✅ 已完成**
 
-### v0027 完成结果
+### v0028 完成结果
 
-- 新增核心事件桥：`packages/fluttron_ui/lib/src/event_bridge.dart`，提供 `FluttronEventBridge.on(eventName)` 与 `dispose()`。
-- 新增平台实现：
-  - `packages/fluttron_ui/lib/src/event_bridge_platform_web.dart`：封装 `addEventListener/removeEventListener` 管理、`event.detail.dartify()` 转换、`Map<String, dynamic>` 规范化、同名事件复用 broadcast Stream。
-  - `packages/fluttron_ui/lib/src/event_bridge_platform_stub.dart`：非 Web 平台显式抛出 `UnsupportedError`，避免静默失败。
-- 核心库入口导出已补齐：`packages/fluttron_ui/lib/fluttron_ui.dart` 新增 `export 'src/event_bridge.dart'`。
-- playground 迁移完成：`playground/ui/lib/main.dart` 已移除手写 JS listener 管理，改为 `FluttronEventBridge + StreamSubscription`，状态更新行为保持一致。
-- 新增契约测试：`packages/fluttron_ui/test/event_bridge_test.dart`，覆盖 `eventName` 空值校验、`dispose` 后调用、非 Web `UnsupportedError`。
+- 入口 API 改造完成：`packages/fluttron_ui/lib/src/ui_app.dart` 中 `runFluttronUi` 已支持 `title/home/debugBanner` 配置，其中 `home` 为 `required Widget`。
+- `FluttronUiApp` 已升级为可配置构造，并将参数透传至 `MaterialApp`，不再内置固定页面。
+- 核心库内置演示页已移除：`DemoPage` 从 `ui_app.dart` 下沉到包入口 `packages/fluttron_ui/lib/main.dart`，并命名为 `PackageDemoPage`。
+- 演示能力保持：`PackageDemoPage` 继续覆盖 `FluttronClient` 的 `getPlatform` / `kvSet` / `kvGet` 行为，用于包内独立运行验证。
+- 新增入口测试：`packages/fluttron_ui/test/ui_app_test.dart`，覆盖 `home` 渲染、`title` 透传、`debugBanner` true/false 映射，以及 `runFluttronUi(...)` 启动行为。
+- 清理空测试：删除 `packages/fluttron_ui/test/widget_test.dart`。
 - 验收链路：
   - `flutter analyze`（工作目录 `packages/fluttron_ui`）通过。
   - `flutter test`（工作目录 `packages/fluttron_ui`）通过。
-  - `flutter analyze`（工作目录 `playground/ui`）通过。
 
 ### 下一步
 
-- v0028：核心库 `runFluttronUi` 可配置入口（将 `runFluttronUi` 从硬编码 `DemoPage` 改为可传入 `home`）。
+- v0029：模板 UI 重写：基于核心库构建（模板入口改为调用 `runFluttronUi(title: ..., home: TemplateDemoPage())`，不再架空核心库）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -254,7 +253,7 @@ Host 端:
 | 2 | ✅ Template build-frontend.mjs 已支持 CSS 产物清理（v0025） | templates/ui/scripts/build-frontend.mjs | 已完成 |
 | 3 | ✅ `fluttron_ui` 已提供 `FluttronHtmlView` 组件封装（v0026） | `packages/fluttron_ui/lib/src/html_view.dart` | 已完成 |
 | 4 | ✅ `fluttron_ui` 已提供 JS→Flutter `CustomEvent` 事件桥（v0027） | `packages/fluttron_ui/lib/src/event_bridge.dart` | 已完成 |
-| 5 | `runFluttronUi` 被模板架空，不可扩展 | ui_app.dart | 中 |
+| 5 | ✅ `runFluttronUi` 已改为可配置入口（v0028） | `packages/fluttron_ui/lib/src/ui_app.dart` | 已完成 |
 | 6 | Template UI main.dart 自行实现全部逻辑，未复用核心库 | main.dart | 中 |
 | 7 | Template Host 无自定义服务扩展演示 | main.dart | 低 |
 | 8 | CLI `build` 不自动执行 `pnpm install` | frontend_builder.dart | 低 |
@@ -290,14 +289,12 @@ Host 端:
 3. ✅ 验收：在 playground 中将手写 listener 逻辑替换为 `FluttronEventBridge`，行为一致
 
 ---
-**v0028 — 核心库：`runFluttronUi` 可配置入口**
-当前 `runFluttronUi()` 硬编码了 `DemoPage`，完全不可扩展。改造为接受配置参数：
-1. 修改 ui_app.dart：
-   - `runFluttronUi()` 签名改为：`void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`
-   - 内部 `FluttronUiApp` 接收这些配置并传递给 `MaterialApp`
-   - 移除 `DemoPage`（它属于演示，不属于核心库；可选地保留为单独的 example 文件）
-2. 确保 `FluttronClient` 仍正常导出
-3. 验收：能通过 `runFluttronUi(title: 'My App', home: MyPage())` 启动一个自定义页面
+**v0028 — 核心库：`runFluttronUi` 可配置入口 ✅ 已完成**
+1. ✅ 已完成入口 API 改造：`runFluttronUi` 签名升级为 `void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`。
+2. ✅ 已完成核心逻辑收敛：`FluttronUiApp` 支持配置透传，核心库 `ui_app.dart` 已移除 `DemoPage`。
+3. ✅ 已完成演示迁移：`packages/fluttron_ui/lib/main.dart` 使用 `runFluttronUi(title: 'Fluttron UI', home: const PackageDemoPage())`，演示页下沉为包入口示例。
+4. ✅ 已完成测试补齐：新增 `packages/fluttron_ui/test/ui_app_test.dart`，并删除空模板测试 `packages/fluttron_ui/test/widget_test.dart`。
+5. ✅ 验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过。
 
 ---
 **v0029 — 模板 UI 重写：基于核心库构建**
