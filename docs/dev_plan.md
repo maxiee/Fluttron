@@ -60,7 +60,7 @@
 
 | # | 缺失能力 | 说明 |
 |---|----------|------|
-| **1** | **playground 集成 Milkdown** | 需要在现有前端构建链路上真正接入编辑器并验证运行时行为（计划 v0024） |
+| **1** | **playground 集成 Milkdown** | 已在 playground 完成接入并验证运行时行为（v0024），模板链路同步留待后续迭代 |
 
 
 ## 工作方式（你必须遵守的协作协议）
@@ -203,6 +203,7 @@ Host 端:
 - v0021：已将前端能力沉淀到模板链路（仅模板层，不改 `packages/fluttron_ui`）：`templates/ui/lib/main.dart` 内置 `HtmlElementView` + JS 工厂接入示例；新增 `package.json` + `pnpm-lock.yaml` 与 `frontend/src -> web/ext` 目录约定；新增 `scripts/build-frontend.mjs` 占位构建脚本；`web/ext/main.js` 作为默认可运行产物，保证 `fluttron create` 后零额外命令可 `build/run`。
 - v0022：CLI `build/run` 已接入前端构建：当 `ui/package.json` 存在 `scripts["js:build"]` 时，自动执行 `pnpm run js:build` 后再执行 `flutter build web`；模板脚本已切换为 esbuild bundling；Node/pnpm 不可用与前端构建失败时提供可读错误；`build` 与 `run --build` 复用统一的 UI 构建流水线。
 - v0023：CLI `build/run --build` 已完成 JS 产物自动搬运与校验增强：解析 `ui/web/index.html` 的本地 script 引用，执行 `ui/web → ui/build/web → host/assets/www` 三阶段校验；当 `scripts["js:clean"]` 存在时自动先执行 `pnpm run js:clean`；任一 JS 资源缺失或校验失败立即中止构建并输出缺失路径。
+- v0024：已在 `playground/ui` 集成 Milkdown Markdown 编辑器（CommonMark + Nord + Listener），并保持 `frontend/src -> web/ext` 构建链路；Dart 侧完成 `HtmlElementView` 工厂升级（传入 `initialMarkdown`）、监听浏览器 `CustomEvent`（`fluttron.playground.milkdown.change`）实现 JS -> Flutter 状态回传；同时接入 Host `storage.kvGet/kvSet` 完成“启动读取 + 手动保存 + 回读校验”闭环。`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过（基于本轮产物）。
 
 ## Backlog (未来)
 
@@ -217,23 +218,25 @@ Host 端:
 
 ## 当前任务
 
-**v0023：JS 产物自动搬运与校验增强 ✅ 已完成**
+**v0024：playground 集成 Milkdown，实现 Markdown 编辑器 ✅ 已完成**
 
-### v0023 完成结果
+### v0024 完成结果
 
-- CLI `build` 与 `run --build` 在前端构建后新增 JS 资源校验：解析 `ui/web/index.html` 的本地 script 引用并执行三阶段校验（`ui/web`、`ui/build/web`、`host/assets/www`）。
-- 严格失败策略已落地：任一阶段检测到 JS 资源缺失时，构建立即失败并输出缺失文件路径，避免脏产物进入 Host 资产目录。
-- Frontend 构建新增预清理：当 `package.json` 含 `scripts["js:clean"]` 时，CLI 自动执行 `pnpm run js:clean` 后再执行 `pnpm run js:build`。
-- CLI 单元测试已补强：覆盖 script 解析/缺失校验、防越界路径、`js:clean` 顺序与失败短路、以及 host 拷贝后缺失资源失败路径。
+- playground `ui` 前端已切换为 Milkdown 编辑器实现：`frontend/src/main.js` 完成 Editor 初始化、状态栏更新、异常兜底与事件分发。
+- JS 全局工厂函数已升级为 `fluttronCreatePlaygroundHtmlView(viewId, initialMarkdown)`，支持从 Flutter 侧注入初始 Markdown。
+- JS -> Flutter 事件协议已落地：浏览器事件 `fluttron.playground.milkdown.change`，`detail` 包含 `markdown/characterCount/updatedAt/source`。
+- Flutter 侧已完成“启动读取 + 手动保存 + 回读校验”：启动读取 `storage.kvGet('playground.markdown')`，编辑时实时更新本地状态，点击按钮触发 `storage.kvSet('playground.markdown', markdown)`。
+- 空内容保存前置拦截已生效，避免触发 Host `StorageService` 的非空参数错误。
+- 验收链路：`pnpm run js:build`、`fluttron build -p playground`、`fluttron run -p playground --no-build -d macos`。
 
-### 下一轮（v0024）建议范围
+### 下一轮（v0025）建议范围
 
-1. 在 playground 的 `ui` 包集成 Milkdown，并基于当前 JS 构建链路输出到 `web/ext/`。
-2. 验证 Milkdown 在 Host WebView 内的运行时交互（初始化、编辑、事件回传）。
-3. 沉淀一份可复用的 Flutter Web + Web 生态集成示例文档，作为模板演进依据。
+1. 将 Milkdown 集成能力从 playground 同步到 `templates/ui`，使 `fluttron create` 默认产物具备相同能力。
+2. 补齐模板与 CLI 的文档示例，明确 `frontend` 依赖安装、构建、调试与问题排查流程。
+3. 评估将编辑器状态与 Fluttron Bridge API 做更类型安全的封装（事件定义与代码生成）。
 
 **后续迭代路线（本轮不做）：**
-- v0024: playground 集成 Milkdown，实现 Markdown 编辑器
+- v0025: 模板链路同步 Milkdown 与文档收敛
 
 ## 我的问题
 
