@@ -231,12 +231,11 @@ Host 端:
 
 ### 下一轮（v0025）建议范围
 
-1. 将 Milkdown 集成能力从 playground 同步到 `templates/ui`，使 `fluttron create` 默认产物具备相同能力。
-2. 补齐模板与 CLI 的文档示例，明确 `frontend` 依赖安装、构建、调试与问题排查流程。
-3. 评估将编辑器状态与 Fluttron Bridge API 做更类型安全的封装（事件定义与代码生成）。
+目前，playground 已成功集成 Milkdown。但是，功能实现仅限于 playground 实验项目，相关能力没有完全下沉到 Fluttron 核心库和模版中。
 
-**后续迭代路线（本轮不做）：**
-- v0025: 模板链路同步 Milkdown 与文档收敛
+也就是说，如果我现在通过 `fluttron create` 创建一个新的 Fluttron 项目，它的能力仍然停留在之前的水平，距离 playground 是有差距的。
+
+而在我的预期中，我希望通过 `fluttron create` 创建的项目，在生成的项目的 ui 部分，能够以通用化方式引入前端生态，并提供通用机制嵌入在 ui 部分的 Flutter Web 页面中。在生成项目的 host 部分，提供通用的扩展 API，让开发者可以扩展自己的服务。同时，底层的库也提供通用化的 Bridge API，让开发者可以方便地调用宿主服务。
 
 ## 我的问题
 
