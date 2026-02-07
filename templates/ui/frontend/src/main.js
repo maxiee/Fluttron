@@ -1,4 +1,28 @@
-const createTemplateHtmlView = (viewId) => {
+const TEMPLATE_EDITOR_CHANGE_EVENT = 'fluttron.template.editor.change';
+const DEFAULT_TEMPLATE_TEXT =
+  'Hello from external HTML/JS.\n\nEdit this text to verify event bridge sync.';
+
+const normalizeInitialText = (value) => {
+  if (typeof value === 'string' && value.trim().length > 0) {
+    return value;
+  }
+  return DEFAULT_TEMPLATE_TEXT;
+};
+
+const emitEditorChanged = (content, source) => {
+  window.dispatchEvent(
+    new CustomEvent(TEMPLATE_EDITOR_CHANGE_EVENT, {
+      detail: {
+        content,
+        characterCount: content.length,
+        updatedAt: new Date().toISOString(),
+        source,
+      },
+    }),
+  );
+};
+
+const createTemplateHtmlView = (viewId, initialText) => {
   const root = document.createElement('div');
   root.id = `fluttron-html-view-${viewId}`;
   root.style.width = '100%';
@@ -30,20 +54,24 @@ const createTemplateHtmlView = (viewId) => {
   editor.style.background = '#f6f8fa';
   editor.style.outline = 'none';
   editor.style.overflow = 'auto';
-  editor.innerHTML =
-    '<p><strong>Hello from external HTML/JS.</strong></p><p>Edit this text to verify embedded DOM rendering inside Flutter.</p>';
+  editor.innerText = normalizeInitialText(initialText);
 
   const status = document.createElement('div');
   status.style.fontSize = '12px';
   status.style.color = '#57606a';
 
-  const updateStatus = () => {
-    const content = (editor.innerText || '').trim();
-    status.textContent = `Characters: ${content.length} | Last input: ${new Date().toLocaleTimeString()}`;
+  const publishEditorState = (source) => {
+    const content = (editor.innerText || '').replace(/\r\n/g, '\n');
+    status.textContent =
+      `Characters: ${content.length} | Last input: ${new Date().toLocaleTimeString()}`;
+    emitEditorChanged(content, source);
   };
 
-  editor.addEventListener('input', updateStatus);
-  updateStatus();
+  editor.addEventListener('input', () => {
+    publishEditorState('input');
+  });
+
+  publishEditorState('init');
 
   root.append(title, editor, status);
   return root;

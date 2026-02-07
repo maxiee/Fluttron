@@ -208,6 +208,7 @@ Host 端:
 - v0026：已完成核心库 `FluttronHtmlView` 封装并下沉 `HtmlElementView` 注册逻辑：新增 `packages/fluttron_ui/lib/src/html_view.dart`（三态 UI + 可选 `loadingBuilder/errorBuilder`）、`html_view_platform_web.dart`（`platformViewRegistry` 去重注册 + `globalContext.callMethodVarArgs` 工厂调用 + `viewType` 冲突严格报错 + `jsFactoryArgs` 类型校验）、`html_view_platform_stub.dart`（非 Web 错误兜底）；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronHtmlView`。playground 已改为使用 `FluttronHtmlView` 替代手写 `registerViewFactory`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 - v0027：已完成核心库 `FluttronEventBridge` JS→Flutter 事件桥下沉：新增 `packages/fluttron_ui/lib/src/event_bridge.dart`、`event_bridge_platform_web.dart`、`event_bridge_platform_stub.dart`；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronEventBridge`；playground 已将手写 `addEventListener/removeEventListener + CustomEvent.detail` 解析替换为 `FluttronEventBridge` + `StreamSubscription`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 - v0028：已完成核心库 `runFluttronUi` 可配置入口：`packages/fluttron_ui/lib/src/ui_app.dart` 已将 `runFluttronUi` 升级为 `void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`，`FluttronUiApp` 支持透传 `title/home/debugBanner` 到 `MaterialApp`；核心库已移除 `DemoPage`，并将演示页面迁移到 `packages/fluttron_ui/lib/main.dart` 的 `PackageDemoPage`；新增测试 `packages/fluttron_ui/test/ui_app_test.dart` 覆盖入口配置与启动行为，并删除空模板测试 `packages/fluttron_ui/test/widget_test.dart`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过。
+- v0029：已完成模板 UI 重写（基于核心库）并同步 playground：`templates/ui/lib/main.dart` 入口改为 `runFluttronUi(title: ..., home: const TemplateDemoPage())`，模板页使用 `FluttronHtmlView + FluttronEventBridge + async bootstrap`，保留 `FluttronClient` 的 `getPlatform/kvSet/kvGet` 演示；`templates/ui/frontend/src/main.js` 支持 `window.fluttronCreateTemplateHtmlView(viewId, initialText)` 并分发 `fluttron.template.editor.change`；新增模板回归测试与 CLI 契约测试（v0029）。playground 采用“模板骨架 + Milkdown”形态并保持原有 Milkdown 能力，同时事件载荷新增 `content` 兼容字段。验收通过：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 通过。
 
 ## Backlog (未来)
 
@@ -218,27 +219,25 @@ Host 端:
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
-- 风险：目前 templates/ui/lib/main.dart 将 runFluttronUi 的实现复制到模板中，架空了 runFluttronUi，实际是希望核心逻辑收敛进 fluttron_ui 包，模板默认生成的工程中，开发者主要通过 fluttron_ui、runFluttronUi 提供的能力进行扩展、调用。因此未来可能需要调整，将平台话逻辑重新下沉至 fluttron_ui。
+- 风险：模板与 playground 已共享核心库骨架，但 playground 叠加了 Milkdown 业务能力；后续模板演进时需持续校验事件契约与页面骨架一致性，避免双轨漂移。
 
 ## 当前任务
 
-**v0028：核心库 `runFluttronUi` 可配置入口 ✅ 已完成**
+**v0029：模板 UI 重写：基于核心库构建 ✅ 已完成**
 
-### v0028 完成结果
+### v0029 完成结果
 
-- 入口 API 改造完成：`packages/fluttron_ui/lib/src/ui_app.dart` 中 `runFluttronUi` 已支持 `title/home/debugBanner` 配置，其中 `home` 为 `required Widget`。
-- `FluttronUiApp` 已升级为可配置构造，并将参数透传至 `MaterialApp`，不再内置固定页面。
-- 核心库内置演示页已移除：`DemoPage` 从 `ui_app.dart` 下沉到包入口 `packages/fluttron_ui/lib/main.dart`，并命名为 `PackageDemoPage`。
-- 演示能力保持：`PackageDemoPage` 继续覆盖 `FluttronClient` 的 `getPlatform` / `kvSet` / `kvGet` 行为，用于包内独立运行验证。
-- 新增入口测试：`packages/fluttron_ui/test/ui_app_test.dart`，覆盖 `home` 渲染、`title` 透传、`debugBanner` true/false 映射，以及 `runFluttronUi(...)` 启动行为。
-- 清理空测试：删除 `packages/fluttron_ui/test/widget_test.dart`。
-- 验收链路：
-  - `flutter analyze`（工作目录 `packages/fluttron_ui`）通过。
-  - `flutter test`（工作目录 `packages/fluttron_ui`）通过。
+- 模板 UI 入口已完成核心化：`templates/ui/lib/main.dart` 改为 `runFluttronUi(title: 'Fluttron UI Template', home: const TemplateDemoPage())`，不再复制/架空核心入口实现。
+- 模板页已完成组件化：使用 `FluttronHtmlView` 替代手写 `registerViewFactory + HtmlElementView`，并使用 `FluttronEventBridge` 监听 `fluttron.template.editor.change`。
+- 模板页已接入异步 bootstrap：`_bootstrap()` 负责加载平台与事件监听，首屏展示 loading 态。
+- 模板前端已升级契约：`window.fluttronCreateTemplateHtmlView(viewId, initialText)` 支持可选初始文本，输入时分发 `CustomEvent`（`content/characterCount/updatedAt/source`）。
+- 模板测试已补齐：`templates/ui/test/widget_test.dart` 改为 UI smoke；新增 `packages/fluttron_cli/test/src/utils/template_contract_v0029_test.dart` 防回退。
+- playground 已同步到“模板骨架 + Milkdown”形态：入口改为 `runFluttronUi`，保留 Milkdown bootstrap / Host KV 回写链路；前端事件载荷新增 `content` 字段并兼容 `content || markdown`。
+- 本轮已完成静态与单测验收：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 均通过。
 
 ### 下一步
 
-- v0029：模板 UI 重写：基于核心库构建（模板入口改为调用 `runFluttronUi(title: ..., home: TemplateDemoPage())`，不再架空核心库）。
+- v0030：模板 Host 自定义服务扩展指引（补充 `greeting_service.dart` 注释骨架与 `runFluttronHost(registry: ...)` 扩展示例）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -297,16 +296,16 @@ Host 端:
 5. ✅ 验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过。
 
 ---
-**v0029 — 模板 UI 重写：基于核心库构建**
+**v0029 — 模板 UI 重写：基于核心库构建 ✅ 已完成**
 用 v0026、v0027、v0028 新增的核心 API 重写模板的 main.dart，使其不再架空 `runFluttronUi`：
-1. 重写 main.dart：
-   - `main()` 调用 `runFluttronUi(title: ..., home: TemplateDemoPage())`
-   - `TemplateDemoPage` 中使用 `FluttronHtmlView` 代替手写的 `registerViewFactory` + `HtmlElementView` 样板代码
-   - 添加 `FluttronEventBridge` 使用示例（监听一个示例事件名，在 UI 上展示收到的数据）
-   - 保留 `FluttronClient` 的 `getPlatform` / `kvSet` / `kvGet` 演示按钮
-   - 使用异步 bootstrap 模式（`_bootstrap()` + loading 态），对齐 playground 的成熟 UX
-2. 同步更新 main.js：JS 工厂函数中添加一个 `CustomEvent` 分发示例，匹配 Dart 侧的事件名
-3. 验收：`fluttron create test_app` → `fluttron build -p test_app` → `fluttron run -p test_app -d macos` 全链路可运行，页面展示 HtmlElementView 嵌入 + 事件通信 + Bridge 调用
+1. ✅ 已完成模板 main.dart 重写：
+   - `main()` 调用 `runFluttronUi(title: ..., home: const TemplateDemoPage())`
+   - `TemplateDemoPage` 使用 `FluttronHtmlView` + `FluttronEventBridge`
+   - 保留 `FluttronClient` 的 `getPlatform` / `kvSet` / `kvGet` 按钮
+   - 引入异步 bootstrap（`_bootstrap()` + loading 态）
+2. ✅ 已完成模板 main.js 重写：JS 工厂支持 `initialText` 参数并分发 `fluttron.template.editor.change` 自定义事件
+3. ✅ 已同步 playground：采用“模板骨架 + Milkdown”，事件载荷新增 `content` 并兼容 `content || markdown`
+4. ✅ 已补齐回归保护：模板 widget smoke test 与 CLI `template_contract_v0029_test.dart` 已新增
 
 ---
 **v0030 — 模板 Host 自定义服务扩展指引**
