@@ -43,6 +43,7 @@ The host app loads Web assets from `assets/www` and exposes services.
 Key files:
 - `host/lib/main.dart`: entry point, calls `runFluttronHost()`
 - `host/assets/www/`: Web build output (populated by `fluttron build`)
+- `host/assets/www/ext/`: external frontend runtime assets (for example `main.js`, `main.css`)
 
 ### ui/
 
@@ -51,6 +52,9 @@ The renderer app is a standard Flutter Web project.
 Key files:
 - `ui/lib/main.dart`: entry point, calls `runFluttronUi()`
 - `ui/web/index.html`: Flutter Web shell
+- `ui/frontend/src/main.js`: frontend source entry
+- `ui/web/ext/`: frontend runtime output used by `index.html`
+- `ui/scripts/build-frontend.mjs`: frontend build/clean script
 
 ## Next Steps
 

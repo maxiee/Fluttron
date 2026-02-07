@@ -14,11 +14,14 @@ function HomepageHeader() {
       <div className="container">
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <p className={styles.statusText}>
+          MVP is live: CLI create/build/run, Host-Renderer bridge, and template frontend ext asset pipeline (v0025).
+        </p>
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro">
-            Get Started
+            to="/docs/getting-started/quick-start">
+            Quick Start
           </Link>
           <Link
             className="button button--outline button--lg"
@@ -36,7 +39,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Dart-native cross-platform container OS. The Electron for Dart developers.">
+      description="Dart-native cross-platform container OS. Electron-inspired architecture for Flutter Host and Flutter Web Renderer.">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

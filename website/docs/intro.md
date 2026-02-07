@@ -1,8 +1,6 @@
 import React from 'react';
-import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 import styles from './index.module.css';
 
@@ -16,38 +14,45 @@ export default function Hello() {
               <h1 className={styles.title}>Introduction to Fluttron</h1>
 
               <p>
-                Welcome to Fluttron, the Dart-native cross-platform container OS.
+                Fluttron is a Dart-native cross-platform container OS.
               </p>
 
               <p>
-                Fluttron is inspired by Electron but designed specifically for Dart developers. It provides a unified development experience where both the host layer and the renderer layer are written in Dart and Flutter.
+                It is inspired by Electron, but designed for Flutter teams that want native host capabilities and web rendering flexibility without leaving Dart.
               </p>
 
               <h2>What is Fluttron?</h2>
 
               <p>
-                Fluttron is a cross-platform container OS that combines the stability of native host applications with the flexibility of web rendering. It enables Dart developers to build cross-platform applications using only Dart and Flutter technologies.
+                Fluttron combines:
               </p>
-
-              <h2>Key Concepts</h2>
 
               <ul>
-                <li><strong>Host Layer:</strong> Built with Flutter Desktop, manages windows, lifecycle, and exposes native capabilities through ServiceRegistry.</li>
-                <li><strong>Renderer Layer:</strong> Built with Flutter Web, runs in a controlled WebView container, handles UI rendering and business logic.</li>
-                <li><strong>Bridge Communication:</strong> High-performance IPC mechanism between Host and Renderer using JavaScript Handlers.</li>
+                <li><strong>Host:</strong> Flutter native app for lifecycle and service capabilities.</li>
+                <li><strong>Renderer:</strong> Flutter Web app running in WebView.</li>
+                <li><strong>Bridge:</strong> request/response IPC between Host and Renderer.</li>
               </ul>
 
-              <h2>Why Fluttron?</h2>
+              <h2>Current MVP Status</h2>
 
-              <p>
-                Electron dominates desktop development with Node.js and Chromium, but requires Dart developers to switch technology stacks. Fluttron eliminates this barrier, allowing you to work entirely in Dart across both the system layer and UI layer.
-              </p>
+              <ul>
+                <li>CLI pipeline (`create/build/run`) is available.</li>
+                <li>Template frontend build pipeline is available (`pnpm` + `esbuild`).</li>
+                <li>v0025 blocker fixes are complete:
+                  <ul>
+                    <li>Host template includes `assets/www/ext/` declaration.</li>
+                    <li>`js:clean` removes both JS/CSS artifacts and sourcemaps.</li>
+                  </ul>
+                </li>
+              </ul>
+
+              <h2>Get Started</h2>
 
               <div className="margin-vert--xl">
                 <Link
                   className="button button--primary button--lg"
-                  to="/docs/getting-started/installation">
-                  Get Started
+                  to="/docs/getting-started/quick-start">
+                  Quick Start
                 </Link>
               </div>
             </div>

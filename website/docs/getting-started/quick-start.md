@@ -2,6 +2,12 @@
 
 This guide creates and runs a Fluttron app using the CLI.
 
+## Prerequisites
+
+- Flutter SDK with desktop support enabled
+- Node.js
+- pnpm (Corepack recommended)
+
 ## 1. Create a Project
 
 ```bash
@@ -13,6 +19,8 @@ If you are not using the global CLI, run:
 ```bash
 dart run packages/fluttron_cli/bin/fluttron.dart create ./hello_fluttron --name HelloFluttron
 ```
+
+Run these commands from repo root when using `dart run ...`.
 
 This generates:
 - `fluttron.json`
@@ -46,6 +54,11 @@ The default demo includes:
 
 The default templates depend on local Fluttron packages. The CLI rewrites
 template `pubspec.yaml` paths to your repo so the project can build locally.
+
+Frontend pipeline notes:
+- `ui/frontend/src/main.js` is bundled into `ui/web/ext/main.js`
+- `pnpm run js:clean` removes JS/CSS artifacts and sourcemaps in `ui/web/ext/`
+- `fluttron build` copies final web assets into `host/assets/www/`
 
 ## Next Steps
 

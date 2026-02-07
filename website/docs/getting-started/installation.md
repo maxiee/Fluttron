@@ -6,6 +6,8 @@ This guide sets up Fluttron for local development on macOS (initial focus).
 
 - **Flutter SDK (stable)** with desktop support enabled
 - **Dart SDK** (bundled with Flutter)
+- **Node.js** (for template frontend build pipeline)
+- **pnpm** (recommended via Corepack)
 - **Git**
 
 Verify Flutter is available:
@@ -19,6 +21,13 @@ Enable macOS desktop if needed:
 
 ```bash
 flutter config --enable-macos-desktop
+```
+
+Enable Corepack and check pnpm:
+
+```bash
+corepack enable
+pnpm --version
 ```
 
 ## Clone the Repository

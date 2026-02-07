@@ -1,66 +1,107 @@
-# Fluttron ⚡️
+# Fluttron
 
-**Dart 原生的跨端容器 OS。**
+Dart-native cross-platform container OS.
 
-> 也就是 Dart/Flutter 版本的 Electron。
+Electron inspired, but built for Dart and Flutter developers.
 
-## 💡 为什么开发 Fluttron?
+## Why Fluttron
 
-Fluttron 重新定义了跨端开发架构，通过融合 **原生宿主的稳定性** 与 **Web 渲染的灵活性**，让 Dart 开发者拥有了自己的 "Electron"。
+Fluttron keeps the Host layer and Renderer layer in the Dart ecosystem:
 
-Electron 利用 Node.js 和 Chromium 统治了桌面端开发，但它要求 Dart 开发者必须切换技术栈。**Fluttron** 让你在系统层（System Layer）和 UI 层（UI Layer）都能使用 Dart 语言。
+- Host: Flutter app with native lifecycle and service capabilities.
+- Renderer: Flutter Web app running inside WebView.
+- Bridge: JSON-based IPC between Host and Renderer.
 
-## 🏗 架构设计
+You can keep Flutter for UI while still integrating Web ecosystem assets when needed.
 
-Fluttron 采用了类似 Electron 或小程序容器的双层架构（Host & Renderer）：
+## Architecture
 
-- **宿主 (Host):** 基于 **Flutter Desktop** 开发。它负责管理窗口、生命周期，并通过服务注册表（Service Registry）对外暴露原生能力（如文件系统、数据库、系统 API）。
-- **渲染层 (Renderer):** 基于 **Flutter Web** 开发。它运行在受控的 WebView 容器内，负责 UI 绘制和业务逻辑，通过高性能 Bridge 与宿主通信。
+Fluttron uses a dual-layer architecture:
+
+- Host (`Flutter Desktop`): window, lifecycle, service registry.
+- Renderer (`Flutter Web`): UI + business logic in WebView.
+- Bridge (`JavaScript Handler`): request/response IPC.
 
 ```mermaid
 graph TD
     subgraph Host ["Fluttron Host (Native Dart)"]
-        HostMain[主入口]
-        ServiceRegistry[服务注册中心]
-        Sys[系统服务]
-        Store[存储服务]
-        BridgeHost[宿主 Bridge]
+        HostMain["Main Entry"]
+        Registry["ServiceRegistry"]
+        System["SystemService"]
+        Storage["StorageService"]
+        HostBridge["Host Bridge"]
     end
 
     subgraph Renderer ["Fluttron UI (Flutter Web)"]
-        WebMain[Web 入口]
-        Client[Fluttron 客户端 SDK]
-        UI[业务 UI]
-        BridgeWeb[渲染层 Bridge]
+        WebMain["Web Entry"]
+        Client["FluttronClient"]
+        AppUI["App UI"]
+        UiBridge["Renderer Bridge"]
     end
 
-    UI --> Client
-    Client --> BridgeWeb
-    BridgeWeb <-->|IPC / JS Channel| BridgeHost
-    BridgeHost --> ServiceRegistry
-    ServiceRegistry --> Sys
-    ServiceRegistry --> Store
+    AppUI --> Client
+    Client --> UiBridge
+    UiBridge <-->|"IPC / JS Handler"| HostBridge
+    HostBridge --> Registry
+    Registry --> System
+    Registry --> Storage
 ```
 
-## ✨ 核心特性
+## Current Status (MVP)
 
-- 全栈 Dart: 宿主服务用 Dart 写，界面 UI 用 Dart (Flutter Web) 写。
-- 服务化架构: 宿主通过 ServiceRegistry 模式管理能力，易于扩展。
-- Web 生态: 渲染层本质是 Web，既享受 Flutter 的绘制，也能无缝接入 Web 生态。
-- 沙箱隔离: 严格区分系统权限（Host）与 UI 逻辑（Renderer），架构更清晰安全。
+- [x] Host and Renderer split architecture
+- [x] Host <-> Renderer bridge protocol
+- [x] Service registry with `system` and `storage`
+- [x] CLI `create/build/run` pipeline
+- [x] Template frontend pipeline (`pnpm` + `esbuild`) with JS asset validation
+- [x] v0025 template blocker fixes:
+  - Host template declares `assets/www/ext/`
+  - `js:clean` removes both JS/CSS artifacts and sourcemaps
+- [ ] Plugin system
+- [ ] Typed bridge codegen
 
-## 🚀 当前状态
+## Quick Start
 
-项目目前处于 MVP (最小可行性平台) 阶段。
+Prerequisites:
 
-- [x] 完成 Host 与 Renderer 分层架构
-- [x] 跑通 Bridge 通信协议 (Host <-> WebView)
-- [x] 实现基础服务注册中心 (System & KV Storage)
-- [x] CLI 脚手架工具
-- [ ] 插件系统
+- Flutter SDK (stable) with macOS desktop support
+- Node.js
+- pnpm (via Corepack or direct install)
 
-## 🤝 参与共建
+From repo root:
 
-Fluttron 遵循 "Build in public" 原则。欢迎提交 Issue 或 PR。
+```bash
+dart pub global activate --path packages/fluttron_cli
+fluttron create ./hello_fluttron --name HelloFluttron
+fluttron build -p ./hello_fluttron
+fluttron run -p ./hello_fluttron
+```
 
-详细文档与安装指南正在编写中...
+Without global CLI:
+
+```bash
+dart run packages/fluttron_cli/bin/fluttron.dart create ./hello_fluttron --name HelloFluttron
+dart run packages/fluttron_cli/bin/fluttron.dart build -p ./hello_fluttron
+dart run packages/fluttron_cli/bin/fluttron.dart run -p ./hello_fluttron
+```
+
+## Template Frontend Assets
+
+Default template frontend contract:
+
+- Source: `ui/frontend/src/main.js`
+- Runtime output: `ui/web/ext/main.js`
+- Optional CSS output: `ui/web/ext/main.css`
+- Clean behavior: `pnpm run js:clean` removes JS/CSS outputs and sourcemaps
+
+During `fluttron build`, UI web output is copied to Host assets (`host/assets/www`).
+
+## Documentation
+
+- Official docs: [https://maxiee.github.io/Fluttron/](https://maxiee.github.io/Fluttron/)
+- Internal development plan: `docs/dev_plan.md`
+- Template and manifest spec: `docs/templating.md`
+
+## Contributing
+
+Issues and PRs are welcome.

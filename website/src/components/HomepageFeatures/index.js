@@ -22,11 +22,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Web Ecosystem',
+    title: 'Frontend Asset Pipeline',
     Svg: require('@site/static/img/web-eco.svg').default,
     description: (
       <>
-        Renderer layer is pure Flutter Web running in WebView. Seamless integration with the entire web ecosystem while enjoying Flutter's rendering.
+        Templates include a frontend workflow (`frontend/src -> web/ext`) powered by `pnpm` + `esbuild`, then synced into Host assets via CLI build.
       </>
     ),
   },
