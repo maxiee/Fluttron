@@ -299,7 +299,7 @@ Host 端:
 
 ---
 **v0029 — 模板 UI 重写：基于核心库构建**
-用 v0025b/c/d 新增的核心 API 重写模板的 main.dart，使其不再架空 `runFluttronUi`：
+用 v0026、v0027、v0028 新增的核心 API 重写模板的 main.dart，使其不再架空 `runFluttronUi`：
 1. 重写 main.dart：
    - `main()` 调用 `runFluttronUi(title: ..., home: TemplateDemoPage())`
    - `TemplateDemoPage` 中使用 `FluttronHtmlView` 代替手写的 `registerViewFactory` + `HtmlElementView` 样板代码
