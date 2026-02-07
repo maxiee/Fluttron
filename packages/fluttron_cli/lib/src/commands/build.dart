@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 
-import '../utils/file_ops.dart';
 import '../utils/manifest_loader.dart';
+import '../utils/ui_build_pipeline.dart';
 
 class BuildCommand extends Command<int> {
   @override
@@ -31,61 +31,12 @@ class BuildCommand extends Command<int> {
 
     try {
       final loaded = ManifestLoader.load(projectDir);
-      final manifest = loaded.manifest;
-      final uiDir = Directory(
-        p.join(projectDir.path, manifest.entry.uiProjectPath),
+      final pipeline = UiBuildPipeline();
+      return pipeline.build(
+        projectDir: projectDir,
+        manifestPath: loaded.manifestPath,
+        manifest: loaded.manifest,
       );
-      if (!uiDir.existsSync()) {
-        stderr.writeln('UI project not found: ${p.normalize(uiDir.path)}');
-        return 2;
-      }
-
-      final hostAssetsDir = Directory(
-        p.join(projectDir.path, manifest.entry.hostAssetPath),
-      );
-      if (!hostAssetsDir.existsSync()) {
-        stderr.writeln(
-          'Host assets directory not found: ${p.normalize(hostAssetsDir.path)}',
-        );
-        return 2;
-      }
-
-      stdout.writeln('Manifest: ${p.normalize(loaded.manifestPath)}');
-      stdout.writeln('UI project: ${p.normalize(uiDir.path)}');
-      stdout.writeln('Host assets: ${p.normalize(hostAssetsDir.path)}');
-      stdout.writeln('Building Flutter Web...');
-
-      final buildExitCode = await _runFlutterBuild(uiDir);
-      if (buildExitCode != 0) {
-        stderr.writeln('Flutter build failed with exit code $buildExitCode.');
-        return buildExitCode;
-      }
-
-      final buildOutputDir = Directory(p.join(uiDir.path, 'build', 'web'));
-      if (!buildOutputDir.existsSync()) {
-        stderr.writeln(
-          'Flutter build output not found: ${p.normalize(buildOutputDir.path)}',
-        );
-        return 2;
-      }
-
-      final indexFile = File(p.join(buildOutputDir.path, manifest.entry.index));
-      if (!indexFile.existsSync()) {
-        stderr.writeln('Entry file not found: ${p.normalize(indexFile.path)}');
-        return 2;
-      }
-
-      stdout.writeln('Clearing host assets directory...');
-      await clearDirectory(hostAssetsDir);
-
-      stdout.writeln('Copying web build output to host assets...');
-      await copyDirectoryContents(
-        sourceDir: buildOutputDir,
-        destinationDir: hostAssetsDir,
-      );
-
-      stdout.writeln('Build complete.');
-      return 0;
     } on ManifestException catch (error) {
       stderr.writeln(error);
       return 2;
@@ -93,18 +44,5 @@ class BuildCommand extends Command<int> {
       stderr.writeln(error.message);
       return 2;
     }
-  }
-
-  Future<int> _runFlutterBuild(Directory uiDir) async {
-    final process = await Process.start(
-      'flutter',
-      const ['build', 'web'],
-      workingDirectory: uiDir.path,
-      runInShell: true,
-    );
-
-    await stdout.addStream(process.stdout);
-    await stderr.addStream(process.stderr);
-    return process.exitCode;
   }
 }

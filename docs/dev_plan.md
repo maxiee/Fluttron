@@ -51,16 +51,16 @@
 | 服务注册机制 (SystemService, StorageService) | ✅ |
 | Flutter Web 编译 → Host 加载 | ✅ |
 | playground 端到端可运行 | ✅ |
-| HtmlElementView 嵌入外部 HTML/JS | ✅（仅 playground 已验证） |
+| HtmlElementView 嵌入外部 HTML/JS（模板化） | ✅ |
+| 前端包管理 (pnpm) | ✅ |
+| JS 编译/打包流水线（esbuild + CLI 接入） | ✅（v0022） |
 
-#### 距北极星的 4 层差距
+#### 距北极星的剩余差距
 
 | # | 缺失能力 | 说明 |
 |---|----------|------|
-| **1** | **Flutter Web 嵌入外部 HTML/JS（模板化）** | playground 已完成 `HtmlElementView` 验证，但 `templates/ui` 与新建工程默认 UI 仍未带上该能力示例 |
-| **2** | **前端包管理 (npm/pnpm)** | UI 模板没有 `package.json`，无法安装 Milkdown 等 JS 依赖 |
-| **3** | **JS 编译/打包流水线** | CLI `build` 只执行 `flutter build web`，没有 JS bundler（esbuild/vite）步骤 |
-| **4** | **JS 资源搬运与加载** | 打包后的 JS 产物没有机制跟随 Flutter Web 产物一同进入 `host/assets/www` |
+| **1** | **JS 资源搬运与校验增强** | 当前已接入前端构建，但 JS 产物同步策略仍需在 v0023 进一步强化（校验/脏产物治理） |
+| **2** | **playground 集成 Milkdown** | 需要在现有前端构建链路上真正接入编辑器并验证运行时行为（计划 v0024） |
 
 
 ## 工作方式（你必须遵守的协作协议）
@@ -201,35 +201,36 @@ Host 端:
 - v0019：统一 Manifest 模型（`FluttronManifest` 对齐 `fluttron.json`，新增 `EntryConfig`），CLI 改为直接依赖 `fluttron_shared` 并移除 `ManifestData`；删除冗余 `RendererBridge`；同步更新 README 与 Backlog 状态。
 - v0020：已在 `playground/ui` 完成 `HtmlElementView` 嵌入外部 HTML/JS 的最小验证：`index.html` 内联 JS 创建 DOM，Dart 侧通过 `dart:ui_web` 的 `platformViewRegistry.registerViewFactory` + `HtmlElementView` 成功渲染；`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过。**注意：本次仅验证 playground，未同步模板与脚手架默认产物。**
 - v0021：已将前端能力沉淀到模板链路（仅模板层，不改 `packages/fluttron_ui`）：`templates/ui/lib/main.dart` 内置 `HtmlElementView` + JS 工厂接入示例；新增 `package.json` + `pnpm-lock.yaml` 与 `frontend/src -> web/ext` 目录约定；新增 `scripts/build-frontend.mjs` 占位构建脚本；`web/ext/main.js` 作为默认可运行产物，保证 `fluttron create` 后零额外命令可 `build/run`。
+- v0022：CLI `build/run` 已接入前端构建：当 `ui/package.json` 存在 `scripts["js:build"]` 时，自动执行 `pnpm run js:build` 后再执行 `flutter build web`；模板脚本已切换为 esbuild bundling；Node/pnpm 不可用与前端构建失败时提供可读错误；`build` 与 `run --build` 复用统一的 UI 构建流水线。
 
 ## Backlog (未来)
 
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
 - 风险：模板依赖路径由 CLI 重写为本地绝对路径，仍需保持本地仓库可用。
-- 风险：v0021 阶段 `frontend/src/main.js` 与 `web/ext/main.js` 可能出现漂移（CLI 暂未自动执行前端构建）。
+- 风险：若本地 `pnpm` 由 corepack 管理且网络不可用，`pnpm --version` 或依赖安装可能失败，需要提前准备离线缓存或可用网络。
 - Backlog（未来）：远程模板支持与依赖来源策略（本地/远程切换）。
 - 风险：本地 Flutter/macOS 运行环境未配置，会导致 flutter run 失败。
 - TODO：若验证成功，下一步可把 CLI 的推荐用法写入 README（避免误用 --directory）。
 - TODO：macOS Release 构建模板仍可能无法访问远程资源，因为 Release.entitlements 还没加 com.apple.security.network.client。需要时再补。
-- TODO：v0022 使用 esbuild 替换 `scripts/build-frontend.mjs` 占位构建脚本，并把前端构建步骤接入 CLI `build/run`。
 - TODO：v0023 将 JS 产物搬运流程自动化（与 Flutter Web 产物一起同步到 Host 资产目录）。
 - 风险：目前 templates/ui/lib/main.dart 将 runFluttronUi 的实现复制到模板中，架空了 runFluttronUi，实际是希望核心逻辑收敛进 fluttron_ui 包，模板默认生成的工程中，开发者主要通过 fluttron_ui、runFluttronUi 提供的能力进行扩展、调用。因此未来可能需要调整，将平台话逻辑重新下沉至 fluttron_ui。
 
 ## 当前任务
 
-**v0022：CLI 构建链路接入前端构建（esbuild）**
+**v0022：CLI 构建链路接入前端构建（esbuild）✅ 已完成**
 
-### v0021 已完成（结论）
+### v0022 完成结果
 
-- 模板已具备外部 HTML/JS 嵌入示例，`fluttron create` 新项目默认可运行。
-- 模板已具备 `pnpm` 基础设施与目录约定：`frontend/src`（输入）、`web/ext`（输出）。
-- 当前边界：CLI 尚未自动执行前端构建；修改 `frontend/src/main.js` 后需手动执行 `pnpm run js:build`。
+- UI 模板 `scripts/build-frontend.mjs` 已从文件复制升级为 esbuild 构建脚本，默认输出 `web/ext/main.js` 与 sourcemap。
+- CLI `build` 与 `run --build` 已接入自动前端构建，并统一复用同一条 UI 构建流水线（frontend build → flutter build → host assets copy）。
+- 兼容策略已落地：无 `package.json` 或无 `scripts["js:build"]` 的项目自动跳过前端构建，不影响历史工程。
+- 错误提示已增强：Node/pnpm 不可用、`pnpm run js:build` 失败时会直接中止并输出可读错误信息。
 
-### v0022 范围（下一轮）
+### 下一轮（v0023）建议范围
 
-1. 在 UI 工程引入 esbuild（或同级成熟方案）并替换占位构建脚本。
-2. CLI `build/run` 接入前端构建步骤，形成 Flutter + JS 一体化构建链路。
-3. 增加失败时的可读错误提示（Node/pnpm 不可用、前端构建失败等）。
+1. 增强 JS 产物校验与搬运策略，避免资源缺失或脏产物进入 `host/assets/www`。
+2. 增补更完整的 CLI 端到端测试（模板创建后构建/运行链路）。
+3. 基于该链路在 playground 尝试 Milkdown 集成（进入 v0024 前置验证）。
 
 **后续迭代路线（本轮不做）：**
 - v0023: JS 产物自动搬运与校验增强

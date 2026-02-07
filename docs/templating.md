@@ -25,9 +25,11 @@ This document defines the minimal template structure and the `fluttron.json` man
 - `ui/` is a Flutter Web app that builds to `ui/build/web/`.
 - `ui/frontend/src/` stores frontend source files for web ecosystem integration.
 - `ui/web/ext/` stores runtime JavaScript assets loaded by `ui/web/index.html`.
-- The build step should copy `ui/build/web/` into `host/assets/www/`.
-- In v0021, frontend build is manual (`pnpm run js:build`).
-- In v0022/v0023, CLI build pipeline will use `ui/frontend/src/` as JS input and `ui/web/ext/` as JS output before Flutter asset copy.
+- CLI build pipeline runs `pnpm run js:build` before `flutter build web` when `package.json` has `scripts["js:build"]`.
+- If `package.json` or `scripts["js:build"]` is missing, frontend build is skipped.
+- If Node.js/pnpm/frontend build fails, CLI exits with readable errors.
+- The build step copies `ui/build/web/` into `host/assets/www/`.
+- In v0023, JS asset validation and sync rules will be further strengthened.
 
 ## fluttron.json
 
