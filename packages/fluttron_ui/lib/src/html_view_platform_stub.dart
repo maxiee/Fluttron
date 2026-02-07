@@ -1,9 +1,8 @@
 bool get isFluttronHtmlViewSupported => false;
 
-void ensureFluttronHtmlViewRegistered({
-  required String viewType,
-  required String jsFactoryName,
-  List<dynamic>? jsFactoryArgs,
+String ensureFluttronHtmlViewRegistered({
+  required String type,
+  List<dynamic>? args,
 }) {
   throw UnsupportedError('FluttronHtmlView is only supported on Flutter Web.');
 }

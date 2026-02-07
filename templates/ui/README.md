@@ -12,7 +12,7 @@ Minimum expectations:
 
 - JavaScript source input: `frontend/src/main.js`
 - JavaScript runtime output: `web/ext/main.js`
-- Runtime global factory: `window.fluttronCreateTemplateHtmlView(viewId, initialText)`
+- Runtime global factory: `window.fluttronCreateTemplateEditorView(viewId, initialText)`
 - Runtime event channel: `fluttron.template.editor.change`
 
 `web/ext/main.js` is committed as the default runtime artifact for quick inspection.

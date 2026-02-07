@@ -10,16 +10,14 @@ typedef FluttronHtmlViewErrorBuilder =
 class FluttronHtmlView extends StatefulWidget {
   const FluttronHtmlView({
     super.key,
-    required this.viewType,
-    required this.jsFactoryName,
-    this.jsFactoryArgs,
+    required this.type,
+    this.args,
     this.loadingBuilder,
     this.errorBuilder,
   });
 
-  final String viewType;
-  final String jsFactoryName;
-  final List<dynamic>? jsFactoryArgs;
+  final String type;
+  final List<dynamic>? args;
   final WidgetBuilder? loadingBuilder;
   final FluttronHtmlViewErrorBuilder? errorBuilder;
 
@@ -32,6 +30,7 @@ enum _FluttronHtmlViewStage { loading, ready, error }
 class _FluttronHtmlViewState extends State<FluttronHtmlView> {
   _FluttronHtmlViewStage _stage = _FluttronHtmlViewStage.loading;
   Object? _error;
+  String? _resolvedViewType;
   int _generation = 0;
 
   @override
@@ -43,9 +42,8 @@ class _FluttronHtmlViewState extends State<FluttronHtmlView> {
   @override
   void didUpdateWidget(covariant FluttronHtmlView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.viewType != oldWidget.viewType ||
-        widget.jsFactoryName != oldWidget.jsFactoryName ||
-        !_jsonLikeEquals(widget.jsFactoryArgs, oldWidget.jsFactoryArgs)) {
+    if (widget.type != oldWidget.type ||
+        !_jsonLikeEquals(widget.args, oldWidget.args)) {
       _bootstrap(notifyLoading: true);
     }
   }
@@ -56,31 +54,33 @@ class _FluttronHtmlViewState extends State<FluttronHtmlView> {
       setState(() {
         _stage = _FluttronHtmlViewStage.loading;
         _error = null;
+        _resolvedViewType = null;
       });
     } else {
       _stage = _FluttronHtmlViewStage.loading;
       _error = null;
+      _resolvedViewType = null;
     }
 
-    Future<void>(() {
+    Future<String>(() {
           if (!html_view_platform.isFluttronHtmlViewSupported) {
             throw StateError(
               'FluttronHtmlView is only supported on Flutter Web.',
             );
           }
 
-          html_view_platform.ensureFluttronHtmlViewRegistered(
-            viewType: widget.viewType,
-            jsFactoryName: widget.jsFactoryName,
-            jsFactoryArgs: widget.jsFactoryArgs,
+          return html_view_platform.ensureFluttronHtmlViewRegistered(
+            type: widget.type,
+            args: widget.args,
           );
         })
-        .then((_) {
+        .then((String resolvedViewType) {
           if (!mounted || generation != _generation) {
             return;
           }
           setState(() {
             _stage = _FluttronHtmlViewStage.ready;
+            _resolvedViewType = resolvedViewType;
           });
         })
         .catchError((Object error, StackTrace _) {
@@ -90,6 +90,7 @@ class _FluttronHtmlViewState extends State<FluttronHtmlView> {
           setState(() {
             _stage = _FluttronHtmlViewStage.error;
             _error = error;
+            _resolvedViewType = null;
           });
         });
   }
@@ -101,7 +102,18 @@ class _FluttronHtmlViewState extends State<FluttronHtmlView> {
         return widget.loadingBuilder?.call(context) ??
             const Center(child: CircularProgressIndicator());
       case _FluttronHtmlViewStage.ready:
-        return HtmlElementView(viewType: widget.viewType);
+        final String? resolvedViewType = _resolvedViewType;
+        if (resolvedViewType == null) {
+          final Object error = StateError(
+            'Missing resolved web view type for "${widget.type}".',
+          );
+          return widget.errorBuilder?.call(context, error) ??
+              SelectableText(
+                'FluttronHtmlView error: $error',
+                style: const TextStyle(color: Colors.redAccent),
+              );
+        }
+        return HtmlElementView(viewType: resolvedViewType);
       case _FluttronHtmlViewStage.error:
         final Object error = _error ?? StateError('Unknown html view error.');
         return widget.errorBuilder?.call(context, error) ??

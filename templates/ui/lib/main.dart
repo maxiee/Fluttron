@@ -3,14 +3,25 @@ import 'dart:async';
 import 'package:fluttron_ui/fluttron_ui.dart';
 import 'package:flutter/material.dart';
 
-const String _externalHtmlViewType = 'fluttron.template.external_html_view';
-const String _createTemplateHtmlViewMethod = 'fluttronCreateTemplateHtmlView';
+const String _templateEditorWebViewType = 'fluttron.template.editor';
+const String _createTemplateEditorViewMethod =
+    'fluttronCreateTemplateEditorView';
 const String _templateEditorChangeEventName = 'fluttron.template.editor.change';
 const String _templateInitialText =
     'Hello from external HTML/JS.\n\nEdit this text to verify event bridge sync.';
 
 void main() {
+  _registerTemplateWebViews();
   runFluttronUi(title: 'Fluttron UI Template', home: const TemplateDemoPage());
+}
+
+void _registerTemplateWebViews() {
+  FluttronWebViewRegistry.register(
+    const FluttronWebViewRegistration(
+      type: _templateEditorWebViewType,
+      jsFactoryName: _createTemplateEditorViewMethod,
+    ),
+  );
 }
 
 class TemplateDemoPage extends StatefulWidget {
@@ -231,9 +242,8 @@ class _TemplateDemoPageState extends State<TemplateDemoPage> {
               child: _isBootstrapping
                   ? const Center(child: CircularProgressIndicator())
                   : FluttronHtmlView(
-                      viewType: _externalHtmlViewType,
-                      jsFactoryName: _createTemplateHtmlViewMethod,
-                      jsFactoryArgs: const <dynamic>[_templateInitialText],
+                      type: _templateEditorWebViewType,
+                      args: const <dynamic>[_templateInitialText],
                       loadingBuilder: (BuildContext context) {
                         return const Center(child: CircularProgressIndicator());
                       },

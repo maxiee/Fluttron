@@ -22,7 +22,7 @@ const emitEditorChanged = (content, source) => {
   );
 };
 
-const createTemplateHtmlView = (viewId, initialText) => {
+const createTemplateEditorView = (viewId, initialText) => {
   const root = document.createElement('div');
   root.id = `fluttron-html-view-${viewId}`;
   root.style.width = '100%';
@@ -77,4 +77,4 @@ const createTemplateHtmlView = (viewId, initialText) => {
   return root;
 };
 
-window.fluttronCreateTemplateHtmlView = createTemplateHtmlView;
+window.fluttronCreateTemplateEditorView = createTemplateEditorView;

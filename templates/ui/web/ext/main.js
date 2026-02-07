@@ -20,7 +20,7 @@
       })
     );
   };
-  var createTemplateHtmlView = (viewId, initialText) => {
+  var createTemplateEditorView = (viewId, initialText) => {
     const root = document.createElement("div");
     root.id = `fluttron-html-view-${viewId}`;
     root.style.width = "100%";
@@ -65,6 +65,6 @@
     root.append(title, editor, status);
     return root;
   };
-  window.fluttronCreateTemplateHtmlView = createTemplateHtmlView;
+  window.fluttronCreateTemplateEditorView = createTemplateEditorView;
 })();
 //# sourceMappingURL=main.js.map

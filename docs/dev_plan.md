@@ -165,7 +165,7 @@ Host 端:
 	- fluttron_ui/
 		- 渲染层就是一个标准的 Flutter Web 项目。它负责画 UI，跑业务逻辑，最后编译成 HTML/JS 被 Host 加载。
 		- 亮点是能集成强大的 Web 生态，利用了 Flutter Web 的无缝集成 Web 的能力
-		- lib/fluttron_ui.dart - UI 库入口，导出 runFluttronUi 与 FluttronClient
+		- lib/fluttron_ui.dart - UI 库入口，导出 runFluttronUi、FluttronClient、FluttronHtmlView、FluttronEventBridge、FluttronWebViewRegistry
 		- lib/src/ui_app.dart - UI 应用核心，包含 runFluttronUi 与 FluttronUiApp
 		- lib/main.dart - Flutter Web 应用入口，调用 runFluttronUi
 		- lib/fluttron/fluttron_client.dart - Fluttron 客户端核心类，封装了通过 WebView Bridge 调用宿主服务的 invoke 方法及具体业务 API（getPlatform、kvSet、kvGet），并负责 JS 互操作调用 callHandler。
@@ -208,7 +208,8 @@ Host 端:
 - v0026：已完成核心库 `FluttronHtmlView` 封装并下沉 `HtmlElementView` 注册逻辑：新增 `packages/fluttron_ui/lib/src/html_view.dart`（三态 UI + 可选 `loadingBuilder/errorBuilder`）、`html_view_platform_web.dart`（`platformViewRegistry` 去重注册 + `globalContext.callMethodVarArgs` 工厂调用 + `viewType` 冲突严格报错 + `jsFactoryArgs` 类型校验）、`html_view_platform_stub.dart`（非 Web 错误兜底）；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronHtmlView`。playground 已改为使用 `FluttronHtmlView` 替代手写 `registerViewFactory`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 - v0027：已完成核心库 `FluttronEventBridge` JS→Flutter 事件桥下沉：新增 `packages/fluttron_ui/lib/src/event_bridge.dart`、`event_bridge_platform_web.dart`、`event_bridge_platform_stub.dart`；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronEventBridge`；playground 已将手写 `addEventListener/removeEventListener + CustomEvent.detail` 解析替换为 `FluttronEventBridge` + `StreamSubscription`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 - v0028：已完成核心库 `runFluttronUi` 可配置入口：`packages/fluttron_ui/lib/src/ui_app.dart` 已将 `runFluttronUi` 升级为 `void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`，`FluttronUiApp` 支持透传 `title/home/debugBanner` 到 `MaterialApp`；核心库已移除 `DemoPage`，并将演示页面迁移到 `packages/fluttron_ui/lib/main.dart` 的 `PackageDemoPage`；新增测试 `packages/fluttron_ui/test/ui_app_test.dart` 覆盖入口配置与启动行为，并删除空模板测试 `packages/fluttron_ui/test/widget_test.dart`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过。
-- v0029：已完成模板 UI 重写（基于核心库）并同步 playground：`templates/ui/lib/main.dart` 入口改为 `runFluttronUi(title: ..., home: const TemplateDemoPage())`，模板页使用 `FluttronHtmlView + FluttronEventBridge + async bootstrap`，保留 `FluttronClient` 的 `getPlatform/kvSet/kvGet` 演示；`templates/ui/frontend/src/main.js` 支持 `window.fluttronCreateTemplateHtmlView(viewId, initialText)` 并分发 `fluttron.template.editor.change`；新增模板回归测试与 CLI 契约测试（v0029）。playground 采用“模板骨架 + Milkdown”形态并保持原有 Milkdown 能力，同时事件载荷新增 `content` 兼容字段。验收通过：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 通过。
+- v0029：已完成模板 UI 重写（基于核心库）并同步 playground：`templates/ui/lib/main.dart` 入口改为 `runFluttronUi(title: ..., home: const TemplateDemoPage())`，模板页使用 `FluttronHtmlView + FluttronEventBridge + async bootstrap`，保留 `FluttronClient` 的 `getPlatform/kvSet/kvGet` 演示；`templates/ui/frontend/src/main.js` 初版契约支持 `window.fluttronCreateTemplateHtmlView(viewId, initialText)` 并分发 `fluttron.template.editor.change`；新增模板回归测试与 CLI 契约测试（v0029）。playground 采用“模板骨架 + Milkdown”形态并保持原有 Milkdown 能力，同时事件载荷新增 `content` 兼容字段。验收通过：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 通过。
+- v0029.5（计划外纠偏 Review）：完成 Web 视图注册机制重构并切换为 “先注册后渲染（Type 驱动）”。`packages/fluttron_ui` 新增 `web_view_registry.dart`（`FluttronWebViewRegistry` / `FluttronWebViewRegistration`）与 `html_view_runtime.dart`（args canonicalize + FNV-1a hash + resolved viewType 冲突保护）；`FluttronHtmlView` 从 `viewType/jsFactoryName/jsFactoryArgs` breaking 变更为 `type/args`；playground 改为启动注册 `fluttron.playground.milkdown.editor`，JS 工厂命名改为 `window.fluttronCreatePlaygroundMilkdownEditorView`；模板改为启动注册 + `type` 渲染，JS 工厂命名统一为 `window.fluttronCreateTemplateEditorView`。新增 `packages/fluttron_ui/test/web_view_registry_test.dart`、`packages/fluttron_ui/test/html_view_runtime_test.dart`，并升级 `packages/fluttron_cli/test/src/utils/template_contract_v0029_test.dart` 断言。验收通过：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）通过。
 
 ## Backlog (未来)
 
@@ -223,17 +224,17 @@ Host 端:
 
 ## 当前任务
 
-**v0029：模板 UI 重写：基于核心库构建 ✅ 已完成**
+**v0029.5：Web 视图注册机制纠偏 Review（计划外）✅ 已完成**
 
-### v0029 完成结果
+### v0029.5 完成结果
 
-- 模板 UI 入口已完成核心化：`templates/ui/lib/main.dart` 改为 `runFluttronUi(title: 'Fluttron UI Template', home: const TemplateDemoPage())`，不再复制/架空核心入口实现。
-- 模板页已完成组件化：使用 `FluttronHtmlView` 替代手写 `registerViewFactory + HtmlElementView`，并使用 `FluttronEventBridge` 监听 `fluttron.template.editor.change`。
-- 模板页已接入异步 bootstrap：`_bootstrap()` 负责加载平台与事件监听，首屏展示 loading 态。
-- 模板前端已升级契约：`window.fluttronCreateTemplateHtmlView(viewId, initialText)` 支持可选初始文本，输入时分发 `CustomEvent`（`content/characterCount/updatedAt/source`）。
-- 模板测试已补齐：`templates/ui/test/widget_test.dart` 改为 UI smoke；新增 `packages/fluttron_cli/test/src/utils/template_contract_v0029_test.dart` 防回退。
-- playground 已同步到“模板骨架 + Milkdown”形态：入口改为 `runFluttronUi`，保留 Milkdown bootstrap / Host KV 回写链路；前端事件载荷新增 `content` 字段并兼容 `content || markdown`。
-- 本轮已完成静态与单测验收：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 均通过。
+- 完成核心机制纠偏：`packages/fluttron_ui` 新增 `FluttronWebViewRegistry`，支持显式 `register/registerAll/lookup`，统一管理 `type -> jsFactoryName` 映射。
+- 完成渲染范式纠偏：`FluttronHtmlView` 已 breaking 切换为 `type + args`，移除 `viewType/jsFactoryName/jsFactoryArgs` 直传。
+- 完成运行时冲突保护：新增 `html_view_runtime.dart`，实现 args canonicalization、`type.__<fnv1a64>` resolved viewType 生成与冲突检测。
+- 完成命名语义纠偏：playground 视图类型改为 `fluttron.playground.milkdown.editor`，并在启动阶段集中注册；JS 工厂改为 `window.fluttronCreatePlaygroundMilkdownEditorView`。
+- 完成模板链路追齐：模板改为启动注册 + type 驱动渲染；JS 工厂统一为 `window.fluttronCreateTemplateEditorView`。
+- 完成回归测试补强：新增 `web_view_registry_test.dart`、`html_view_runtime_test.dart`，并将 CLI 模板契约测试升级为 v0030 断言（注册中心 + type 渲染 + 新工厂名）。
+- 本轮已完成静态与单测验收：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）全部通过。
 
 ### 下一步
 
@@ -253,7 +254,7 @@ Host 端:
 | 3 | ✅ `fluttron_ui` 已提供 `FluttronHtmlView` 组件封装（v0026） | `packages/fluttron_ui/lib/src/html_view.dart` | 已完成 |
 | 4 | ✅ `fluttron_ui` 已提供 JS→Flutter `CustomEvent` 事件桥（v0027） | `packages/fluttron_ui/lib/src/event_bridge.dart` | 已完成 |
 | 5 | ✅ `runFluttronUi` 已改为可配置入口（v0028） | `packages/fluttron_ui/lib/src/ui_app.dart` | 已完成 |
-| 6 | Template UI main.dart 自行实现全部逻辑，未复用核心库 | main.dart | 中 |
+| 6 | ✅ 已完成“先注册后渲染”纠偏：`FluttronWebViewRegistry + FluttronHtmlView(type,args)`（v0029.5） | `packages/fluttron_ui/lib/src/web_view_registry.dart` / `html_view*.dart` | 已完成 |
 | 7 | Template Host 无自定义服务扩展演示 | main.dart | 低 |
 | 8 | CLI `build` 不自动执行 `pnpm install` | frontend_builder.dart | 低 |
 
@@ -308,6 +309,24 @@ Host 端:
 4. ✅ 已补齐回归保护：模板 widget smoke test 与 CLI `template_contract_v0029_test.dart` 已新增
 
 ---
+**v0029.5 — 计划外纠偏 Review：通用 Web 视图注册机制 + Type 驱动渲染 ✅ 已完成**
+1. ✅ 新增注册中心：`packages/fluttron_ui/lib/src/web_view_registry.dart`
+   - `FluttronWebViewRegistration`（`type` + `jsFactoryName`）
+   - `FluttronWebViewRegistry.register/registerAll/isRegistered/lookup`
+   - 同 `type` 冲突注册严格报错
+2. ✅ 新增运行时解析层：`packages/fluttron_ui/lib/src/html_view_runtime.dart`
+   - args canonicalization（Map key 排序）+ 签名生成
+   - `resolvedViewType = type`（无 args）或 `"$type.__<fnv1a64>"`（有 args）
+   - resolvedViewType 冲突保护（同 resolved type 不允许不同 factory/args）
+3. ✅ `FluttronHtmlView` 已 breaking 切换为 `type + args`
+   - 移除 `viewType/jsFactoryName/jsFactoryArgs`
+   - Web 侧改为 `lookup(type)` 后按 resolvedViewType 注册并渲染
+4. ✅ playground 追齐：启动前注册 Milkdown 视图，命名改为 `fluttron.playground.milkdown.editor`，JS 工厂改为 `window.fluttronCreatePlaygroundMilkdownEditorView`
+5. ✅ 模板追齐：启动前注册模板编辑器视图，JS 工厂统一为 `window.fluttronCreateTemplateEditorView`，并更新模板 README 约定
+6. ✅ 回归补强：新增 `web_view_registry_test.dart`、`html_view_runtime_test.dart`，并升级 `template_contract_v0029_test.dart` 到 v0030 断言（注册中心 + type 渲染 + 新工厂名）
+7. ✅ 验收通过：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）
+
+---
 **v0030 — 模板 Host 自定义服务扩展指引**
 1. 在 lib 下新增 `greeting_service.dart`（空白骨架）：
    - 继承 `FluttronService`，`namespace` 为 `'greeting'`
@@ -342,6 +361,7 @@ Host 端:
 - **Host 扩展用注释骨架而非完整示例服务**：避免新项目带多余代码，开发者按需启用
 - **v0025 优先修复模板阻塞项**：`assets/www/ext/` 声明缺失会导致所有 ext 下的 JS/CSS 无法加载，必须首先修复
 - **v0026 采用“核心库 + playground 先迁移”策略**：先在 `fluttron_ui` 沉淀 `FluttronHtmlView` 并用 playground 验证功能不变，模板重写放到 v0029 统一推进
+- **v0029.5 采用“计划外纠偏优先”策略**：先修正为 `registry + type` 机制，避免在多页面复杂 UI 场景继续累积隐式注册技术债
 ## 我的问题
 
 暂无
