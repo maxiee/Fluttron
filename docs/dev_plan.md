@@ -205,6 +205,7 @@ Host 端:
 - v0023：CLI `build/run --build` 已完成 JS 产物自动搬运与校验增强：解析 `ui/web/index.html` 的本地 script 引用，执行 `ui/web → ui/build/web → host/assets/www` 三阶段校验；当 `scripts["js:clean"]` 存在时自动先执行 `pnpm run js:clean`；任一 JS 资源缺失或校验失败立即中止构建并输出缺失路径。
 - v0024：已在 `playground/ui` 集成 Milkdown Markdown 编辑器（CommonMark + Nord + Listener），并保持 `frontend/src -> web/ext` 构建链路；Dart 侧完成 `HtmlElementView` 工厂升级（传入 `initialMarkdown`）、监听浏览器 `CustomEvent`（`fluttron.playground.milkdown.change`）实现 JS -> Flutter 状态回传；同时接入 Host `storage.kvGet/kvSet` 完成“启动读取 + 手动保存 + 回读校验”闭环。`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过（基于本轮产物）。
 - v0025：已完成模板阻塞修复（`pubspec.yaml + CSS 构建脚本`）：`templates/host/pubspec.yaml` 新增 `assets/www/ext/` 声明；`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile`，`cleanFrontend()` 同步清理 `main.css` 与 sourcemap；新增模板契约回归测试 `packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`。验收通过：`dart test`（`packages/fluttron_cli`）全绿，`create + build` smoke 验证 Host 侧产物 `assets/www/ext/main.js` 可用，且 `js:clean` 在 CSS 缺失场景下保持幂等成功。
+- v0026：已完成核心库 `FluttronHtmlView` 封装并下沉 `HtmlElementView` 注册逻辑：新增 `packages/fluttron_ui/lib/src/html_view.dart`（三态 UI + 可选 `loadingBuilder/errorBuilder`）、`html_view_platform_web.dart`（`platformViewRegistry` 去重注册 + `globalContext.callMethodVarArgs` 工厂调用 + `viewType` 冲突严格报错 + `jsFactoryArgs` 类型校验）、`html_view_platform_stub.dart`（非 Web 错误兜底）；`packages/fluttron_ui/lib/fluttron_ui.dart` 已导出 `FluttronHtmlView`。playground 已改为使用 `FluttronHtmlView` 替代手写 `registerViewFactory`。验收通过：`flutter analyze` + `flutter test`（`packages/fluttron_ui`）通过，`flutter analyze`（`playground/ui`）通过。
 
 ## Backlog (未来)
 
@@ -219,21 +220,24 @@ Host 端:
 
 ## 当前任务
 
-**v0025：模板阻塞修复（pubspec.yaml + CSS 构建脚本）✅ 已完成**
+**v0026：核心库 `FluttronHtmlView` 完整组件封装 ✅ 已完成**
 
-### v0025 完成结果
+### v0026 完成结果
 
-- Host 模板资产声明已补齐：`templates/host/pubspec.yaml` 的 `flutter.assets` 新增 `- assets/www/ext/`，避免 ext 目录资源在 Host 侧不可加载。
-- UI 模板前端清理能力已补齐：`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile = web/ext/main.css`，`cleanFrontend()` 会同时清理 JS/CSS 及其 sourcemap。
-- 新增回归测试：`packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`，静态断言模板资产声明与 CSS 清理逻辑，防止回退。
+- 新增核心组件：`packages/fluttron_ui/lib/src/html_view.dart`，提供 `FluttronHtmlView(viewType, jsFactoryName, jsFactoryArgs, loadingBuilder, errorBuilder)`，内置 `loading/ready/error` 三态。
+- 新增平台实现：
+  - `packages/fluttron_ui/lib/src/html_view_platform_web.dart`：封装 `platformViewRegistry.registerViewFactory` 注册、JS 工厂调用、`viewType` 冲突检测与 `jsFactoryArgs` JSON-like 类型校验。
+  - `packages/fluttron_ui/lib/src/html_view_platform_stub.dart`：非 Web 平台返回可读错误，避免崩溃。
+- 核心库入口导出已补齐：`packages/fluttron_ui/lib/fluttron_ui.dart` 新增 `export 'src/html_view.dart'`。
+- playground 迁移完成：`playground/ui/lib/main.dart` 已用 `FluttronHtmlView` 替代手写 `registerViewFactory + HtmlElementView` 路径，保持 bootstrap 和事件监听逻辑不变。
 - 验收链路：
-  - `dart test`（工作目录 `packages/fluttron_cli`）通过。
-  - smoke：`fluttron create /tmp/fluttron_v0025_smoke --template /Volumes/ssd/Code/Fluttron/templates` 与 `fluttron build -p /tmp/fluttron_v0025_smoke` 验证通过。
-  - `pnpm run js:clean` 在 `web/ext/main.css` 缺失场景下仍成功退出（`force: true` 幂等）。
+  - `flutter analyze`（工作目录 `packages/fluttron_ui`）通过。
+  - `flutter test`（工作目录 `packages/fluttron_ui`）通过。
+  - `flutter analyze`（工作目录 `playground/ui`）通过。
 
 ### 下一步
 
-- v0026：核心库 `FluttronHtmlView` 组件封装（将模板/playground 中手写 `HtmlElementView` 注册与工厂调用逻辑下沉到 `fluttron_ui`）。
+- v0027：核心库 `FluttronEventBridge` JS→Flutter 事件桥（将 playground 中手写 `addEventListener/removeEventListener` + `CustomEvent.detail` 解析逻辑下沉到 `fluttron_ui`）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -246,7 +250,7 @@ Host 端:
 |---|------|------|--------|
 | 1 | ✅ Template Host pubspec.yaml 已补齐 `assets/www/ext/` 声明（v0025） | templates/host/pubspec.yaml | 已完成 |
 | 2 | ✅ Template build-frontend.mjs 已支持 CSS 产物清理（v0025） | templates/ui/scripts/build-frontend.mjs | 已完成 |
-| 3 | `fluttron_ui` 无 `HtmlElementView` 注册抽象 | src | 高 |
+| 3 | ✅ `fluttron_ui` 已提供 `FluttronHtmlView` 组件封装（v0026） | `packages/fluttron_ui/lib/src/html_view.dart` | 已完成 |
 | 4 | `fluttron_ui` 无 JS→Flutter `CustomEvent` 事件桥 | 同上 | 高 |
 | 5 | `runFluttronUi` 被模板架空，不可扩展 | ui_app.dart | 中 |
 | 6 | Template UI main.dart 自行实现全部逻辑，未复用核心库 | main.dart | 中 |
@@ -261,15 +265,16 @@ Host 端:
 3. ✅ 验收通过：模板契约回归测试 + `fluttron create/build` smoke 已完成验证。
 
 ---
-**v0026 — 核心库：`FluttronHtmlView` 完整组件封装**
+**v0026 — 核心库：`FluttronHtmlView` 完整组件封装 ✅ 已完成**
 在 `fluttron_ui` 中新增 `FluttronHtmlView` widget，封装 playground 中验证过的 `HtmlElementView` + JS 工厂调用模式：
-1. 新增文件 `packages/fluttron_ui/lib/src/html_view.dart`，包含：
+1. ✅ 新增文件 `packages/fluttron_ui/lib/src/html_view.dart`，包含：
    - `FluttronHtmlView` — StatefulWidget，接收参数：`viewType`（String）、`jsFactoryName`（String）、`jsFactoryArgs`（`List<dynamic>?`，可选，传给 JS 工厂的额外参数如 `initialMarkdown`）
    - 内部自动调用 `ui_web.platformViewRegistry.registerViewFactory`（带去重保护），调用 `globalContext.callMethodVarArgs` 执行 JS 工厂
    - 内置三态 UI：`loading`（`CircularProgressIndicator`）、`ready`（`HtmlElementView`）、`error`（错误信息展示）
    - 支持通过可选参数 `loadingBuilder` / `errorBuilder` 自定义三态 UI
-2. 在 fluttron_ui.dart 中添加 `export 'src/html_view.dart'`
-3. 验收：在 packages/fluttron_ui 的测试或 playground 中用 `FluttronHtmlView` 替代手写的 `HtmlElementView` 逻辑，功能不变
+2. ✅ 在 `fluttron_ui.dart` 中添加 `export 'src/html_view.dart'`
+3. ✅ 已补充平台差异处理：新增 `html_view_platform_web.dart` / `html_view_platform_stub.dart`，非 Web 返回可读错误态；Web 侧对 `viewType` 冲突执行严格报错。
+4. ✅ 验收通过：`packages/fluttron_ui` 完成 `flutter analyze` + `flutter test`，`playground/ui` 完成 `flutter analyze`；playground 已用 `FluttronHtmlView` 替代手写 `HtmlElementView` 注册逻辑。
 
 ---
 **v0027 — 核心库：`FluttronEventBridge` JS→Flutter 事件桥**
@@ -338,7 +343,7 @@ Host 端:
 - **`runFluttronUi` 走入口+配置路线**：保持简洁 API，`required Widget home` 让开发者完全控制页面内容
 - **Host 扩展用注释骨架而非完整示例服务**：避免新项目带多余代码，开发者按需启用
 - **v0025 优先修复模板阻塞项**：`assets/www/ext/` 声明缺失会导致所有 ext 下的 JS/CSS 无法加载，必须首先修复
-- **playground 本身暂不改动**：v0025 各步骤完成后，playground 可作为后续迭代单独迁移到核心 API，但不阻塞此轮
+- **v0026 采用“核心库 + playground 先迁移”策略**：先在 `fluttron_ui` 沉淀 `FluttronHtmlView` 并用 playground 验证功能不变，模板重写放到 v0029 统一推进
 ## 我的问题
 
 暂无
