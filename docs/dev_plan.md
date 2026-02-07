@@ -229,14 +229,110 @@ Host 端:
 - 空内容保存前置拦截已生效，避免触发 Host `StorageService` 的非空参数错误。
 - 验收链路：`pnpm run js:build`、`fluttron build -p playground`、`fluttron run -p playground --no-build -d macos`。
 
-### 下一轮（v0025）建议范围
+## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
-目前，playground 已成功集成 Milkdown。但是，功能实现仅限于 playground 实验项目，相关能力没有完全下沉到 Fluttron 核心库和模版中。
+**TL;DR**：playground 在 v0024 验证了 Milkdown 集成，但验证过程中产生的 HtmlElementView 注册、JS→Flutter 事件桥、异步 bootstrap 等模式都是硬编码在 playground 内的。v0025～0031 的目标是将这些能力下沉到 `fluttron_ui` 核心库和模板中，使 `fluttron create` 创建的新项目直接具备「嵌入前端组件 + 双向通信」的完整能力。拆为 7 个独立 commit，按依赖顺序逐步推进。
 
-也就是说，如果我现在通过 `fluttron create` 创建一个新的 Fluttron 项目，它的能力仍然停留在之前的水平，距离 playground 是有差距的。
+---
+### 差距总览
 
-而在我的预期中，我希望通过 `fluttron create` 创建的项目，在生成的项目的 ui 部分，能够以通用化方式引入前端生态，并提供通用机制嵌入在 ui 部分的 Flutter Web 页面中。在生成项目的 host 部分，提供通用的扩展 API，让开发者可以扩展自己的服务。同时，底层的库也提供通用化的 Bridge API，让开发者可以方便地调用宿主服务。
+| # | 差距 | 位置 | 严重度 |
+|---|------|------|--------|
+| 1 | Template Host pubspec.yaml 缺少 `assets/www/ext/` 声明 | pubspec.yaml | 阻塞级 |
+| 2 | Template build-frontend.mjs 不处理 CSS 输出/清理 | build-frontend.mjs | 高 |
+| 3 | `fluttron_ui` 无 `HtmlElementView` 注册抽象 | src | 高 |
+| 4 | `fluttron_ui` 无 JS→Flutter `CustomEvent` 事件桥 | 同上 | 高 |
+| 5 | `runFluttronUi` 被模板架空，不可扩展 | ui_app.dart | 中 |
+| 6 | Template UI main.dart 自行实现全部逻辑，未复用核心库 | main.dart | 中 |
+| 7 | Template Host 无自定义服务扩展演示 | main.dart | 低 |
+| 8 | CLI `build` 不自动执行 `pnpm install` | frontend_builder.dart | 低 |
 
+---
+### Steps
+**v0025 — 模板阻塞修复（pubspec.yaml + CSS 构建脚本）**
+1. 在 pubspec.yaml 的 `flutter.assets` 中添加 `- assets/www/ext/`，对齐 pubspec.yaml 已有的声明
+2. 在 build-frontend.mjs 中添加 `outputCssFile` 常量（`web/ext/main.css`），`cleanFrontend()` 中追加对 CSS 及其 sourcemap 的清理，对齐 build-frontend.mjs 的实现
+3. 验收：`fluttron create` 新项目 → `fluttron build` → Host `assets/www/ext/` 目录下的 JS 可被 `rootBundle.load()` 加载
+
+---
+**v0026 — 核心库：`FluttronHtmlView` 完整组件封装**
+在 `fluttron_ui` 中新增 `FluttronHtmlView` widget，封装 playground 中验证过的 `HtmlElementView` + JS 工厂调用模式：
+1. 新增文件 `packages/fluttron_ui/lib/src/html_view.dart`，包含：
+   - `FluttronHtmlView` — StatefulWidget，接收参数：`viewType`（String）、`jsFactoryName`（String）、`jsFactoryArgs`（`List<dynamic>?`，可选，传给 JS 工厂的额外参数如 `initialMarkdown`）
+   - 内部自动调用 `ui_web.platformViewRegistry.registerViewFactory`（带去重保护），调用 `globalContext.callMethodVarArgs` 执行 JS 工厂
+   - 内置三态 UI：`loading`（`CircularProgressIndicator`）、`ready`（`HtmlElementView`）、`error`（错误信息展示）
+   - 支持通过可选参数 `loadingBuilder` / `errorBuilder` 自定义三态 UI
+2. 在 fluttron_ui.dart 中添加 `export 'src/html_view.dart'`
+3. 验收：在 packages/fluttron_ui 的测试或 playground 中用 `FluttronHtmlView` 替代手写的 `HtmlElementView` 逻辑，功能不变
+
+---
+**v0027 — 核心库：`FluttronEventBridge` JS→Flutter 事件桥**
+将 playground 中手写的 `addEventListener` / `removeEventListener` + `CustomEvent` 解析逻辑抽象为通用工具：
+1. 新增文件 `packages/fluttron_ui/lib/src/event_bridge.dart`，包含：
+   - `FluttronEventBridge` — 管理对指定 `CustomEvent` 名称的监听
+   - 核心 API：`Stream<Map<String, dynamic>> on(String eventName)` — 返回一个 broadcast Stream，每当浏览器触发同名 `CustomEvent` 时，自动提取 `event.detail`、`dartify()` 为 `Map<String, dynamic>` 并推入 Stream
+   - `dispose()` 方法：自动 `removeEventListener` 并关闭所有 StreamController
+   - 内部使用 `dart:js_interop` + `dart:js_interop_unsafe`，与 playground 的实现对齐
+2. 在 fluttron_ui.dart 中添加导出
+3. 验收：在 playground 中将手写 listener 逻辑替换为 `FluttronEventBridge`，行为一致
+
+---
+**v0028 — 核心库：`runFluttronUi` 可配置入口**
+当前 `runFluttronUi()` 硬编码了 `DemoPage`，完全不可扩展。改造为接受配置参数：
+1. 修改 ui_app.dart：
+   - `runFluttronUi()` 签名改为：`void runFluttronUi({String title = 'Fluttron App', required Widget home, bool debugBanner = false})`
+   - 内部 `FluttronUiApp` 接收这些配置并传递给 `MaterialApp`
+   - 移除 `DemoPage`（它属于演示，不属于核心库；可选地保留为单独的 example 文件）
+2. 确保 `FluttronClient` 仍正常导出
+3. 验收：能通过 `runFluttronUi(title: 'My App', home: MyPage())` 启动一个自定义页面
+
+---
+**v0029 — 模板 UI 重写：基于核心库构建**
+用 v0025b/c/d 新增的核心 API 重写模板的 main.dart，使其不再架空 `runFluttronUi`：
+1. 重写 main.dart：
+   - `main()` 调用 `runFluttronUi(title: ..., home: TemplateDemoPage())`
+   - `TemplateDemoPage` 中使用 `FluttronHtmlView` 代替手写的 `registerViewFactory` + `HtmlElementView` 样板代码
+   - 添加 `FluttronEventBridge` 使用示例（监听一个示例事件名，在 UI 上展示收到的数据）
+   - 保留 `FluttronClient` 的 `getPlatform` / `kvSet` / `kvGet` 演示按钮
+   - 使用异步 bootstrap 模式（`_bootstrap()` + loading 态），对齐 playground 的成熟 UX
+2. 同步更新 main.js：JS 工厂函数中添加一个 `CustomEvent` 分发示例，匹配 Dart 侧的事件名
+3. 验收：`fluttron create test_app` → `fluttron build -p test_app` → `fluttron run -p test_app -d macos` 全链路可运行，页面展示 HtmlElementView 嵌入 + 事件通信 + Bridge 调用
+
+---
+**v0030 — 模板 Host 自定义服务扩展指引**
+1. 在 lib 下新增 `greeting_service.dart`（空白骨架）：
+   - 继承 `FluttronService`，`namespace` 为 `'greeting'`
+   - `handle` 方法中只有一个 `greet` 方法，返回 `{'message': 'Hello from custom service!'}`
+   - 但整体置为注释状态（`// TODO: Uncomment to enable`），供开发者参考
+2. 修改 main.dart：
+   - 添加注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`
+   - 提供被注释掉的完整代码示例（导入 `greeting_service.dart`，创建 registry，注册 `GreetingService`）
+3. 验收：开发者取消注释后，能在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务
+
+---
+**v0031 — CLI 自动 `pnpm install`**
+1. 修改 frontend_builder.dart：
+   - 在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在
+   - 如果不存在且 `package.json` 有 `dependencies` 或 `devDependencies`，自动执行 `pnpm install`
+   - 打印 `[frontend] Running pnpm install...`
+2. 验收：`fluttron create` 新项目后直接 `fluttron build`，无需手动 `pnpm install`
+
+---
+### Verification
+每个子版本独立验收（上面已列出具体方法），全链路终极验收：
+1. `fluttron create fresh_app` — 创建新项目
+2. `fluttron build -p fresh_app` — 自动 `pnpm install` + JS 构建 + Flutter build + 资产搬运
+3. `fluttron run -p fresh_app -d macos` — 运行成功，页面展示：
+   - `FluttronHtmlView` 嵌入的前端内容
+   - `FluttronEventBridge` 接收的事件数据
+   - `FluttronClient` 调用宿主服务的结果
+4. 取消模板 Host 中 `GreetingService` 注释 → 重新 build/run → UI 可调用 `greeting.greet`
+### Decisions
+- **选择完整组件封装**而非轻量工具函数：`FluttronHtmlView` 作为 widget 直接可用，含 loading/error 三态，降低上手门槛
+- **`runFluttronUi` 走入口+配置路线**：保持简洁 API，`required Widget home` 让开发者完全控制页面内容
+- **Host 扩展用注释骨架而非完整示例服务**：避免新项目带多余代码，开发者按需启用
+- **v0025 优先修复模板阻塞项**：`assets/www/ext/` 声明缺失会导致所有 ext 下的 JS/CSS 无法加载，必须首先修复
+- **playground 本身暂不改动**：v0025 各步骤完成后，playground 可作为后续迭代单独迁移到核心 API，但不阻塞此轮
 ## 我的问题
 
 暂无
