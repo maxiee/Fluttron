@@ -24,6 +24,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/www/
+    - assets/www/ext/
     - assets/www/assets/
     - assets/www/assets/fonts/
     - assets/www/assets/packages/cupertino_icons/assets/

@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const uiRoot = path.resolve(__dirname, '..');
 const sourceFile = path.join(uiRoot, 'frontend', 'src', 'main.js');
 const outputFile = path.join(uiRoot, 'web', 'ext', 'main.js');
+const outputCssFile = path.join(uiRoot, 'web', 'ext', 'main.css');
 
 function relativePath(targetPath) {
   return path.relative(uiRoot, targetPath);
@@ -45,7 +46,11 @@ async function buildFrontend() {
 async function cleanFrontend() {
   await rm(outputFile, {force: true});
   await rm(`${outputFile}.map`, {force: true});
-  console.log(`[frontend] removed ${relativePath(outputFile)} and sourcemap`);
+  await rm(outputCssFile, {force: true});
+  await rm(`${outputCssFile}.map`, {force: true});
+  console.log(
+    `[frontend] removed ${relativePath(outputFile)} and ${relativePath(outputCssFile)} (with sourcemaps)`,
+  );
 }
 
 async function watchFrontend() {

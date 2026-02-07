@@ -204,6 +204,7 @@ Host 端:
 - v0022：CLI `build/run` 已接入前端构建：当 `ui/package.json` 存在 `scripts["js:build"]` 时，自动执行 `pnpm run js:build` 后再执行 `flutter build web`；模板脚本已切换为 esbuild bundling；Node/pnpm 不可用与前端构建失败时提供可读错误；`build` 与 `run --build` 复用统一的 UI 构建流水线。
 - v0023：CLI `build/run --build` 已完成 JS 产物自动搬运与校验增强：解析 `ui/web/index.html` 的本地 script 引用，执行 `ui/web → ui/build/web → host/assets/www` 三阶段校验；当 `scripts["js:clean"]` 存在时自动先执行 `pnpm run js:clean`；任一 JS 资源缺失或校验失败立即中止构建并输出缺失路径。
 - v0024：已在 `playground/ui` 集成 Milkdown Markdown 编辑器（CommonMark + Nord + Listener），并保持 `frontend/src -> web/ext` 构建链路；Dart 侧完成 `HtmlElementView` 工厂升级（传入 `initialMarkdown`）、监听浏览器 `CustomEvent`（`fluttron.playground.milkdown.change`）实现 JS -> Flutter 状态回传；同时接入 Host `storage.kvGet/kvSet` 完成“启动读取 + 手动保存 + 回读校验”闭环。`fluttron build -p playground` 与 `run --no-build -d macos` 链路验证通过（基于本轮产物）。
+- v0025：已完成模板阻塞修复（`pubspec.yaml + CSS 构建脚本`）：`templates/host/pubspec.yaml` 新增 `assets/www/ext/` 声明；`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile`，`cleanFrontend()` 同步清理 `main.css` 与 sourcemap；新增模板契约回归测试 `packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`。验收通过：`dart test`（`packages/fluttron_cli`）全绿，`create + build` smoke 验证 Host 侧产物 `assets/www/ext/main.js` 可用，且 `js:clean` 在 CSS 缺失场景下保持幂等成功。
 
 ## Backlog (未来)
 
@@ -218,16 +219,21 @@ Host 端:
 
 ## 当前任务
 
-**v0024：playground 集成 Milkdown，实现 Markdown 编辑器 ✅ 已完成**
+**v0025：模板阻塞修复（pubspec.yaml + CSS 构建脚本）✅ 已完成**
 
-### v0024 完成结果
+### v0025 完成结果
 
-- playground `ui` 前端已切换为 Milkdown 编辑器实现：`frontend/src/main.js` 完成 Editor 初始化、状态栏更新、异常兜底与事件分发。
-- JS 全局工厂函数已升级为 `fluttronCreatePlaygroundHtmlView(viewId, initialMarkdown)`，支持从 Flutter 侧注入初始 Markdown。
-- JS -> Flutter 事件协议已落地：浏览器事件 `fluttron.playground.milkdown.change`，`detail` 包含 `markdown/characterCount/updatedAt/source`。
-- Flutter 侧已完成“启动读取 + 手动保存 + 回读校验”：启动读取 `storage.kvGet('playground.markdown')`，编辑时实时更新本地状态，点击按钮触发 `storage.kvSet('playground.markdown', markdown)`。
-- 空内容保存前置拦截已生效，避免触发 Host `StorageService` 的非空参数错误。
-- 验收链路：`pnpm run js:build`、`fluttron build -p playground`、`fluttron run -p playground --no-build -d macos`。
+- Host 模板资产声明已补齐：`templates/host/pubspec.yaml` 的 `flutter.assets` 新增 `- assets/www/ext/`，避免 ext 目录资源在 Host 侧不可加载。
+- UI 模板前端清理能力已补齐：`templates/ui/scripts/build-frontend.mjs` 新增 `outputCssFile = web/ext/main.css`，`cleanFrontend()` 会同时清理 JS/CSS 及其 sourcemap。
+- 新增回归测试：`packages/fluttron_cli/test/src/utils/template_contract_v0025_test.dart`，静态断言模板资产声明与 CSS 清理逻辑，防止回退。
+- 验收链路：
+  - `dart test`（工作目录 `packages/fluttron_cli`）通过。
+  - smoke：`fluttron create /tmp/fluttron_v0025_smoke --template /Volumes/ssd/Code/Fluttron/templates` 与 `fluttron build -p /tmp/fluttron_v0025_smoke` 验证通过。
+  - `pnpm run js:clean` 在 `web/ext/main.css` 缺失场景下仍成功退出（`force: true` 幂等）。
+
+### 下一步
+
+- v0026：核心库 `FluttronHtmlView` 组件封装（将模板/playground 中手写 `HtmlElementView` 注册与工厂调用逻辑下沉到 `fluttron_ui`）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -238,8 +244,8 @@ Host 端:
 
 | # | 差距 | 位置 | 严重度 |
 |---|------|------|--------|
-| 1 | Template Host pubspec.yaml 缺少 `assets/www/ext/` 声明 | pubspec.yaml | 阻塞级 |
-| 2 | Template build-frontend.mjs 不处理 CSS 输出/清理 | build-frontend.mjs | 高 |
+| 1 | ✅ Template Host pubspec.yaml 已补齐 `assets/www/ext/` 声明（v0025） | templates/host/pubspec.yaml | 已完成 |
+| 2 | ✅ Template build-frontend.mjs 已支持 CSS 产物清理（v0025） | templates/ui/scripts/build-frontend.mjs | 已完成 |
 | 3 | `fluttron_ui` 无 `HtmlElementView` 注册抽象 | src | 高 |
 | 4 | `fluttron_ui` 无 JS→Flutter `CustomEvent` 事件桥 | 同上 | 高 |
 | 5 | `runFluttronUi` 被模板架空，不可扩展 | ui_app.dart | 中 |
@@ -249,10 +255,10 @@ Host 端:
 
 ---
 ### Steps
-**v0025 — 模板阻塞修复（pubspec.yaml + CSS 构建脚本）**
-1. 在 pubspec.yaml 的 `flutter.assets` 中添加 `- assets/www/ext/`，对齐 pubspec.yaml 已有的声明
-2. 在 build-frontend.mjs 中添加 `outputCssFile` 常量（`web/ext/main.css`），`cleanFrontend()` 中追加对 CSS 及其 sourcemap 的清理，对齐 build-frontend.mjs 的实现
-3. 验收：`fluttron create` 新项目 → `fluttron build` → Host `assets/www/ext/` 目录下的 JS 可被 `rootBundle.load()` 加载
+**v0025 — 模板阻塞修复（pubspec.yaml + CSS 构建脚本）✅ 已完成**
+1. ✅ `templates/host/pubspec.yaml` 的 `flutter.assets` 已添加 `- assets/www/ext/`。
+2. ✅ `templates/ui/scripts/build-frontend.mjs` 已添加 `outputCssFile`（`web/ext/main.css`），`cleanFrontend()` 已追加 CSS 与 sourcemap 清理。
+3. ✅ 验收通过：模板契约回归测试 + `fluttron create/build` smoke 已完成验证。
 
 ---
 **v0026 — 核心库：`FluttronHtmlView` 完整组件封装**
