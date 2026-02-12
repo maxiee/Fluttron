@@ -10,6 +10,7 @@ export default {
   "5e95c892": [() => import(/* webpackChunkName: "5e95c892" */ "@theme/DocsRoot"), "@theme/DocsRoot", require.resolveWeak("@theme/DocsRoot")],
   "5e9f5e1a": [() => import(/* webpackChunkName: "5e9f5e1a" */ "@generated/docusaurus.config"), "@generated/docusaurus.config", require.resolveWeak("@generated/docusaurus.config")],
   "616bf3fc": [() => import(/* webpackChunkName: "616bf3fc" */ "@generated/docusaurus-plugin-content-docs/default/p/fluttron-zh-cn-docs-b00.json"), "@generated/docusaurus-plugin-content-docs/default/p/fluttron-zh-cn-docs-b00.json", require.resolveWeak("@generated/docusaurus-plugin-content-docs/default/p/fluttron-zh-cn-docs-b00.json")],
+  "934ce419": [() => import(/* webpackChunkName: "934ce419" */ "@site/docs/api/web-packages.md"), "@site/docs/api/web-packages.md", require.resolveWeak("@site/docs/api/web-packages.md")],
   "a7456010": [() => import(/* webpackChunkName: "a7456010" */ "@generated/docusaurus-plugin-content-pages/default/__plugin.json"), "@generated/docusaurus-plugin-content-pages/default/__plugin.json", require.resolveWeak("@generated/docusaurus-plugin-content-pages/default/__plugin.json")],
   "a7bd4aaa": [() => import(/* webpackChunkName: "a7bd4aaa" */ "@theme/DocVersionRoot"), "@theme/DocVersionRoot", require.resolveWeak("@theme/DocVersionRoot")],
   "a8b2a833": [() => import(/* webpackChunkName: "a8b2a833" */ "@site/docs/examples/hello-world.md"), "@site/docs/examples/hello-world.md", require.resolveWeak("@site/docs/examples/hello-world.md")],

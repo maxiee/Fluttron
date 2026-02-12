@@ -30,6 +30,7 @@ const sidebars = {
       items: [
         'api/services',
         'api/web-views',
+        'api/web-packages',
       ],
     },
     {

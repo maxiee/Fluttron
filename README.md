@@ -59,10 +59,13 @@ graph TD
   - `FluttronEventBridge` - JS→Flutter event communication
   - `FluttronWebViewRegistry` - Type-driven view registration
 - [x] Host custom service extension with template example
+- [x] Web Package support - Create reusable web components as Dart packages
 - [ ] Plugin system
 - [ ] Typed bridge codegen
 
 ## Quick Start
+
+### Create a Fluttron App
 
 Prerequisites:
 
@@ -85,6 +88,84 @@ Without global CLI:
 dart run packages/fluttron_cli/bin/fluttron.dart create ./hello_fluttron --name HelloFluttron
 dart run packages/fluttron_cli/bin/fluttron.dart build -p ./hello_fluttron
 dart run packages/fluttron_cli/bin/fluttron.dart run -p ./hello_fluttron
+```
+
+### Create a Web Package
+
+Web packages are reusable Dart packages that include Flutter widgets, JavaScript bundles, and CSS:
+
+```bash
+fluttron create ./my_editor --name my_editor --type web_package
+```
+
+This creates a package structure with:
+- `lib/` - Dart library with widgets
+- `frontend/` - JavaScript source files
+- `web/ext/` - Built assets (JS/CSS)
+- `fluttron_web_package.json` - Package manifest
+
+Build the frontend assets:
+
+```bash
+cd my_editor/frontend
+pnpm install
+pnpm run js:build
+```
+
+Then add to your app's `ui/pubspec.yaml`:
+
+```yaml
+dependencies:
+  my_editor:
+    path: ../my_editor
+```
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `fluttron create <path>` | Create a new app project |
+| `fluttron create <path> --type web_package` | Create a web package |
+| `fluttron build -p <path>` | Build the UI and copy to host |
+| `fluttron run -p <path>` | Run the host application |
+
+## Project Types
+
+### App (`--type app`, default)
+
+Full Fluttron application with host and UI:
+
+```
+my_app/
+├── fluttron.json
+├── host/
+│   ├── lib/main.dart
+│   ├── pubspec.yaml
+│   └── assets/www/
+└── ui/
+    ├── lib/main.dart
+    ├── frontend/src/main.js
+    ├── pubspec.yaml
+    └── web/ext/
+```
+
+### Web Package (`--type web_package`)
+
+Reusable component package:
+
+```
+my_package/
+├── fluttron_web_package.json
+├── pubspec.yaml
+├── lib/
+│   ├── my_package.dart
+│   └── src/widget.dart
+├── frontend/
+│   ├── package.json
+│   └── src/main.js
+└── web/ext/
+    ├── main.js
+    └── main.css
 ```
 
 ## Template Frontend Assets

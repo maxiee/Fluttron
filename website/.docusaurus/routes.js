@@ -4,19 +4,25 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/Fluttron/zh-CN/docs',
-    component: ComponentCreator('/Fluttron/zh-CN/docs', 'f0c'),
+    component: ComponentCreator('/Fluttron/zh-CN/docs', 'c17'),
     routes: [
       {
         path: '/Fluttron/zh-CN/docs',
-        component: ComponentCreator('/Fluttron/zh-CN/docs', 'a40'),
+        component: ComponentCreator('/Fluttron/zh-CN/docs', 'd3b'),
         routes: [
           {
             path: '/Fluttron/zh-CN/docs',
-            component: ComponentCreator('/Fluttron/zh-CN/docs', 'db0'),
+            component: ComponentCreator('/Fluttron/zh-CN/docs', '57f'),
             routes: [
               {
                 path: '/Fluttron/zh-CN/docs/api/services',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/api/services', 'a92'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/api/web-packages',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/web-packages', '8a6'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },

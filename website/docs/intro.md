@@ -39,6 +39,7 @@ export default function Hello() {
                 <li><strong>Web View System:</strong> Embed HTML/JS/CSS into Flutter Web with type-driven rendering.</li>
                 <li><strong>Event Bridge:</strong> JS→Flutter custom event communication.</li>
                 <li><strong>Custom Services:</strong> Extend Host with your own services.</li>
+                <li><strong>Web Packages:</strong> Create reusable web components as distributable Dart packages.</li>
                 <li><strong>CLI Pipeline:</strong> Create, build, and run projects with one command.</li>
               </ul>
 
@@ -49,6 +50,7 @@ export default function Hello() {
                 <li>Template frontend build pipeline is available (`pnpm` + `esbuild`).</li>
                 <li>Core UI library with `FluttronHtmlView`, `FluttronEventBridge`, and `FluttronWebViewRegistry`.</li>
                 <li>Host custom service extension support with template example.</li>
+                <li>Web Package support - create reusable components with `--type web_package`.</li>
               </ul>
 
               <h2>Get Started</h2>

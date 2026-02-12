@@ -16,6 +16,11 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "api/web-packages",
+              "path": "/Fluttron/zh-CN/docs/api/web-packages",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "api/web-views",
               "path": "/Fluttron/zh-CN/docs/api/web-views",
               "sidebar": "tutorialSidebar"

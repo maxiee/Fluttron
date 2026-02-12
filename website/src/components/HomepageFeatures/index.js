@@ -22,11 +22,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Frontend Asset Pipeline',
+    title: 'Web Ecosystem Integration',
     Svg: require('@site/static/img/web-eco.svg').default,
     description: (
       <>
-        Templates include a frontend workflow (`frontend/src -> web/ext`) powered by `pnpm` + `esbuild`, then synced into Host assets via CLI build.
+        Embed any JavaScript library in Flutter Web. Create reusable web packages with `--type web_package` and share them across apps.
       </>
     ),
   },

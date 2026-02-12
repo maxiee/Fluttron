@@ -1,8 +1,10 @@
 # Fluttron Templates And Manifest
 
-This document defines the minimal template structure and the `fluttron.json` manifest format.
+This document defines the template structure and manifest formats for Fluttron projects.
 
-## Template Structure (Repository Root)
+## App Template Structure
+
+The default app template creates a full Fluttron application:
 
 ```
 <project-root>/
@@ -57,7 +59,168 @@ The template UI uses the Fluttron Web View system:
 
 See `ui/lib/main.dart` for the registration pattern and `ui/frontend/src/main.js` for the JS factory contract.
 
-## fluttron.json
+---
+
+## Web Package Template Structure
+
+Web packages are reusable Dart packages that can be distributed and used across multiple Fluttron apps.
+
+Create with:
+
+```bash
+fluttron create ./my_package --name my_package --type web_package
+```
+
+### Directory Structure
+
+```
+my_package/
+├── fluttron_web_package.json    # Package manifest (required)
+├── pubspec.yaml                  # Dart package definition
+├── lib/
+│   ├── my_package.dart          # Library entry point
+│   └── src/
+│       └── example_widget.dart  # Widget implementation
+├── frontend/
+│   ├── package.json             # pnpm + esbuild config
+│   ├── scripts/
+│   │   └── build-frontend.mjs   # Build script
+│   └── src/
+│       └── main.js              # View factory implementations
+└── web/
+    └── ext/
+        ├── main.js              # Bundled JS output (committed)
+        └── main.css             # Bundled CSS output (committed)
+```
+
+### Key Files
+
+#### pubspec.yaml
+
+Must include `fluttron_web_package: true` tag:
+
+```yaml
+name: my_package
+fluttron_web_package: true
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fluttron_ui:
+    path: ../packages/fluttron_ui
+```
+
+#### fluttron_web_package.json
+
+Asset manifest defining view factories, assets, and events:
+
+```json
+{
+  "version": "1",
+  "viewFactories": [
+    {
+      "type": "my_package.example",
+      "jsFactoryName": "fluttronCreateMyPackageExampleView",
+      "description": "Example component"
+    }
+  ],
+  "assets": {
+    "js": ["web/ext/main.js"],
+    "css": ["web/ext/main.css"]
+  },
+  "events": [
+    {
+      "name": "fluttron.my_package.example.change",
+      "direction": "js_to_dart",
+      "payloadType": "{ content: string }"
+    }
+  ]
+}
+```
+
+### Naming Conventions
+
+When creating a web package, the CLI automatically transforms the package name:
+
+| Format | Example | Use Case |
+|--------|---------|----------|
+| snake_case | `markdown_editor` | Dart package name, file names |
+| PascalCase | `MarkdownEditor` | Dart class names |
+| camelCase | `markdownEditor` | Dart function/method names |
+| kebab-case | `markdown-editor` | CSS class prefixes |
+
+### View Factory Naming
+
+**Pattern**: `fluttronCreate<Package><Feature>View`
+
+Examples:
+| Package | Feature | Factory Name |
+|---------|---------|--------------|
+| `markdown_editor` | `editor` | `fluttronCreateMarkdownEditorEditorView` |
+| `chart_viewer` | `bar` | `fluttronCreateChartViewerBarView` |
+
+### Event Naming
+
+**Pattern**: `fluttron.<package>.<feature>.<event>`
+
+Examples:
+- `fluttron.markdown_editor.editor.change`
+- `fluttron.chart_viewer.bar.click`
+
+### CSS Isolation
+
+Web packages must use CSS isolation to avoid conflicts:
+
+**Recommended: BEM naming**
+
+```css
+/* Good: Scoped by package prefix */
+.my-package__toolbar { }
+.my-package__button--active { }
+
+/* Bad: Generic names will conflict */
+.toolbar { }
+.button { }
+```
+
+**Alternative: Container scoping**
+
+```css
+.fluttron-my-package .toolbar { }
+.fluttron-my-package .button { }
+```
+
+### Build Process
+
+1. Install dependencies:
+   ```bash
+   cd frontend
+   pnpm install
+   ```
+
+2. Build assets:
+   ```bash
+   pnpm run js:build
+   ```
+
+3. Clean assets (optional):
+   ```bash
+   pnpm run js:clean
+   ```
+
+### Using in an App
+
+Add to your app's `ui/pubspec.yaml`:
+
+```yaml
+dependencies:
+  my_package:
+    path: ../my_package
+```
+
+---
+
+## fluttron.json (App Manifest)
 
 ### Required Fields
 

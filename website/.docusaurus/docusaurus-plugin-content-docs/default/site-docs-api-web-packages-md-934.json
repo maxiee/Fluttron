@@ -1,0 +1,24 @@
+{
+  "id": "api/web-packages",
+  "title": "Web Packages",
+  "description": "Web packages are reusable Dart packages that include Flutter widgets, JavaScript bundles, and CSS. They can be distributed via pub.dev and used across multiple Fluttron apps.",
+  "source": "@site/docs/api/web-packages.md",
+  "sourceDirName": "api",
+  "slug": "/api/web-packages",
+  "permalink": "/Fluttron/zh-CN/docs/api/web-packages",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/web-packages.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Web Views API Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/web-views"
+  },
+  "next": {
+    "title": "Hello World Example",
+    "permalink": "/Fluttron/zh-CN/docs/examples/hello-world"
+  }
+}
