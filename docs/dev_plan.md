@@ -285,6 +285,7 @@ bridge.on('my.editor.change').listen((data) {
 - v0034：已完成 Web Package Manifest 解析与校验：新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`，定义 `WebPackageManifest`、`ViewFactory`、`Assets`、`Event` 模型类，实现 `WebPackageManifestLoader` 加载器；校验规则包括 `version` 必须为 `"1"`、`type` 匹配 `^[a-z0-9_]+\.[a-z0-9_]+$`、`jsFactoryName` 匹配 `^fluttronCreate[A-Z][a-zA-Z0-9]*View$`、JS/CSS 路径格式、事件命名空间格式等；对非法 manifest 提供可读报错。新增测试 `packages/fluttron_cli/test/src/utils/web_package_manifest_test.dart` 覆盖合法解析与各种非法场景（30 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）68 个测试全部通过。
 - v0035：已完成基于 `package_config.json` 的依赖发现：新增 `packages/fluttron_cli/lib/src/utils/web_package_discovery.dart`，定义 `PackageConfigEntry` 和 `PackageConfig` 模型类解析 package_config.json；实现 `WebPackageDiscovery` 类提供 `discover()` 异步和 `discoverSync()` 同步方法；支持相对路径依赖（如 `../packages/my_package`）和 file:// URI 绝对路径依赖（pub cache 中的包）；覆盖 path/git/hosted 依赖场景；对每个依赖检查 `fluttron_web_package.json` 是否存在，命中后加载 manifest 并设置 `packageName` 和 `rootPath`；缺失 `package_config.json` 时提供可读报错提示运行 `flutter pub get`。新增测试 `packages/fluttron_cli/test/src/utils/web_package_discovery_test.dart`（19 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）87 个测试全部通过。
 - v0036：已完成构建产物阶段资源收集器：新增 `packages/fluttron_cli/lib/src/utils/web_package_collector.dart`，定义 `WebPackageCollector` 类复制依赖包的 JS/CSS 到 `ui/build/web/ext/packages/<pkg>/`；实现 `collect()` 异步和 `collectSync()` 同步方法；定义 `CollectedAsset`、`CollectionResult`、`AssetType` 模型类；提供 `validateAssets()` 方法预校验资产文件存在性；源文件不存在时抛出 `WebPackageCollectorException` 并提示运行 `pnpm run js:build`；新增测试 `packages/fluttron_cli/test/src/utils/web_package_collector_test.dart`（19 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）106 个测试全部通过。
+- v0037：已完成 HTML 注入器（占位符替换）：新增 `packages/fluttron_cli/lib/src/utils/html_injector.dart`，定义 `HtmlInjector` 类实现 `inject()` 和 `injectSync()` 方法；定义 `InjectionResult` 模型类（injectedJsCount、injectedCssCount、outputPath、hasInjections）；定义 `HtmlInjectorException` 异常类；支持替换占位符 `<!-- FLUTTRON_PACKAGES_JS -->` 和 `<!-- FLUTTRON_PACKAGES_CSS -->`；为 JS 资产生成 `<script>` 标签，为 CSS 资产生成 `<link rel="stylesheet">` 标签；校验占位符存在性，缺失时抛出可读错误；保持现有 `ext/main.js` 与 `flutter_bootstrap.js` 顺序不被破坏；新增测试 `packages/fluttron_cli/test/src/utils/html_injector_test.dart`（18 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）124 个测试全部通过。
 
 ## Backlog (未来)
 
@@ -299,32 +300,30 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0036：构建产物阶段新增资源收集器 ✅ 已完成**
+**v0037：HTML 注入器（占位符替换） ✅ 已完成**
 
-### v0036 完成结果
+### v0037 完成结果
 
-- 新增 `packages/fluttron_cli/lib/src/utils/web_package_collector.dart`：
-  - 定义 `WebPackageCollector` 类，实现 `collect()` 和 `collectSync()` 方法
-  - 定义 `CollectedAsset` 模型类（packageName、relativePath、sourcePath、destinationPath、type）
-  - 定义 `CollectionResult` 模型类（packages、assets、skippedPackages、jsAssetPaths、cssAssetPaths）
-  - 定义 `AssetType` 枚举（js、css）
-  - 定义 `WebPackageCollectorException` 异常类
+- 新增 `packages/fluttron_cli/lib/src/utils/html_injector.dart`：
+  - 定义 `HtmlInjector` 类，实现 `inject()` 和 `injectSync()` 方法
+  - 定义 `InjectionResult` 模型类（injectedJsCount、injectedCssCount、outputPath、hasInjections）
+  - 定义 `HtmlInjectorException` 异常类
 - 核心功能：
-  - 复制依赖包的 JS/CSS 到 `ui/build/web/ext/packages/<pkg>/`
-  - 为每个包创建独立的目标目录
-  - 自动递归创建目标目录结构
-  - 跳过缺少 `rootPath` 的包（记录到 `skippedPackages`）
-  - 提供 `validateAssets()` 方法预校验资产文件存在性
+  - 替换占位符 `<!-- FLUTTRON_PACKAGES_JS -->` 为 JS `<script>` 标签
+  - 替换占位符 `<!-- FLUTTRON_PACKAGES_CSS -->` 为 CSS `<link>` 标签
+  - 校验 HTML 文件存在性
+  - 校验占位符存在性，缺失时提供可读错误
+  - 保持现有 `ext/main.js` 与 `flutter_bootstrap.js` 顺序不被破坏
 - 错误处理：
-  - 源文件不存在时抛出 `WebPackageCollectorException`
-  - 提示运行 `pnpm run js:build` 构建前端资产
-- 新增测试 `packages/fluttron_cli/test/src/utils/web_package_collector_test.dart`：
-  - 19 个测试覆盖：模型类、单包/多包收集、JS/CSS 资产、缺失文件错误、跳过无效包、同步/异步一致性、资产验证
-- 验收通过：`dart test`（`packages/fluttron_cli`）106 个测试全部通过
+  - HTML 文件不存在时抛出 `HtmlInjectorException`
+  - 占位符缺失时抛出 `HtmlInjectorException` 并列出缺失的占位符
+- 新增测试 `packages/fluttron_cli/test/src/utils/html_injector_test.dart`：
+  - 18 个测试覆盖：模型类、文件不存在、占位符缺失、单/多 JS/CSS 注入、同步/异步一致性、顺序保持
+- 验收通过：`dart test`（`packages/fluttron_cli`）124 个测试全部通过
 
 ### 下一步
 
-- v0037：HTML 注入器（占位符替换）（参见「新增重大需求拆解（Web Package）」）
+- v0038：生成视图注册代码（参见「新增重大需求拆解（Web Package）」）
 
 ## 我的问题
 
