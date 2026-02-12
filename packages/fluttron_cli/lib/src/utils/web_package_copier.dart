@@ -268,25 +268,38 @@ class WebPackageCopier {
 
   /// Converts a string to snake_case.
   String _toSnakeCase(String input) {
-    // Handle existing snake_case
-    if (input.contains('_')) {
-      return input.toLowerCase();
-    }
+    final normalizedInput = input.trim().replaceAll(
+      RegExp(r'[^a-zA-Z0-9]+'),
+      '_',
+    );
 
-    // Convert camelCase/PascalCase to snake_case
     final buffer = StringBuffer();
-    for (var i = 0; i < input.length; i++) {
-      final char = input[i];
+    for (var i = 0; i < normalizedInput.length; i++) {
+      final char = normalizedInput[i];
       if (char.toUpperCase() == char && char.toLowerCase() != char) {
-        if (i > 0) {
+        final hasPrevious = i > 0;
+        final previousChar = hasPrevious ? normalizedInput[i - 1] : '';
+        if (hasPrevious && previousChar != '_') {
           buffer.write('_');
         }
         buffer.write(char.toLowerCase());
       } else {
-        buffer.write(char);
+        buffer.write(char.toLowerCase());
       }
     }
-    return buffer.toString();
+
+    var result = buffer.toString();
+    result = result.replaceAll(RegExp(r'_+'), '_');
+    result = result.replaceFirst(RegExp(r'^_+'), '');
+    result = result.replaceFirst(RegExp(r'_+$'), '');
+
+    if (result.isEmpty) {
+      return 'web_package';
+    }
+    if (RegExp(r'^[0-9]').hasMatch(result)) {
+      return 'pkg_$result';
+    }
+    return result;
   }
 
   /// Converts a string to PascalCase.

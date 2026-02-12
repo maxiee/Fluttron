@@ -159,6 +159,30 @@ void main() {
       );
     });
 
+    test('web_package rewrites fluttron_ui path dependency', () async {
+      final targetPath = p.join(tempDir.path, 'my_package');
+
+      final exitCode = await runCli([
+        'create',
+        targetPath,
+        '--name',
+        'my_package',
+        '--type',
+        'web_package',
+        '--template',
+        templatesDir.path,
+      ]);
+
+      expect(exitCode, equals(0));
+
+      final pubspec = File(p.join(targetPath, 'pubspec.yaml'));
+      final pubspecContent = await pubspec.readAsString();
+      final expectedPath = p.normalize(
+        p.join(templatesDir.parent.path, 'packages', 'fluttron_ui'),
+      );
+      expect(pubspecContent, contains('path: $expectedPath'));
+    });
+
     test('rejects invalid --type value', () async {
       final targetPath = p.join(tempDir.path, 'test');
 
@@ -186,6 +210,47 @@ void main() {
 
       expect(exitCode, equals(0));
       expect(await Directory(p.join(targetPath, 'host')).exists(), isTrue);
+    });
+
+    test('app rewrites local package dependencies to absolute paths', () async {
+      final targetPath = p.join(tempDir.path, 'test_app');
+
+      final exitCode = await runCli([
+        'create',
+        targetPath,
+        '--name',
+        'test_app',
+        '--template',
+        templatesDir.path,
+      ]);
+
+      expect(exitCode, equals(0));
+
+      final expectedRoot = p.normalize(
+        p.join(templatesDir.parent.path, 'packages'),
+      );
+
+      final uiPubspec = File(p.join(targetPath, 'ui', 'pubspec.yaml'));
+      final uiContent = await uiPubspec.readAsString();
+      expect(
+        uiContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_ui')}'),
+      );
+      expect(
+        uiContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_shared')}'),
+      );
+
+      final hostPubspec = File(p.join(targetPath, 'host', 'pubspec.yaml'));
+      final hostContent = await hostPubspec.readAsString();
+      expect(
+        hostContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_host')}'),
+      );
+      expect(
+        hostContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_shared')}'),
+      );
     });
   });
 

@@ -289,5 +289,39 @@ window.fluttronCreateTemplatePackageExampleView = createTemplatePackageExampleVi
       final content = await targetPubspec.readAsString();
       expect(content, contains('name: my_cool_editor'));
     });
+
+    test('normalizes kebab-case input to valid snake_case', () async {
+      final copier = WebPackageCopier();
+
+      final pubspecFile = File(p.join(templateDir.path, 'pubspec.yaml'));
+      await pubspecFile.writeAsString('name: fluttron_web_package_template');
+
+      await copier.copyAndTransform(
+        packageName: 'my-cool-editor',
+        sourceDir: templateDir,
+        destinationDir: targetDir,
+      );
+
+      final targetPubspec = File(p.join(targetDir.path, 'pubspec.yaml'));
+      final content = await targetPubspec.readAsString();
+      expect(content, contains('name: my_cool_editor'));
+    });
+
+    test('prefixes package name when input starts with digits', () async {
+      final copier = WebPackageCopier();
+
+      final pubspecFile = File(p.join(templateDir.path, 'pubspec.yaml'));
+      await pubspecFile.writeAsString('name: fluttron_web_package_template');
+
+      await copier.copyAndTransform(
+        packageName: '123-editor',
+        sourceDir: templateDir,
+        destinationDir: targetDir,
+      );
+
+      final targetPubspec = File(p.join(targetDir.path, 'pubspec.yaml'));
+      final content = await targetPubspec.readAsString();
+      expect(content, contains('name: pkg_123_editor'));
+    });
   });
 }

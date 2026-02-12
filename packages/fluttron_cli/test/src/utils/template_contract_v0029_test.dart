@@ -23,6 +23,11 @@ void main() {
 
         final contents = templateMain.readAsStringSync();
         expect(contents, contains('runFluttronUi('));
+        expect(
+          contents,
+          contains("import 'generated/web_package_registrations.dart';"),
+        );
+        expect(contents, contains('registerFluttronWebPackages();'));
         expect(contents, contains('FluttronWebViewRegistry.register('));
         expect(contents, contains('FluttronWebViewRegistration('));
         expect(contents, contains('FluttronHtmlView('));
@@ -30,6 +35,25 @@ void main() {
         expect(contents, contains('FluttronEventBridge'));
       },
     );
+
+    test('template has generated registration placeholder file', () {
+      final generatedFile = File(
+        p.join(
+          Directory.current.path,
+          '..',
+          '..',
+          'templates',
+          'ui',
+          'lib',
+          'generated',
+          'web_package_registrations.dart',
+        ),
+      );
+      expect(generatedFile.existsSync(), isTrue);
+
+      final contents = generatedFile.readAsStringSync();
+      expect(contents, contains('registerFluttronWebPackages'));
+    });
 
     test(
       'template frontend main.js exports editor factory and emits CustomEvent',

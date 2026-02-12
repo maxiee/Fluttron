@@ -1,8 +1,8 @@
 name: fluttron_web_package_template
 description: "Template for creating reusable Fluttron web packages."
-publish_to: "none"
 
 version: 0.1.0
+publish_to: none
 
 # This tag identifies the package as a Fluttron web package.
 # The CLI will scan dependencies for this tag to discover web packages.

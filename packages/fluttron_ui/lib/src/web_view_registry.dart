@@ -32,10 +32,10 @@ abstract final class FluttronWebViewRegistry {
     }
 
     throw StateError(
-      'Conflicting FluttronWebViewRegistration for type '
-      '"${normalizedRegistration.type}". Existing '
-      'jsFactoryName="${existingRegistration.jsFactoryName}", incoming '
-      'jsFactoryName="${normalizedRegistration.jsFactoryName}".',
+      'Conflicting Fluttron web view registration for '
+      '"${normalizedRegistration.type}": existing jsFactoryName is '
+      '"${existingRegistration.jsFactoryName}", attempted to register '
+      '"${normalizedRegistration.jsFactoryName}".',
     );
   }
 

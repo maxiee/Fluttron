@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fluttron_ui/fluttron_ui.dart';
 import 'package:flutter/material.dart';
+import 'generated/web_package_registrations.dart';
 
 const String _templateEditorWebViewType = 'fluttron.template.editor';
 const String _createTemplateEditorViewMethod =
@@ -11,6 +12,7 @@ const String _templateInitialText =
     'Hello from external HTML/JS.\n\nEdit this text to verify event bridge sync.';
 
 void main() {
+  registerFluttronWebPackages();
   _registerTemplateWebViews();
   runFluttronUi(title: 'Fluttron UI Template', home: const TemplateDemoPage());
 }

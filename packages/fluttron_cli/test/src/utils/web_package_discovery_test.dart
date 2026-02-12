@@ -148,6 +148,7 @@ void main() {
       Directory packageDir, {
       required String type,
       required String jsFactoryName,
+      bool includeTag = true,
     }) {
       final manifest = {
         'version': '1',
@@ -164,6 +165,13 @@ void main() {
       manifestFile.writeAsStringSync(
         const JsonEncoder.withIndent('  ').convert(manifest),
       );
+
+      final pubspecFile = File(p.join(packageDir.path, 'pubspec.yaml'));
+      pubspecFile.writeAsStringSync('''
+name: ${p.basename(packageDir.path)}
+version: 0.1.0
+${includeTag ? 'fluttron_web_package: true' : ''}
+''');
     }
 
     test('throws when package_config.json is missing', () {
@@ -248,7 +256,7 @@ void main() {
       writePackageConfig([
         {
           'name': 'my_editor',
-          'rootUri': '../packages/my_editor',
+          'rootUri': '../../packages/my_editor',
           'packageUri': 'lib/',
         },
       ]);
@@ -308,10 +316,14 @@ void main() {
       writePackageConfig([
         {
           'name': 'editor',
-          'rootUri': '../packages/editor',
+          'rootUri': '../../packages/editor',
           'packageUri': 'lib/',
         },
-        {'name': 'chart', 'rootUri': '../packages/chart', 'packageUri': 'lib/'},
+        {
+          'name': 'chart',
+          'rootUri': '../../packages/chart',
+          'packageUri': 'lib/',
+        },
         {
           'name': 'regular_package',
           'rootUri': 'file:///path/to/regular',
@@ -327,7 +339,31 @@ void main() {
       expect(names, containsAll(['editor', 'chart']));
     });
 
-    test('skips package with invalid manifest', () {
+    test('skips package with manifest but missing marker tag', () {
+      final packageDir = Directory(p.join(tempDir.path, 'packages', 'untagged'))
+        ..createSync(recursive: true);
+      writeWebPackageManifest(
+        packageDir,
+        type: 'untagged.view',
+        jsFactoryName: 'fluttronCreateUntaggedViewView',
+        includeTag: false,
+      );
+
+      writePackageConfig([
+        {
+          'name': 'untagged',
+          'rootUri': '../../packages/untagged',
+          'packageUri': 'lib/',
+        },
+      ]);
+
+      final discovery = WebPackageDiscovery();
+      final packages = discovery.discoverSync(uiDir);
+
+      expect(packages, isEmpty);
+    });
+
+    test('throws when tagged package has invalid manifest', () {
       final packageDir = Directory(p.join(tempDir.path, 'packages', 'broken'))
         ..createSync(recursive: true);
       // Write invalid manifest (missing required fields)
@@ -335,30 +371,32 @@ void main() {
         p.join(packageDir.path, 'fluttron_web_package.json'),
       );
       manifestFile.writeAsStringSync('{"version": "1"}');
-
-      final validPackage = Directory(p.join(tempDir.path, 'packages', 'valid'))
-        ..createSync(recursive: true);
-      writeWebPackageManifest(
-        validPackage,
-        type: 'valid.view',
-        jsFactoryName: 'fluttronCreateValidViewView',
-      );
+      final pubspecFile = File(p.join(packageDir.path, 'pubspec.yaml'));
+      pubspecFile.writeAsStringSync('''
+name: broken
+version: 0.1.0
+fluttron_web_package: true
+''');
 
       writePackageConfig([
         {
           'name': 'broken',
-          'rootUri': '../packages/broken',
+          'rootUri': '../../packages/broken',
           'packageUri': 'lib/',
         },
-        {'name': 'valid', 'rootUri': '../packages/valid', 'packageUri': 'lib/'},
       ]);
 
       final discovery = WebPackageDiscovery();
-      final packages = discovery.discoverSync(uiDir);
-
-      // Invalid manifest should be skipped by tryLoad
-      expect(packages, hasLength(1));
-      expect(packages[0].packageName, equals('valid'));
+      expect(
+        () => discovery.discoverSync(uiDir),
+        throwsA(
+          isA<WebPackageDiscoveryException>().having(
+            (e) => e.message,
+            'message',
+            allOf(contains('Invalid web package manifest'), contains('broken')),
+          ),
+        ),
+      );
     });
 
     test('handles deeply nested relative paths', () {
@@ -375,7 +413,7 @@ void main() {
       writePackageConfig([
         {
           'name': 'my_package',
-          'rootUri': '../packages/my_package',
+          'rootUri': '../../packages/my_package',
           'packageUri': 'lib/',
         },
       ]);
@@ -400,7 +438,7 @@ void main() {
       writePackageConfig([
         {
           'name': 'async_test',
-          'rootUri': '../packages/async_test',
+          'rootUri': '../../packages/async_test',
           'packageUri': 'lib/',
         },
       ]);
@@ -483,7 +521,7 @@ void main() {
       writePackageConfig([
         {
           'name': 'metadata_test',
-          'rootUri': '../packages/metadata_test',
+          'rootUri': '../../packages/metadata_test',
           'packageUri': 'lib/',
         },
       ]);

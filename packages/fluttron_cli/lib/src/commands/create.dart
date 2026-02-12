@@ -167,10 +167,11 @@ class CreateCommand extends Command<int> {
       );
     } else {
       stdout.writeln('Next steps:');
-      stdout.writeln('  1. cd $normalizedTarget/frontend && pnpm install');
-      stdout.writeln('  2. pnpm run js:build');
+      stdout.writeln('  1. cd $normalizedTarget');
+      stdout.writeln('  2. dart pub get');
+      stdout.writeln('  3. cd frontend && pnpm install && pnpm run js:build');
       stdout.writeln(
-        '  3. Add this package to your app\'s ui/pubspec.yaml dependencies',
+        '  4. Add this package to your app\'s ui/pubspec.yaml dependencies',
       );
     }
   }
@@ -266,8 +267,8 @@ class CreateCommand extends Command<int> {
     required Directory projectDir,
     required Directory templateDir,
   }) {
-    final packagesDir = Directory(p.join(templateDir.path, 'packages'));
-    if (!packagesDir.existsSync()) {
+    final packagesDir = _resolvePackagesDir(templateDir);
+    if (packagesDir == null) {
       return;
     }
 
@@ -290,22 +291,29 @@ class CreateCommand extends Command<int> {
       return;
     }
 
-    final packagesDir = Directory(p.join(templateDir.path, 'packages'));
-    if (!packagesDir.existsSync()) {
+    final packagesDir = _resolvePackagesDir(templateDir);
+    if (packagesDir == null) {
       return;
     }
 
     final normalizedPackages = p.normalize(packagesDir.path);
+    _rewritePubspecFile(pubspecFile, normalizedPackages);
+  }
 
-    final original = pubspecFile.readAsStringSync();
-    var updated = original.replaceAll(
-      'path: ../../packages/fluttron_ui',
-      'path: ${p.join(normalizedPackages, 'fluttron_ui')}',
-    );
-
-    if (updated != original) {
-      pubspecFile.writeAsStringSync(updated);
+  Directory? _resolvePackagesDir(Directory templateDir) {
+    Directory current = templateDir;
+    for (var i = 0; i < 8; i++) {
+      final candidate = Directory(p.join(current.path, 'packages'));
+      if (candidate.existsSync()) {
+        return candidate;
+      }
+      final parent = current.parent;
+      if (parent.path == current.path) {
+        break;
+      }
+      current = parent;
     }
+    return null;
   }
 
   void _rewritePubspecFile(File file, String packagesPath) {

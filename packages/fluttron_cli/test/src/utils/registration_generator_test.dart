@@ -180,6 +180,59 @@ void main() {
       expect(content, contains('// chartjs_wrapper'));
     });
 
+    test(
+      'keeps conflicting registrations for runtime strict conflict checks',
+      () {
+        final packages = [
+          WebPackageManifest(
+            version: '1',
+            viewFactories: [
+              const ViewFactory(
+                type: 'chart.editor',
+                jsFactoryName: 'fluttronCreateChartEditorV1View',
+              ),
+            ],
+            assets: const Assets(js: ['web/ext/main.js']),
+            packageName: 'chart_v1',
+            rootPath: '/path/to/chart_v1',
+          ),
+          WebPackageManifest(
+            version: '1',
+            viewFactories: [
+              const ViewFactory(
+                type: 'chart.editor',
+                jsFactoryName: 'fluttronCreateChartEditorV2View',
+              ),
+            ],
+            assets: const Assets(js: ['web/ext/main.js']),
+            packageName: 'chart_v2',
+            rootPath: '/path/to/chart_v2',
+          ),
+        ];
+
+        final result = generator.generateSync(
+          uiProjectDir: tempDir,
+          packages: packages,
+        );
+
+        expect(result.factoryCount, equals(2));
+        final content = File(result.outputPath).readAsStringSync();
+        expect(
+          content,
+          contains("jsFactoryName: 'fluttronCreateChartEditorV1View'"),
+        );
+        expect(
+          content,
+          contains("jsFactoryName: 'fluttronCreateChartEditorV2View'"),
+        );
+
+        final typeMatches = RegExp(
+          r"type: 'chart\.editor'",
+        ).allMatches(content);
+        expect(typeMatches.length, equals(2));
+      },
+    );
+
     test('generates empty file when no packages', () {
       final result = generator.generateSync(
         uiProjectDir: tempDir,

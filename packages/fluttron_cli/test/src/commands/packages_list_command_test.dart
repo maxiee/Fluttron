@@ -101,6 +101,7 @@ void main() {
 name: mock_web_package
 version: 1.2.3
 description: A mock web package
+fluttron_web_package: true
 ''');
 
       // Create manifest for web package
@@ -160,6 +161,7 @@ description: A mock web package
         await pubspecFile.writeAsString('''
 name: pkg$i
 version: 0.$i.0
+fluttron_web_package: true
 ''');
 
         final manifestFile = File(

@@ -63,6 +63,8 @@ void main() {
         ),
         throwsStateError,
       );
+      final lookedUp = FluttronWebViewRegistry.lookup(type);
+      expect(lookedUp.jsFactoryName, 'fluttronCreateConflictA');
     });
 
     test('lookup throws when type is missing', () {

@@ -43,6 +43,7 @@ cd my_package
 ### 2. Build Frontend Assets
 
 ```bash
+dart pub get
 cd frontend
 pnpm install
 pnpm run js:build

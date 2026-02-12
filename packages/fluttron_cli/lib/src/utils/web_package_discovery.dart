@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'pubspec_loader.dart';
 import 'web_package_manifest.dart';
 
 /// Exception thrown when package discovery fails.
@@ -102,6 +103,7 @@ class PackageConfig {
 class WebPackageDiscovery {
   /// Relative path to package_config.json from UI project root.
   static const String packageConfigPath = '.dart_tool/package_config.json';
+  static const String _webPackageTagKey = 'fluttron_web_package';
 
   /// Discovers web packages in the dependency tree of a UI project.
   ///
@@ -135,22 +137,34 @@ class WebPackageDiscovery {
     }
 
     final manifests = <WebPackageManifest>[];
-    final baseDir = uiProjectDir.path;
+    final baseDir = configFile.parent.path;
 
     for (final pkg in config.packages) {
       final rootPath = pkg.resolveRootPath(baseDir);
+      final packageDir = Directory(rootPath);
       final manifestFile = File(
         p.join(rootPath, WebPackageManifestLoader.fileName),
       );
-
-      if (await manifestFile.exists()) {
-        final manifest = WebPackageManifestLoader.tryLoad(Directory(rootPath));
-        if (manifest != null) {
-          manifests.add(
-            manifest.copyWith(packageName: pkg.name, rootPath: rootPath),
-          );
-        }
+      if (!await manifestFile.exists()) {
+        continue;
       }
+      if (!_hasWebPackageTag(packageDir)) {
+        continue;
+      }
+
+      final WebPackageManifest manifest;
+      try {
+        manifest = WebPackageManifestLoader.load(packageDir);
+      } on WebPackageManifestException catch (error) {
+        throw WebPackageDiscoveryException(
+          'Invalid web package manifest for "${pkg.name}" at '
+          '${p.normalize(rootPath)}: ${error.message}',
+        );
+      }
+
+      manifests.add(
+        manifest.copyWith(packageName: pkg.name, rootPath: rootPath),
+      );
     }
 
     return manifests;
@@ -180,22 +194,34 @@ class WebPackageDiscovery {
     }
 
     final manifests = <WebPackageManifest>[];
-    final baseDir = uiProjectDir.path;
+    final baseDir = configFile.parent.path;
 
     for (final pkg in config.packages) {
       final rootPath = pkg.resolveRootPath(baseDir);
+      final packageDir = Directory(rootPath);
       final manifestFile = File(
         p.join(rootPath, WebPackageManifestLoader.fileName),
       );
-
-      if (manifestFile.existsSync()) {
-        final manifest = WebPackageManifestLoader.tryLoad(Directory(rootPath));
-        if (manifest != null) {
-          manifests.add(
-            manifest.copyWith(packageName: pkg.name, rootPath: rootPath),
-          );
-        }
+      if (!manifestFile.existsSync()) {
+        continue;
       }
+      if (!_hasWebPackageTag(packageDir)) {
+        continue;
+      }
+
+      final WebPackageManifest manifest;
+      try {
+        manifest = WebPackageManifestLoader.load(packageDir);
+      } on WebPackageManifestException catch (error) {
+        throw WebPackageDiscoveryException(
+          'Invalid web package manifest for "${pkg.name}" at '
+          '${p.normalize(rootPath)}: ${error.message}',
+        );
+      }
+
+      manifests.add(
+        manifest.copyWith(packageName: pkg.name, rootPath: rootPath),
+      );
     }
 
     return manifests;
@@ -231,5 +257,22 @@ class WebPackageDiscovery {
         '(${error.message})',
       );
     }
+  }
+
+  bool _hasWebPackageTag(Directory packageDir) {
+    final pubspecFile = File(p.join(packageDir.path, PubspecLoader.fileName));
+    if (!pubspecFile.existsSync()) {
+      return false;
+    }
+
+    final map = PubspecLoader.parseAsMap(pubspecFile.readAsStringSync());
+    final value = map[_webPackageTagKey];
+    if (value is bool) {
+      return value;
+    }
+    if (value is String) {
+      return value.trim().toLowerCase() == 'true';
+    }
+    return false;
   }
 }

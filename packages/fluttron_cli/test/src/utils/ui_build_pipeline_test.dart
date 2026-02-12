@@ -1023,6 +1023,139 @@ void main() {
         expect(exitCode, 2);
         expect(clearCalled, isFalse);
       });
+
+      test(
+        'fails when injected package script is missing in build output',
+        () async {
+          final uiDir = Directory(p.join(projectDir.path, 'ui'))..createSync();
+          final sourceWebDir = Directory(p.join(uiDir.path, 'web'))
+            ..createSync(recursive: true);
+          _writeIndexWithPlaceholders(sourceWebDir, const <String>[
+            'ext/main.js',
+          ]);
+          _writeFile(sourceWebDir, 'ext/main.js', 'console.log("source");');
+
+          final buildOutputDir = Directory(p.join(uiDir.path, 'build', 'web'))
+            ..createSync(recursive: true);
+          _writeIndexWithPlaceholders(buildOutputDir, const <String>[
+            'ext/main.js',
+          ]);
+          _writeFile(buildOutputDir, 'ext/main.js', 'console.log("build");');
+
+          Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
+            ..createSync(recursive: true);
+
+          var clearCalled = false;
+          final mockPackage = WebPackageManifest(
+            version: '1',
+            viewFactories: [
+              ViewFactory(
+                type: 'test.editor',
+                jsFactoryName: 'fluttronCreateTestEditorView',
+              ),
+            ],
+            assets: Assets(js: ['web/ext/main.js'], css: null),
+            events: null,
+            packageName: 'test_package',
+            rootPath: '/fake/path',
+          );
+
+          final pipeline = UiBuildPipeline(
+            frontendBuilder: _FakeFrontendBuilder((_) async {
+              return const FrontendBuildResult.built();
+            }),
+            commandRunner:
+                (
+                  String executable,
+                  List<String> arguments, {
+                  required String workingDirectory,
+                  required bool streamOutput,
+                }) async {
+                  return const ProcessCommandResult(
+                    exitCode: 0,
+                    stdout: '',
+                    stderr: '',
+                  );
+                },
+            clearDirectoryFn: (Directory directory) async {
+              clearCalled = true;
+            },
+            webPackageDiscoveryFn: (Directory uiProjectDir) async {
+              return [mockPackage];
+            },
+            registrationGenerateFn:
+                ({
+                  required Directory uiProjectDir,
+                  required List<WebPackageManifest> packages,
+                  String? outputDir,
+                }) async {
+                  return RegistrationResult(
+                    outputPath: '',
+                    packageCount: 1,
+                    factoryCount: 1,
+                    hasGenerated: true,
+                  );
+                },
+            webPackageCollectFn:
+                ({
+                  required Directory buildOutputDir,
+                  required List<WebPackageManifest> manifests,
+                }) async {
+                  // Return a collected asset path but do not create the file.
+                  final asset = CollectedAsset(
+                    packageName: 'test_package',
+                    relativePath: 'web/ext/main.js',
+                    sourcePath: '/fake/path/web/ext/main.js',
+                    destinationPath: p.join(
+                      buildOutputDir.path,
+                      'ext/packages/test_package/main.js',
+                    ),
+                    type: AssetType.js,
+                  );
+                  return CollectionResult(
+                    packages: 1,
+                    assets: [asset],
+                    skippedPackages: [],
+                  );
+                },
+            htmlInjectFn:
+                ({
+                  required File indexHtml,
+                  required CollectionResult collectionResult,
+                }) async {
+                  final content = indexHtml.readAsStringSync().replaceFirst(
+                    '<!-- FLUTTRON_PACKAGES_JS -->',
+                    '<script src="ext/packages/test_package/main.js"></script>',
+                  );
+                  indexHtml.writeAsStringSync(content);
+                  return InjectionResult(
+                    injectedJsCount: 1,
+                    injectedCssCount: 0,
+                    outputPath: indexHtml.path,
+                  );
+                },
+            writeOut: (_) {},
+            writeErr: (_) {},
+          );
+
+          final exitCode = await pipeline.build(
+            projectDir: projectDir,
+            manifestPath: p.join(projectDir.path, 'fluttron.json'),
+            manifest: const FluttronManifest(
+              name: 'demo',
+              version: '0.1.0',
+              entry: EntryConfig(
+                uiProjectPath: 'ui',
+                hostAssetPath: 'host/assets/www',
+                index: 'index.html',
+              ),
+            ),
+          );
+
+          expect(exitCode, 2);
+          expect(clearCalled, isFalse);
+        },
+      );
     });
   });
 }

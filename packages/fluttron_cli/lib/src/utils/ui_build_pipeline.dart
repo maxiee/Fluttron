@@ -305,19 +305,31 @@ class UiBuildPipeline {
       }
     }
 
-    // Step 9: Validate build output JS assets
+    // Step 9: Re-collect JS assets from build index (includes injected package scripts)
+    late final List<JsScriptAsset> buildScriptAssets;
+    try {
+      buildScriptAssets = _jsAssetValidator.collectLocalScriptAssets(
+        indexFile: indexFile,
+        webRootDir: buildOutputDir,
+      );
+    } on JsAssetValidationException catch (error) {
+      _writeErr(error.message);
+      return 2;
+    }
+
+    // Step 10: Validate build output JS assets
     final buildAssetLabel = p.normalize(
       p.join(manifest.entry.uiProjectPath, 'build', 'web'),
     );
     if (!_validateJsAssets(
       stageLabel: buildAssetLabel,
       rootDir: buildOutputDir,
-      assets: scriptAssets,
+      assets: buildScriptAssets,
     )) {
       return 2;
     }
 
-    // Step 10: Clear and copy to host assets
+    // Step 11: Clear and copy to host assets
     _writeOut('Clearing host assets directory...');
     await _clearDirectory(hostAssetsDir);
 
@@ -327,12 +339,12 @@ class UiBuildPipeline {
       destinationDir: hostAssetsDir,
     );
 
-    // Step 11: Validate host assets
+    // Step 12: Validate host assets
     final hostAssetLabel = p.normalize(manifest.entry.hostAssetPath);
     if (!_validateJsAssets(
       stageLabel: hostAssetLabel,
       rootDir: hostAssetsDir,
-      assets: scriptAssets,
+      assets: buildScriptAssets,
     )) {
       return 2;
     }
