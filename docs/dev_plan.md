@@ -212,6 +212,7 @@ Host 端:
 - v0029.5（计划外纠偏 Review）：完成 Web 视图注册机制重构并切换为 “先注册后渲染（Type 驱动）”。`packages/fluttron_ui` 新增 `web_view_registry.dart`（`FluttronWebViewRegistry` / `FluttronWebViewRegistration`）与 `html_view_runtime.dart`（args canonicalize + FNV-1a hash + resolved viewType 冲突保护）；`FluttronHtmlView` 从 `viewType/jsFactoryName/jsFactoryArgs` breaking 变更为 `type/args`；playground 改为启动注册 `fluttron.playground.milkdown.editor`，JS 工厂命名改为 `window.fluttronCreatePlaygroundMilkdownEditorView`；模板改为启动注册 + `type` 渲染，JS 工厂命名统一为 `window.fluttronCreateTemplateEditorView`。新增 `packages/fluttron_ui/test/web_view_registry_test.dart`、`packages/fluttron_ui/test/html_view_runtime_test.dart`，并升级 `packages/fluttron_cli/test/src/utils/template_contract_v0029_test.dart` 断言。验收通过：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）通过。
 
 - v0030：已完成模板 Host 自定义服务扩展指引：新增 `templates/host/lib/greeting_service.dart`（注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`）；重写 `templates/host/lib/main.dart` 添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`；更新 `templates/host/README.md` 补充自定义服务开发指引。验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
+- v0031：已完成 CLI 自动 `pnpm install`：修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`，在执行 `pnpm run js:build` 之前检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`；新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法。验收通过：创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
 ## Backlog (未来)
 
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
@@ -225,18 +226,20 @@ Host 端:
 
 ## 当前任务
 
-**v0030：模板 Host 自定义服务扩展指引 ✅ 已完成**
+**v0031：CLI 自动 `pnpm install` ✅ 已完成**
 
-### v0030 完成结果
+### v0031 完成结果
 
-- 新增 `templates/host/lib/greeting_service.dart`：提供注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`。
-- 重写 `templates/host/lib/main.dart`：添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`。
-- 更新 `templates/host/README.md`：补充自定义服务开发指引，包含服务结构示例和注册代码示例。
-- 验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
+- 修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`：
+  - 在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在
+  - 如果不存在且 `package.json` 有 `dependencies` 或 `devDependencies`，自动执行 `pnpm install`
+  - 打印 `[frontend] Running pnpm install...`
+  - 新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法
+- 验收通过：`flutter analyze` + `dart test`（`packages/fluttron_cli`）通过；创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
 
 ### 下一步
 
-- v0031：CLI 自动 `pnpm install`（在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`）。
+- v0032：新增 `web_package` 模板骨架（参见「新增重大需求拆解（Web Package）」）
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -254,7 +257,7 @@ Host 端:
 | 5 | ✅ `runFluttronUi` 已改为可配置入口（v0028） | `packages/fluttron_ui/lib/src/ui_app.dart` | 已完成 |
 | 6 | ✅ 已完成“先注册后渲染”纠偏：`FluttronWebViewRegistry + FluttronHtmlView(type,args)`（v0029.5） | `packages/fluttron_ui/lib/src/web_view_registry.dart` / `html_view*.dart` | 已完成 |
 | 7 | ✅ Template Host 自定义服务扩展指引（v0030） | templates/host/lib/greeting_service.dart, main.dart, README.md | 已完成 |
-| 8 | CLI `build` 不自动执行 `pnpm install` | frontend_builder.dart | 低 |
+| 8 | ✅ CLI `build` 已支持自动 `pnpm install`（v0031） | frontend_builder.dart | 已完成 |
 
 ---
 ### Steps
@@ -339,12 +342,12 @@ Host 端:
 4. ✅ 验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，能在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务
 
 ---
-**v0031 — CLI 自动 `pnpm install`**
-1. 修改 frontend_builder.dart：
+**v0031 — CLI 自动 `pnpm install` ✅ 已完成**
+1. ✅ 修改 frontend_builder.dart：
    - 在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在
    - 如果不存在且 `package.json` 有 `dependencies` 或 `devDependencies`，自动执行 `pnpm install`
    - 打印 `[frontend] Running pnpm install...`
-2. 验收：`fluttron create` 新项目后直接 `fluttron build`，无需手动 `pnpm install`
+2. ✅ 验收通过：`fluttron create` 新项目后删除 `node_modules`，直接 `fluttron build` 成功自动安装依赖。
 
 ---
 ### Verification

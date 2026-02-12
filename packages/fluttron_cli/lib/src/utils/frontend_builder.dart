@@ -155,6 +155,25 @@ class FrontendBuilder implements FrontendBuildStep {
       throw FrontendBuildException(_buildPnpmUnavailableMessage(pnpmCheck));
     }
 
+    // Auto-install dependencies if node_modules is missing
+    final nodeModulesDir = Directory(p.join(uiDir.path, 'node_modules'));
+    if (!nodeModulesDir.existsSync() && _hasDependencies(packageJsonFile)) {
+      _writeOut('[frontend] Running pnpm install...');
+      final installResult = await _commandRunner(
+        'pnpm',
+        const ['install'],
+        workingDirectory: uiDir.path,
+        streamOutput: true,
+      );
+      if (!installResult.isSuccess) {
+        throw FrontendBuildException(
+          'pnpm install failed with exit code ${installResult.exitCode}.\n'
+          'Check your network connection and package.json, then retry.',
+          exitCode: installResult.exitCode == 0 ? 2 : installResult.exitCode,
+        );
+      }
+    }
+
     if (scripts.containsKey('js:clean')) {
       _writeOut('Cleaning frontend assets with `pnpm run js:clean`...');
       final frontendClean = await _commandRunner(
@@ -194,23 +213,7 @@ class FrontendBuilder implements FrontendBuildStep {
   }
 
   Map<String, String> _readScripts(File packageJsonFile) {
-    final packageJsonPath = p.normalize(packageJsonFile.path);
-    final rawContents = packageJsonFile.readAsStringSync();
-
-    dynamic decoded;
-    try {
-      decoded = jsonDecode(rawContents);
-    } on FormatException catch (error) {
-      throw FrontendBuildException(
-        'Invalid package.json at $packageJsonPath (${error.message}).',
-      );
-    }
-
-    if (decoded is! Map<String, dynamic>) {
-      throw FrontendBuildException(
-        'Invalid package.json at $packageJsonPath (JSON object expected).',
-      );
-    }
+    final decoded = _parsePackageJson(packageJsonFile);
 
     final scripts = decoded['scripts'];
     if (scripts is! Map) {
@@ -231,6 +234,41 @@ class FrontendBuilder implements FrontendBuildStep {
       normalizedScripts[key] = trimmed;
     }
     return normalizedScripts;
+  }
+
+  /// Checks if package.json has any dependencies (dependencies or devDependencies).
+  bool _hasDependencies(File packageJsonFile) {
+    final decoded = _parsePackageJson(packageJsonFile);
+
+    final dependencies = decoded['dependencies'];
+    final devDependencies = decoded['devDependencies'];
+
+    final hasDeps = dependencies is Map && dependencies.isNotEmpty;
+    final hasDevDeps = devDependencies is Map && devDependencies.isNotEmpty;
+
+    return hasDeps || hasDevDeps;
+  }
+
+  Map<String, dynamic> _parsePackageJson(File packageJsonFile) {
+    final packageJsonPath = p.normalize(packageJsonFile.path);
+    final rawContents = packageJsonFile.readAsStringSync();
+
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(rawContents);
+    } on FormatException catch (error) {
+      throw FrontendBuildException(
+        'Invalid package.json at $packageJsonPath (${error.message}).',
+      );
+    }
+
+    if (decoded is! Map<String, dynamic>) {
+      throw FrontendBuildException(
+        'Invalid package.json at $packageJsonPath (JSON object expected).',
+      );
+    }
+
+    return decoded;
   }
 
   String _buildNodeUnavailableMessage(ProcessCommandResult result) {
