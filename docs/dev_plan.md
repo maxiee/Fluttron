@@ -211,6 +211,7 @@ Host 端:
 - v0029：已完成模板 UI 重写（基于核心库）并同步 playground：`templates/ui/lib/main.dart` 入口改为 `runFluttronUi(title: ..., home: const TemplateDemoPage())`，模板页使用 `FluttronHtmlView + FluttronEventBridge + async bootstrap`，保留 `FluttronClient` 的 `getPlatform/kvSet/kvGet` 演示；`templates/ui/frontend/src/main.js` 初版契约支持 `window.fluttronCreateTemplateHtmlView(viewId, initialText)` 并分发 `fluttron.template.editor.change`；新增模板回归测试与 CLI 契约测试（v0029）。playground 采用“模板骨架 + Milkdown”形态并保持原有 Milkdown 能力，同时事件载荷新增 `content` 兼容字段。验收通过：模板与 playground 的 `pnpm run js:build`、`flutter analyze`、`flutter test` 通过。
 - v0029.5（计划外纠偏 Review）：完成 Web 视图注册机制重构并切换为 “先注册后渲染（Type 驱动）”。`packages/fluttron_ui` 新增 `web_view_registry.dart`（`FluttronWebViewRegistry` / `FluttronWebViewRegistration`）与 `html_view_runtime.dart`（args canonicalize + FNV-1a hash + resolved viewType 冲突保护）；`FluttronHtmlView` 从 `viewType/jsFactoryName/jsFactoryArgs` breaking 变更为 `type/args`；playground 改为启动注册 `fluttron.playground.milkdown.editor`，JS 工厂命名改为 `window.fluttronCreatePlaygroundMilkdownEditorView`；模板改为启动注册 + `type` 渲染，JS 工厂命名统一为 `window.fluttronCreateTemplateEditorView`。新增 `packages/fluttron_ui/test/web_view_registry_test.dart`、`packages/fluttron_ui/test/html_view_runtime_test.dart`，并升级 `packages/fluttron_cli/test/src/utils/template_contract_v0029_test.dart` 断言。验收通过：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）通过。
 
+- v0030：已完成模板 Host 自定义服务扩展指引：新增 `templates/host/lib/greeting_service.dart`（注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`）；重写 `templates/host/lib/main.dart` 添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`；更新 `templates/host/README.md` 补充自定义服务开发指引。验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
 ## Backlog (未来)
 
 - 风险：后续模板对 Host/UI 的入口 API 需求不清晰，可能需要轻量调整导出
@@ -224,21 +225,18 @@ Host 端:
 
 ## 当前任务
 
-**v0029.5：Web 视图注册机制纠偏 Review（计划外）✅ 已完成**
+**v0030：模板 Host 自定义服务扩展指引 ✅ 已完成**
 
-### v0029.5 完成结果
+### v0030 完成结果
 
-- 完成核心机制纠偏：`packages/fluttron_ui` 新增 `FluttronWebViewRegistry`，支持显式 `register/registerAll/lookup`，统一管理 `type -> jsFactoryName` 映射。
-- 完成渲染范式纠偏：`FluttronHtmlView` 已 breaking 切换为 `type + args`，移除 `viewType/jsFactoryName/jsFactoryArgs` 直传。
-- 完成运行时冲突保护：新增 `html_view_runtime.dart`，实现 args canonicalization、`type.__<fnv1a64>` resolved viewType 生成与冲突检测。
-- 完成命名语义纠偏：playground 视图类型改为 `fluttron.playground.milkdown.editor`，并在启动阶段集中注册；JS 工厂改为 `window.fluttronCreatePlaygroundMilkdownEditorView`。
-- 完成模板链路追齐：模板改为启动注册 + type 驱动渲染；JS 工厂统一为 `window.fluttronCreateTemplateEditorView`。
-- 完成回归测试补强：新增 `web_view_registry_test.dart`、`html_view_runtime_test.dart`，并将 CLI 模板契约测试升级为 v0030 断言（注册中心 + type 渲染 + 新工厂名）。
-- 本轮已完成静态与单测验收：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）全部通过。
+- 新增 `templates/host/lib/greeting_service.dart`：提供注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`。
+- 重写 `templates/host/lib/main.dart`：添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`。
+- 更新 `templates/host/README.md`：补充自定义服务开发指引，包含服务结构示例和注册代码示例。
+- 验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
 
 ### 下一步
 
-- v0030：模板 Host 自定义服务扩展指引（补充 `greeting_service.dart` 注释骨架与 `runFluttronHost(registry: ...)` 扩展示例）。
+- v0031：CLI 自动 `pnpm install`（在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`）。
 
 ## Plan: v0025～0031 — 从 playground 到通用框架的能力下沉
 
@@ -255,7 +253,7 @@ Host 端:
 | 4 | ✅ `fluttron_ui` 已提供 JS→Flutter `CustomEvent` 事件桥（v0027） | `packages/fluttron_ui/lib/src/event_bridge.dart` | 已完成 |
 | 5 | ✅ `runFluttronUi` 已改为可配置入口（v0028） | `packages/fluttron_ui/lib/src/ui_app.dart` | 已完成 |
 | 6 | ✅ 已完成“先注册后渲染”纠偏：`FluttronWebViewRegistry + FluttronHtmlView(type,args)`（v0029.5） | `packages/fluttron_ui/lib/src/web_view_registry.dart` / `html_view*.dart` | 已完成 |
-| 7 | Template Host 无自定义服务扩展演示 | main.dart | 低 |
+| 7 | ✅ Template Host 自定义服务扩展指引（v0030） | templates/host/lib/greeting_service.dart, main.dart, README.md | 已完成 |
 | 8 | CLI `build` 不自动执行 `pnpm install` | frontend_builder.dart | 低 |
 
 ---
@@ -327,15 +325,18 @@ Host 端:
 7. ✅ 验收通过：`pnpm run js:build`（playground/template）、`flutter analyze` + `flutter test`（`packages/fluttron_ui`、`playground/ui`、`templates/ui`）、`dart test`（`packages/fluttron_cli`）
 
 ---
-**v0030 — 模板 Host 自定义服务扩展指引**
-1. 在 lib 下新增 `greeting_service.dart`（空白骨架）：
+**v0030 — 模板 Host 自定义服务扩展指引 ✅ 已完成**
+1. ✅ 在 lib 下新增 `greeting_service.dart`（注释骨架）：
    - 继承 `FluttronService`，`namespace` 为 `'greeting'`
    - `handle` 方法中只有一个 `greet` 方法，返回 `{'message': 'Hello from custom service!'}`
-   - 但整体置为注释状态（`// TODO: Uncomment to enable`），供开发者参考
-2. 修改 main.dart：
+   - 整体置为注释状态，供开发者参考，附详细说明如何启用
+2. ✅ 修改 main.dart：
    - 添加注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`
    - 提供被注释掉的完整代码示例（导入 `greeting_service.dart`，创建 registry，注册 `GreetingService`）
-3. 验收：开发者取消注释后，能在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务
+3. ✅ 更新 `templates/host/README.md`：
+   - 补充自定义服务开发指引
+   - 包含服务结构示例和注册代码示例
+4. ✅ 验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，能在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务
 
 ---
 **v0031 — CLI 自动 `pnpm install`**
