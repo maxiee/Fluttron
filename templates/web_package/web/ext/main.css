@@ -1,0 +1,35 @@
+/* Web Package Template - CSS Isolation Example */
+/* Using BEM naming convention: .<package>__<element>--<modifier> */
+
+.template-package-example {
+  /* Container styles - scoped by unique class name */
+}
+
+.template-package-example__header {
+  /* Header element styles */
+}
+
+.template-package-example__badge {
+  /* Badge element styles */
+}
+
+.template-package-example__title {
+  /* Title element styles */
+}
+
+.template-package-example__editor {
+  /* Editor element styles */
+}
+
+.template-package-example__editor--focused {
+  /* Focused state modifier */
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.template-package-example__editor--disabled {
+  /* Disabled state modifier */
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}

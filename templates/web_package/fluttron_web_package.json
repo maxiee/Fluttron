@@ -1,0 +1,22 @@
+{
+  "$schema": "https://fluttron.dev/schemas/web_package.json",
+  "version": "1",
+  "viewFactories": [
+    {
+      "type": "template_package.example",
+      "jsFactoryName": "fluttronCreateTemplatePackageExampleView",
+      "description": "Example view factory for web package template"
+    }
+  ],
+  "assets": {
+    "js": ["web/ext/main.js"],
+    "css": ["web/ext/main.css"]
+  },
+  "events": [
+    {
+      "name": "fluttron.template_package.example.change",
+      "direction": "js_to_dart",
+      "payloadType": "{ content: string, timestamp: number }"
+    }
+  ]
+}

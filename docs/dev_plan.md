@@ -280,6 +280,7 @@ bridge.on('my.editor.change').listen((data) {
 
 - v0030：已完成模板 Host 自定义服务扩展指引：新增 `templates/host/lib/greeting_service.dart`（注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`）；重写 `templates/host/lib/main.dart` 添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`；更新 `templates/host/README.md` 补充自定义服务开发指引。验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
 - v0031：已完成 CLI 自动 `pnpm install`：修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`，在执行 `pnpm run js:build` 之前检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`；新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法。验收通过：创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
+- v0032：已完成 `web_package` 模板骨架：新增 `templates/web_package/` 目录，包含 `pubspec.yaml`（含 `fluttron_web_package: true` 标记）、`fluttron_web_package.json` manifest、`frontend/` 前端构建链路（`package.json` + `scripts/build-frontend.mjs` + `src/main.js`）、`web/ext/` 默认产物（`main.js` + `main.css`）、`lib/` Dart 库（入口 + 示例 widget）、`README.md`（含 CSS 命名隔离约定 BEM 指南）。验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过。
 
 ## Backlog (未来)
 
@@ -294,20 +295,29 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0031：CLI 自动 `pnpm install` ✅ 已完成**
+**v0032：新增 `web_package` 模板骨架 ✅ 已完成**
 
-### v0031 完成结果
+### v0032 完成结果
 
-- 修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`：
-  - 在执行 `pnpm run js:build` 之前，检查 `node_modules` 目录是否存在
-  - 如果不存在且 `package.json` 有 `dependencies` 或 `devDependencies`，自动执行 `pnpm install`
-  - 打印 `[frontend] Running pnpm install...`
-  - 新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法
-- 验收通过：`flutter analyze` + `dart test`（`packages/fluttron_cli`）通过；创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
+- 新增 `templates/web_package/` 目录结构：
+  - `pubspec.yaml` - Dart 包定义，含 `fluttron_web_package: true` 标记
+  - `fluttron_web_package.json` - Asset manifest（viewFactories、assets、events）
+  - `frontend/` - 前端构建链路
+    - `package.json` - pnpm + esbuild 配置
+    - `scripts/build-frontend.mjs` - 构建脚本（build/watch/clean）
+    - `src/main.js` - 示例视图工厂（`fluttronCreateTemplatePackageExampleView`）
+  - `web/ext/` - 默认运行时产物
+    - `main.js` - 构建产物（已提交）
+    - `main.css` - CSS 隔离示例（已提交）
+  - `lib/` - Dart 库
+    - `fluttron_web_package_template.dart` - 库入口
+    - `src/example_widget.dart` - 示例 widget + 事件订阅辅助
+  - `README.md` - 模板文档，含 CSS 命名隔离约定（BEM）指南
+- 验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过
 
 ### 下一步
 
-- v0032：新增 `web_package` 模板骨架（参见「新增重大需求拆解（Web Package）」）
+- v0033：增强 `fluttron create` 支持 `--type web_package`（参见「新增重大需求拆解（Web Package）」）
 
 ## 我的问题
 

@@ -1,0 +1,13 @@
+{
+  "name": "fluttron-web-package-template-frontend",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "js:build": "node scripts/build-frontend.mjs",
+    "js:watch": "node scripts/build-frontend.mjs --watch",
+    "js:clean": "node scripts/build-frontend.mjs --clean"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
