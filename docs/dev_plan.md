@@ -283,6 +283,7 @@ bridge.on('my.editor.change').listen((data) {
 - v0032：已完成 `web_package` 模板骨架：新增 `templates/web_package/` 目录，包含 `pubspec.yaml`（含 `fluttron_web_package: true` 标记）、`fluttron_web_package.json` manifest、`frontend/` 前端构建链路（`package.json` + `scripts/build-frontend.mjs` + `src/main.js`）、`web/ext/` 默认产物（`main.js` + `main.css`）、`lib/` Dart 库（入口 + 示例 widget）、`README.md`（含 CSS 命名隔离约定 BEM 指南）。验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过。
 - v0033：已完成 `fluttron create --type web_package` 支持：扩展 `packages/fluttron_cli/lib/src/commands/create.dart` 新增 `--type` 选项（`app|web_package`，默认 `app`）；新增 `packages/fluttron_cli/lib/src/utils/web_package_copier.dart` 实现 web_package 模板的变量替换逻辑（支持 snake_case/PascalCase/camelCase/kebab-case 命名转换，自动跳过 `node_modules`/`.dart_tool`/`build` 目录）；新增测试 `packages/fluttron_cli/test/src/utils/web_package_copier_test.dart` 和 `packages/fluttron_cli/test/src/commands/create_command_test.dart` 覆盖类型分支与向后兼容。验收通过：`dart test`（`packages/fluttron_cli`）全部通过。
 - v0034：已完成 Web Package Manifest 解析与校验：新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`，定义 `WebPackageManifest`、`ViewFactory`、`Assets`、`Event` 模型类，实现 `WebPackageManifestLoader` 加载器；校验规则包括 `version` 必须为 `"1"`、`type` 匹配 `^[a-z0-9_]+\.[a-z0-9_]+$`、`jsFactoryName` 匹配 `^fluttronCreate[A-Z][a-zA-Z0-9]*View$`、JS/CSS 路径格式、事件命名空间格式等；对非法 manifest 提供可读报错。新增测试 `packages/fluttron_cli/test/src/utils/web_package_manifest_test.dart` 覆盖合法解析与各种非法场景（30 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）68 个测试全部通过。
+- v0035：已完成基于 `package_config.json` 的依赖发现：新增 `packages/fluttron_cli/lib/src/utils/web_package_discovery.dart`，定义 `PackageConfigEntry` 和 `PackageConfig` 模型类解析 package_config.json；实现 `WebPackageDiscovery` 类提供 `discover()` 异步和 `discoverSync()` 同步方法；支持相对路径依赖（如 `../packages/my_package`）和 file:// URI 绝对路径依赖（pub cache 中的包）；覆盖 path/git/hosted 依赖场景；对每个依赖检查 `fluttron_web_package.json` 是否存在，命中后加载 manifest 并设置 `packageName` 和 `rootPath`；缺失 `package_config.json` 时提供可读报错提示运行 `flutter pub get`。新增测试 `packages/fluttron_cli/test/src/utils/web_package_discovery_test.dart`（19 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）87 个测试全部通过。
 
 ## Backlog (未来)
 
@@ -297,30 +298,32 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0034：新增 Web Package Manifest 解析与校验 ✅ 已完成**
+**v0035：基于 `package_config.json` 的依赖发现 ✅ 已完成**
 
-### v0034 完成结果
+### v0035 完成结果
 
-- 新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`：
-  - 定义 manifest 模型类：`WebPackageManifest`、`ViewFactory`、`Assets`、`Event`、`EventDirection`
-  - 实现 `WebPackageManifestLoader` 加载器与校验器
-  - 手写 `fromJson`/`toJson`，避免 build_runner 依赖
-  - 提供 `load()` 和 `tryLoad()` 两种加载方式
-- 校验规则（严格遵循 PRD）：
-  - `version`: 必须为 `"1"`
-  - `viewFactories[].type`: `^[a-z0-9_]+\.[a-z0-9_]+$` (package.type 格式)
-  - `viewFactories[].jsFactoryName`: `^fluttronCreate[A-Z][a-zA-Z0-9]*View$`
-  - `assets.js`: 必需，路径匹配 `^web/ext/[^/]+\.js$`
-  - `assets.css`: 可选，路径匹配 `^web/ext/[^/]+\.css$`
-  - `events[].name`: `^fluttron\.[a-z0-9_]+\.[a-z0-9_.]+$`
-  - `events[].direction`: 枚举 `js_to_dart` | `dart_to_js` | `bidirectional`
-- 新增测试 `packages/fluttron_cli/test/src/utils/web_package_manifest_test.dart`：
-  - 30 个测试覆盖：合法解析、可选字段、非法校验（版本/类型/路径/事件）、边界情况
-- 验收通过：`dart test`（`packages/fluttron_cli`）68 个测试全部通过
+- 新增 `packages/fluttron_cli/lib/src/utils/web_package_discovery.dart`：
+  - 定义 `PackageConfigEntry` 模型类，支持解析 package_config.json 中的包条目
+  - 定义 `PackageConfig` 模型类，解析完整的 package_config.json 结构
+  - 实现 `WebPackageDiscovery` 类，提供 `discover()` 异步方法和 `discoverSync()` 同步方法
+- 核心功能：
+  - 从 `ui/.dart_tool/package_config.json` 解析依赖树
+  - 支持相对路径依赖（如 `../packages/my_package`）
+  - 支持 file:// URI 绝对路径依赖（如 pub cache 中的包）
+  - 支持 path/git/hosted 依赖场景（pub get 后均解析为本地路径）
+  - 对每个依赖检查 `fluttron_web_package.json` 是否存在
+  - 命中后加载 manifest 并设置 `packageName` 和 `rootPath`
+  - 无效 manifest 自动跳过（使用 `tryLoad`）
+- 错误处理：
+  - 缺失 `package_config.json` 时提供可读报错，提示运行 `flutter pub get`
+  - JSON 解析失败时提供详细错误信息
+- 新增测试 `packages/fluttron_cli/test/src/utils/web_package_discovery_test.dart`：
+  - 19 个测试覆盖：模型解析、路径解析（相对/绝对）、发现逻辑、错误处理、异步同步一致性
+- 验收通过：`dart test`（`packages/fluttron_cli`）87 个测试全部通过
 
 ### 下一步
 
-- v0035：基于 `package_config.json` 的依赖发现（参见「新增重大需求拆解（Web Package）」）
+- v0036：构建产物阶段新增资源收集器（参见「新增重大需求拆解（Web Package）」）
 
 ## 我的问题
 
