@@ -6,6 +6,10 @@ import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:path/path.dart' as p;
 
 import '../utils/template_copy.dart';
+import '../utils/web_package_copier.dart';
+
+/// Supported project types for creation.
+enum ProjectType { app, webPackage }
 
 class CreateCommand extends Command<int> {
   @override
@@ -23,9 +27,16 @@ class CreateCommand extends Command<int> {
         valueHelp: 'name',
       )
       ..addOption(
+        'type',
+        help:
+            'Project type: "app" for full Fluttron app, "web_package" for reusable web package.',
+        valueHelp: 'type',
+        allowed: ['app', 'web_package'],
+        defaultsTo: 'app',
+      )
+      ..addOption(
         'template',
-        abbr: 't',
-        help: 'Path to templates root (optional).',
+        help: 'Path to templates root (optional, only for app type).',
         valueHelp: 'path',
       );
   }
@@ -35,7 +46,8 @@ class CreateCommand extends Command<int> {
     final targetPath = _readSingleRest('target directory');
     final targetDir = Directory(targetPath);
     final normalizedTarget = p.normalize(targetDir.path);
-    final templateDir = _resolveTemplateDir();
+    final projectType = _resolveProjectType();
+    final name = _resolveProjectName(normalizedTarget);
 
     if (targetDir.existsSync()) {
       final entries = targetDir.listSync();
@@ -45,18 +57,21 @@ class CreateCommand extends Command<int> {
       }
     }
 
-    final name = _resolveProjectName(normalizedTarget);
     try {
-      final copier = TemplateCopier();
-      await copier.copyContents(
-        sourceDir: templateDir,
-        destinationDir: targetDir,
-      );
-      _updateManifest(
-        manifestFile: File(p.join(targetDir.path, 'fluttron.json')),
-        projectName: name,
-      );
-      _rewritePubspecPaths(projectDir: targetDir, templateDir: templateDir);
+      switch (projectType) {
+        case ProjectType.app:
+          await _createAppProject(
+            targetDir: targetDir,
+            normalizedTarget: normalizedTarget,
+            name: name,
+          );
+        case ProjectType.webPackage:
+          await _createWebPackageProject(
+            targetDir: targetDir,
+            normalizedTarget: normalizedTarget,
+            name: name,
+          );
+      }
     } on FileSystemException catch (error) {
       stderr.writeln(error.message);
       return 2;
@@ -65,11 +80,107 @@ class CreateCommand extends Command<int> {
       return 2;
     }
 
-    stdout.writeln('Project created: $normalizedTarget');
-    stdout.writeln('Template: ${p.normalize(templateDir.path)}');
-    stdout.writeln('Name: $name');
-    stdout.writeln('Next step: run `fluttron build` in the project directory.');
+    _printSuccessMessage(
+      normalizedTarget: normalizedTarget,
+      projectType: projectType,
+      name: name,
+    );
     return 0;
+  }
+
+  Future<void> _createAppProject({
+    required Directory targetDir,
+    required String normalizedTarget,
+    required String name,
+  }) async {
+    final templateDir = _resolveTemplateDir(subdir: 'host');
+    final uiTemplateDir = _resolveTemplateDir(subdir: 'ui');
+    final rootTemplateDir = templateDir.parent;
+
+    final copier = TemplateCopier();
+
+    // Copy host template
+    final hostTargetDir = Directory(p.join(targetDir.path, 'host'));
+    await copier.copyContents(
+      sourceDir: templateDir,
+      destinationDir: hostTargetDir,
+    );
+
+    // Copy ui template
+    final uiTargetDir = Directory(p.join(targetDir.path, 'ui'));
+    await copier.copyContents(
+      sourceDir: uiTemplateDir,
+      destinationDir: uiTargetDir,
+    );
+
+    // Copy fluttron.json from root template directory
+    final rootManifest = File(p.join(rootTemplateDir.path, 'fluttron.json'));
+    if (rootManifest.existsSync()) {
+      await rootManifest.copy(p.join(targetDir.path, 'fluttron.json'));
+    }
+
+    // Update manifest
+    _updateManifest(
+      manifestFile: File(p.join(targetDir.path, 'fluttron.json')),
+      projectName: name,
+    );
+
+    // Rewrite pubspec paths
+    _rewritePubspecPaths(projectDir: targetDir, templateDir: rootTemplateDir);
+  }
+
+  Future<void> _createWebPackageProject({
+    required Directory targetDir,
+    required String normalizedTarget,
+    required String name,
+  }) async {
+    final templateDir = _resolveTemplateDir(subdir: 'web_package');
+
+    final copier = WebPackageCopier();
+    await copier.copyAndTransform(
+      packageName: name,
+      sourceDir: templateDir,
+      destinationDir: targetDir,
+    );
+
+    // Rewrite pubspec path for fluttron_ui dependency
+    _rewriteWebPackagePubspecPath(
+      pubspecFile: File(p.join(targetDir.path, 'pubspec.yaml')),
+      templateDir: templateDir.parent,
+    );
+  }
+
+  void _printSuccessMessage({
+    required String normalizedTarget,
+    required ProjectType projectType,
+    required String name,
+  }) {
+    stdout.writeln('Project created: $normalizedTarget');
+    stdout.writeln(
+      'Type: ${projectType == ProjectType.app ? 'app' : 'web_package'}',
+    );
+    stdout.writeln('Name: $name');
+
+    if (projectType == ProjectType.app) {
+      stdout.writeln(
+        'Next step: run `fluttron build` in the project directory.',
+      );
+    } else {
+      stdout.writeln('Next steps:');
+      stdout.writeln('  1. cd $normalizedTarget/frontend && pnpm install');
+      stdout.writeln('  2. pnpm run js:build');
+      stdout.writeln(
+        '  3. Add this package to your app\'s ui/pubspec.yaml dependencies',
+      );
+    }
+  }
+
+  ProjectType _resolveProjectType() {
+    final typeArg = argResults?['type'] as String?;
+    if (typeArg == 'web_package') {
+      return ProjectType.webPackage;
+    }
+    return ProjectType.app;
   }
 
   String _readSingleRest(String label) {
@@ -83,16 +194,24 @@ class CreateCommand extends Command<int> {
     return rest.first;
   }
 
-  Directory _resolveTemplateDir() {
+  Directory _resolveTemplateDir({String? subdir}) {
     final templateArg = argResults?['template'] as String?;
-    final templatePath = templateArg?.trim();
-    final resolvedPath = templatePath != null && templatePath.isNotEmpty
-        ? templatePath
-        : p.join(Directory.current.path, 'templates');
-    final dir = Directory(p.normalize(resolvedPath));
+    var templatePath = templateArg?.trim();
+
+    // If no template arg, use default templates directory
+    if (templatePath == null || templatePath.isEmpty) {
+      templatePath = p.join(Directory.current.path, 'templates');
+    }
+
+    // If subdir is specified, append it
+    if (subdir != null) {
+      templatePath = p.join(templatePath, subdir);
+    }
+
+    final dir = Directory(p.normalize(templatePath));
     if (!dir.existsSync()) {
       throw UsageException(
-        'Template directory not found: ${p.normalize(resolvedPath)}',
+        'Template directory not found: ${p.normalize(templatePath)}',
         usage,
       );
     }
@@ -147,7 +266,7 @@ class CreateCommand extends Command<int> {
     required Directory projectDir,
     required Directory templateDir,
   }) {
-    final packagesDir = Directory(p.join(templateDir.parent.path, 'packages'));
+    final packagesDir = Directory(p.join(templateDir.path, 'packages'));
     if (!packagesDir.existsSync()) {
       return;
     }
@@ -161,6 +280,32 @@ class CreateCommand extends Command<int> {
       File(p.join(projectDir.path, 'ui', 'pubspec.yaml')),
       normalizedPackages,
     );
+  }
+
+  void _rewriteWebPackagePubspecPath({
+    required File pubspecFile,
+    required Directory templateDir,
+  }) {
+    if (!pubspecFile.existsSync()) {
+      return;
+    }
+
+    final packagesDir = Directory(p.join(templateDir.path, 'packages'));
+    if (!packagesDir.existsSync()) {
+      return;
+    }
+
+    final normalizedPackages = p.normalize(packagesDir.path);
+
+    final original = pubspecFile.readAsStringSync();
+    var updated = original.replaceAll(
+      'path: ../../packages/fluttron_ui',
+      'path: ${p.join(normalizedPackages, 'fluttron_ui')}',
+    );
+
+    if (updated != original) {
+      pubspecFile.writeAsStringSync(updated);
+    }
   }
 
   void _rewritePubspecFile(File file, String packagesPath) {

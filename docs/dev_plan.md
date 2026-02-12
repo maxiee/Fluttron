@@ -281,6 +281,7 @@ bridge.on('my.editor.change').listen((data) {
 - v0030：已完成模板 Host 自定义服务扩展指引：新增 `templates/host/lib/greeting_service.dart`（注释掉的 `GreetingService` 示例，继承 `FluttronService`，`namespace` 为 `'greeting'`，含 `greet` 方法返回 `{'message': 'Hello from custom service!'}`）；重写 `templates/host/lib/main.dart` 添加详细注释说明如何创建自定义 `ServiceRegistry`、注册额外服务、传入 `runFluttronHost(registry: ...)`；更新 `templates/host/README.md` 补充自定义服务开发指引。验收通过：`flutter analyze`（`templates/host/lib/`）通过。开发者取消注释后，可在 UI 端通过 `FluttronClient.invoke('greeting.greet', {})` 调用自定义服务。
 - v0031：已完成 CLI 自动 `pnpm install`：修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`，在执行 `pnpm run js:build` 之前检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`；新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法。验收通过：创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
 - v0032：已完成 `web_package` 模板骨架：新增 `templates/web_package/` 目录，包含 `pubspec.yaml`（含 `fluttron_web_package: true` 标记）、`fluttron_web_package.json` manifest、`frontend/` 前端构建链路（`package.json` + `scripts/build-frontend.mjs` + `src/main.js`）、`web/ext/` 默认产物（`main.js` + `main.css`）、`lib/` Dart 库（入口 + 示例 widget）、`README.md`（含 CSS 命名隔离约定 BEM 指南）。验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过。
+- v0033：已完成 `fluttron create --type web_package` 支持：扩展 `packages/fluttron_cli/lib/src/commands/create.dart` 新增 `--type` 选项（`app|web_package`，默认 `app`）；新增 `packages/fluttron_cli/lib/src/utils/web_package_copier.dart` 实现 web_package 模板的变量替换逻辑（支持 snake_case/PascalCase/camelCase/kebab-case 命名转换，自动跳过 `node_modules`/`.dart_tool`/`build` 目录）；新增测试 `packages/fluttron_cli/test/src/utils/web_package_copier_test.dart` 和 `packages/fluttron_cli/test/src/commands/create_command_test.dart` 覆盖类型分支与向后兼容。验收通过：`dart test`（`packages/fluttron_cli`）全部通过。
 
 ## Backlog (未来)
 
@@ -295,32 +296,28 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0032：新增 `web_package` 模板骨架 ✅ 已完成**
+**v0033：增强 `fluttron create` 支持 `--type web_package` ✅ 已完成**
 
-### v0032 完成结果
+### v0033 完成结果
 
-- 新增 `templates/web_package/` 目录结构：
-  - `pubspec.yaml` - Dart 包定义，含 `fluttron_web_package: true` 标记
-  - `fluttron_web_package.json` - Asset manifest（viewFactories、assets、events）
-  - `frontend/` - 前端构建链路
-    - `package.json` - pnpm + esbuild 配置
-    - `scripts/build-frontend.mjs` - 构建脚本（build/watch/clean）
-    - `src/main.js` - 示例视图工厂（`fluttronCreateTemplatePackageExampleView`）
-  - `web/ext/` - 默认运行时产物
-    - `main.js` - 构建产物（已提交）
-    - `main.css` - CSS 隔离示例（已提交）
-  - `lib/` - Dart 库
-    - `fluttron_web_package_template.dart` - 库入口
-    - `src/example_widget.dart` - 示例 widget + 事件订阅辅助
-  - `README.md` - 模板文档，含 CSS 命名隔离约定（BEM）指南
-- 更新 `templates/ui/web/index.html`，预置 `<!-- FLUTTRON_PACKAGES_JS -->` 和 `<!-- FLUTTRON_PACKAGES_CSS -->` 占位符
-- 更新 `.gitignore`，忽略 `node_modules/` 和 `*.map` 文件
-- 更新 PRD（v0.2.0 → v0.3.0），将类型冲突策略改为严格模式
-- 验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过
+- 扩展 `packages/fluttron_cli/lib/src/commands/create.dart`：
+  - 新增 `--type` 选项，支持 `app|web_package`，默认为 `app`
+  - 重构 `run()` 方法，根据类型分发到 `_createAppProject()` 或 `_createWebPackageProject()`
+  - `_createAppProject()` 现在显式拷贝 `templates/fluttron.json` 到目标目录
+- 新增 `packages/fluttron_cli/lib/src/utils/web_package_copier.dart`：
+  - `WebPackageCopier` 类实现 web_package 模板的拷贝与变量替换
+  - 支持 snake_case/PascalCase/camelCase/kebab-case 四种命名转换
+  - 自动跳过 `node_modules`、`.dart_tool`、`build`、`.idea` 目录
+  - 对二进制文件（`.map`、图片、字体等）直接拷贝不做文本转换
+  - 特殊处理 `pubspec.yaml`（更新 name 字段）和 `fluttron_web_package.json`（更新 type/jsFactoryName/events）
+- 新增测试：
+  - `packages/fluttron_cli/test/src/utils/web_package_copier_test.dart`：覆盖命名转换、文件重命名、内容替换
+  - `packages/fluttron_cli/test/src/commands/create_command_test.dart`：覆盖 `--type` 选项、默认行为、向后兼容
+- 验收通过：`dart test`（`packages/fluttron_cli`）38 个测试全部通过
 
 ### 下一步
 
-- v0033：增强 `fluttron create` 支持 `--type web_package`（参见「新增重大需求拆解（Web Package）」）
+- v0034：新增 Web Package Manifest 解析与校验（参见「新增重大需求拆解（Web Package）」）
 
 ## 我的问题
 
