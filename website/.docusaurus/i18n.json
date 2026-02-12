@@ -14,8 +14,8 @@
       "calendar": "gregory",
       "path": "en",
       "translate": false,
-      "url": "https://fluttron.dev",
-      "baseUrl": "/"
+      "url": "https://maxiee.github.io",
+      "baseUrl": "/Fluttron/"
     },
     "zh-CN": {
       "label": "中文（中国）",
@@ -24,8 +24,8 @@
       "calendar": "gregory",
       "path": "zh-CN",
       "translate": false,
-      "url": "https://fluttron.dev",
-      "baseUrl": "/zh-CN/"
+      "url": "https://maxiee.github.io",
+      "baseUrl": "/Fluttron/zh-CN/"
     }
   }
 }

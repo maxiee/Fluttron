@@ -3,74 +3,80 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/zh-CN/docs',
-    component: ComponentCreator('/zh-CN/docs', '88c'),
+    path: '/Fluttron/zh-CN/docs',
+    component: ComponentCreator('/Fluttron/zh-CN/docs', 'f0c'),
     routes: [
       {
-        path: '/zh-CN/docs',
-        component: ComponentCreator('/zh-CN/docs', '4e5'),
+        path: '/Fluttron/zh-CN/docs',
+        component: ComponentCreator('/Fluttron/zh-CN/docs', 'a40'),
         routes: [
           {
-            path: '/zh-CN/docs',
-            component: ComponentCreator('/zh-CN/docs', '560'),
+            path: '/Fluttron/zh-CN/docs',
+            component: ComponentCreator('/Fluttron/zh-CN/docs', 'db0'),
             routes: [
               {
-                path: '/zh-CN/docs/api/services',
-                component: ComponentCreator('/zh-CN/docs/api/services', 'e83'),
+                path: '/Fluttron/zh-CN/docs/api/services',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/services', 'a92'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/architecture/bridge-communication',
-                component: ComponentCreator('/zh-CN/docs/architecture/bridge-communication', 'e09'),
+                path: '/Fluttron/zh-CN/docs/api/web-views',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/web-views', '718'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/architecture/host-layer',
-                component: ComponentCreator('/zh-CN/docs/architecture/host-layer', '023'),
+                path: '/Fluttron/zh-CN/docs/architecture/bridge-communication',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/architecture/bridge-communication', '186'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/architecture/overview',
-                component: ComponentCreator('/zh-CN/docs/architecture/overview', 'c14'),
+                path: '/Fluttron/zh-CN/docs/architecture/host-layer',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/architecture/host-layer', 'ecc'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/architecture/renderer-layer',
-                component: ComponentCreator('/zh-CN/docs/architecture/renderer-layer', 'cd0'),
+                path: '/Fluttron/zh-CN/docs/architecture/overview',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/architecture/overview', '386'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/examples/hello-world',
-                component: ComponentCreator('/zh-CN/docs/examples/hello-world', '982'),
+                path: '/Fluttron/zh-CN/docs/architecture/renderer-layer',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/architecture/renderer-layer', 'e0b'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/getting-started/installation',
-                component: ComponentCreator('/zh-CN/docs/getting-started/installation', '10b'),
+                path: '/Fluttron/zh-CN/docs/examples/hello-world',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/examples/hello-world', '9b8'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/getting-started/project-structure',
-                component: ComponentCreator('/zh-CN/docs/getting-started/project-structure', '1da'),
+                path: '/Fluttron/zh-CN/docs/getting-started/installation',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/installation', 'e4a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/getting-started/quick-start',
-                component: ComponentCreator('/zh-CN/docs/getting-started/quick-start', '0a7'),
+                path: '/Fluttron/zh-CN/docs/getting-started/project-structure',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/project-structure', '99a'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
               {
-                path: '/zh-CN/docs/intro',
-                component: ComponentCreator('/zh-CN/docs/intro', '1c9'),
+                path: '/Fluttron/zh-CN/docs/getting-started/quick-start',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/quick-start', '4f0'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/intro',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/intro', '3d9'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               }
@@ -81,8 +87,8 @@ export default [
     ]
   },
   {
-    path: '/zh-CN/',
-    component: ComponentCreator('/zh-CN/', '42a'),
+    path: '/Fluttron/zh-CN/',
+    component: ComponentCreator('/Fluttron/zh-CN/', 'f3e'),
     exact: true
   },
   {

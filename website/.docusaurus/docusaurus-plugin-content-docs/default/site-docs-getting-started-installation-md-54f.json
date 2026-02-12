@@ -1,24 +1,24 @@
 {
   "id": "getting-started/installation",
   "title": "Installation",
-  "description": "This guide will help you install and set up Fluttron on your development machine.",
+  "description": "This guide sets up Fluttron for local development on macOS (initial focus).",
   "source": "@site/docs/getting-started/installation.md",
   "sourceDirName": "getting-started",
   "slug": "/getting-started/installation",
-  "permalink": "/zh-CN/docs/getting-started/installation",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/installation",
   "draft": false,
   "unlisted": false,
-  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/getting-started/installation.md",
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/installation.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "intro",
-    "permalink": "/zh-CN/docs/intro"
+    "permalink": "/Fluttron/zh-CN/docs/intro"
   },
   "next": {
     "title": "Installation",
-    "permalink": "/zh-CN/docs/getting-started/installation"
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/installation"
   }
 }

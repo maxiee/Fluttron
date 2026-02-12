@@ -49,6 +49,14 @@ The default demo includes:
 - **System Service**: `system.getPlatform`
 - **Storage Service**: `storage.kvSet` / `storage.kvGet`
 - **Bridge Communication**: JSON IPC between Host and Renderer
+- **Web View**: Embedded editor using `FluttronHtmlView`
+- **Event Bridge**: JS→Flutter event communication
+
+## Custom Services
+
+The template includes a commented-out custom service example:
+- `host/lib/greeting_service.dart` - Example service skeleton
+- Uncomment to enable and call from UI: `FluttronClient.invoke('greeting.greet', {})`
 
 ## Notes
 
@@ -64,4 +72,5 @@ Frontend pipeline notes:
 
 - [Project Structure](./project-structure.md) - Learn repo and template layout
 - [Architecture Overview](../architecture/overview.md) - Deep dive into Fluttron architecture
-- [API Reference](../api/services.md) - Explore available services
+- [Services API](../api/services.md) - Built-in and custom services reference
+- [Web Views API](../api/web-views.md) - Embed Web content into Flutter Web

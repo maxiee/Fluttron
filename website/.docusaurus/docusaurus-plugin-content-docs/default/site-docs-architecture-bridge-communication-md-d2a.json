@@ -1,24 +1,24 @@
 {
   "id": "architecture/bridge-communication",
   "title": "Bridge Communication",
-  "description": "Bridge communication is the IPC mechanism between Host and Renderer using JavaScript Handlers.",
+  "description": "Bridge communication is the IPC mechanism between Host and Renderer using flutter_inappwebview JavaScript handlers.",
   "source": "@site/docs/architecture/bridge-communication.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/bridge-communication",
-  "permalink": "/zh-CN/docs/architecture/bridge-communication",
+  "permalink": "/Fluttron/zh-CN/docs/architecture/bridge-communication",
   "draft": false,
   "unlisted": false,
-  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/architecture/bridge-communication.md",
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/architecture/bridge-communication.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Renderer Layer",
-    "permalink": "/zh-CN/docs/architecture/renderer-layer"
+    "permalink": "/Fluttron/zh-CN/docs/architecture/renderer-layer"
   },
   "next": {
     "title": "Services API Reference",
-    "permalink": "/zh-CN/docs/api/services"
+    "permalink": "/Fluttron/zh-CN/docs/api/services"
   }
 }

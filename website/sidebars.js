@@ -29,6 +29,7 @@ const sidebars = {
       link: {type: 'doc', id: 'api/services'},
       items: [
         'api/services',
+        'api/web-views',
       ],
     },
     {

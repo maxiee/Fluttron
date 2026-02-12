@@ -9,6 +9,7 @@ This document defines the minimal template structure and the `fluttron.json` man
   fluttron.json
   host/
     lib/main.dart
+    lib/greeting_service.dart  # Custom service example (commented out)
     pubspec.yaml
     assets/www/
   ui/
@@ -35,6 +36,26 @@ This document defines the minimal template structure and the `fluttron.json` man
   - Flutter build stage: `ui/build/web/`
   - host sync stage: `host/assets/www/`
 - Any JS asset validation failure is treated as a hard error and stops the build pipeline.
+
+### Host Custom Services
+
+The template includes `host/lib/greeting_service.dart` with a commented-out example service. To enable:
+
+1. Uncomment the code in `greeting_service.dart`
+2. Uncomment the import and registration code in `main.dart`
+3. Call from UI: `FluttronClient.invoke('greeting.greet', {})`
+
+This provides a reference implementation for creating custom Host services.
+
+### UI Web Views
+
+The template UI uses the Fluttron Web View system:
+
+- `FluttronWebViewRegistry` - Register view types at startup
+- `FluttronHtmlView` - Embed Web content with type-driven rendering
+- `FluttronEventBridge` - Receive JS→Flutter custom events
+
+See `ui/lib/main.dart` for the registration pattern and `ui/frontend/src/main.js` for the JS factory contract.
 
 ## fluttron.json
 

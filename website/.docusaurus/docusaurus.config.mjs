@@ -7,10 +7,10 @@ export default {
   "title": "Fluttron",
   "tagline": "Dart-native Cross-Platform Container OS",
   "favicon": "img/favicon.ico",
-  "url": "https://fluttron.dev",
-  "baseUrl": "/zh-CN/",
-  "organizationName": "fluttron",
-  "projectName": "fluttron",
+  "url": "https://maxiee.github.io",
+  "baseUrl": "/Fluttron/zh-CN/",
+  "organizationName": "maxiee",
+  "projectName": "Fluttron",
   "onBrokenLinks": "throw",
   "i18n": {
     "defaultLocale": "en",
@@ -26,11 +26,11 @@ export default {
       "classic",
       {
         "docs": {
-          "sidebarPath": "/Users/wangrui/Code/Fluttron/website/sidebars.js",
-          "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/"
+          "sidebarPath": "/Volumes/ssd/Code/Fluttron/website/sidebars.js",
+          "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/"
         },
         "theme": {
-          "customCss": "/Users/wangrui/Code/Fluttron/website/src/css/custom.css"
+          "customCss": "/Volumes/ssd/Code/Fluttron/website/src/css/custom.css"
         }
       }
     ]
@@ -51,7 +51,7 @@ export default {
           "label": "Documentation"
         },
         {
-          "href": "https://github.com/fluttron/fluttron",
+          "href": "https://github.com/maxiee/Fluttron",
           "label": "GitHub",
           "position": "right"
         }
@@ -83,7 +83,7 @@ export default {
           "items": [
             {
               "label": "GitHub",
-              "href": "https://github.com/fluttron/fluttron"
+              "href": "https://github.com/maxiee/Fluttron"
             },
             {
               "label": "Discord",

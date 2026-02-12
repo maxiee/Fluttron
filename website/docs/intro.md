@@ -33,17 +33,22 @@ export default function Hello() {
                 <li><strong>Bridge:</strong> request/response IPC between Host and Renderer.</li>
               </ul>
 
+              <h2>Key Features</h2>
+
+              <ul>
+                <li><strong>Web View System:</strong> Embed HTML/JS/CSS into Flutter Web with type-driven rendering.</li>
+                <li><strong>Event Bridge:</strong> JS→Flutter custom event communication.</li>
+                <li><strong>Custom Services:</strong> Extend Host with your own services.</li>
+                <li><strong>CLI Pipeline:</strong> Create, build, and run projects with one command.</li>
+              </ul>
+
               <h2>Current MVP Status</h2>
 
               <ul>
                 <li>CLI pipeline (`create/build/run`) is available.</li>
                 <li>Template frontend build pipeline is available (`pnpm` + `esbuild`).</li>
-                <li>v0025 blocker fixes are complete:
-                  <ul>
-                    <li>Host template includes `assets/www/ext/` declaration.</li>
-                    <li>`js:clean` removes both JS/CSS artifacts and sourcemaps.</li>
-                  </ul>
-                </li>
+                <li>Core UI library with `FluttronHtmlView`, `FluttronEventBridge`, and `FluttronWebViewRegistry`.</li>
+                <li>Host custom service extension support with template example.</li>
               </ul>
 
               <h2>Get Started</h2>

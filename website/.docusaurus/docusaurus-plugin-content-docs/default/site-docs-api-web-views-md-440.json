@@ -1,0 +1,24 @@
+{
+  "id": "api/web-views",
+  "title": "Web Views API Reference",
+  "description": "This document describes the Web View APIs available in Fluttron for embedding Web content into Flutter Web applications.",
+  "source": "@site/docs/api/web-views.md",
+  "sourceDirName": "api",
+  "slug": "/api/web-views",
+  "permalink": "/Fluttron/zh-CN/docs/api/web-views",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/web-views.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Services API Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/services"
+  },
+  "next": {
+    "title": "Hello World Example",
+    "permalink": "/Fluttron/zh-CN/docs/examples/hello-world"
+  }
+}

@@ -1,24 +1,24 @@
 {
   "id": "getting-started/quick-start",
   "title": "Quick Start",
-  "description": "This guide will help you create and run your first Fluttron application in minutes.",
+  "description": "This guide creates and runs a Fluttron app using the CLI.",
   "source": "@site/docs/getting-started/quick-start.md",
   "sourceDirName": "getting-started",
   "slug": "/getting-started/quick-start",
-  "permalink": "/zh-CN/docs/getting-started/quick-start",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/quick-start",
   "draft": false,
   "unlisted": false,
-  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/getting-started/quick-start.md",
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/quick-start.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Installation",
-    "permalink": "/zh-CN/docs/getting-started/installation"
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/installation"
   },
   "next": {
     "title": "Project Structure",
-    "permalink": "/zh-CN/docs/getting-started/project-structure"
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
   }
 }

@@ -54,9 +54,11 @@ graph TD
 - [x] Service registry with `system` and `storage`
 - [x] CLI `create/build/run` pipeline
 - [x] Template frontend pipeline (`pnpm` + `esbuild`) with JS asset validation
-- [x] v0025 template blocker fixes:
-  - Host template declares `assets/www/ext/`
-  - `js:clean` removes both JS/CSS artifacts and sourcemaps
+- [x] Core UI library:
+  - `FluttronHtmlView` - Embed Web content into Flutter Web
+  - `FluttronEventBridge` - JS→Flutter event communication
+  - `FluttronWebViewRegistry` - Type-driven view registration
+- [x] Host custom service extension with template example
 - [ ] Plugin system
 - [ ] Typed bridge codegen
 

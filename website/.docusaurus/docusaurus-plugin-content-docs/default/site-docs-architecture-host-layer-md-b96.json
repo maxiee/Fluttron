@@ -1,24 +1,24 @@
 {
   "id": "architecture/host-layer",
   "title": "Host Layer",
-  "description": "The Host layer is a Flutter Desktop application that provides native capabilities and manages the application lifecycle.",
+  "description": "The Host layer is a Flutter Desktop application that exposes native services and loads the Renderer in a WebView.",
   "source": "@site/docs/architecture/host-layer.md",
   "sourceDirName": "architecture",
   "slug": "/architecture/host-layer",
-  "permalink": "/zh-CN/docs/architecture/host-layer",
+  "permalink": "/Fluttron/zh-CN/docs/architecture/host-layer",
   "draft": false,
   "unlisted": false,
-  "editUrl": "https://github.com/fluttron/fluttron/tree/main/website/docs/architecture/host-layer.md",
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/architecture/host-layer.md",
   "tags": [],
   "version": "current",
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Architecture Overview",
-    "permalink": "/zh-CN/docs/architecture/overview"
+    "permalink": "/Fluttron/zh-CN/docs/architecture/overview"
   },
   "next": {
     "title": "Renderer Layer",
-    "permalink": "/zh-CN/docs/architecture/renderer-layer"
+    "permalink": "/Fluttron/zh-CN/docs/architecture/renderer-layer"
   }
 }
