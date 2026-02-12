@@ -365,3 +365,79 @@ Host 端:
 ## 我的问题
 
 暂无
+
+## 新增重大需求拆解（Web Package）
+
+### 需求来源
+
+- 主文档：`docs/feature/fluttron_web_package_prd.md`（v0.2.0-draft，2026-02-12）
+- 目标：落地 `fluttron_web_package` 项目类型，并将“依赖发现 -> 资源收集 -> HTML 注入 -> 视图注册生成”接入现有 CLI 构建链路
+
+### 子需求清单（按依赖顺序）
+
+**v0032：新增 `web_package` 模板骨架**
+1. 新增 `templates/web_package/`，包含 `pubspec.yaml`、`fluttron_web_package.json`、`frontend/`、`web/ext/`、`lib/` 最小可运行内容。
+2. 模板默认包含 `fluttron_web_package: true` 与示例 JS 工厂，确保 `pnpm run js:build` 后可生成 `web/ext/main.js`。
+3. 产出模板 README，明确 CSS 命名隔离约定（BEM/CSS Modules/容器作用域）。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§4.1、§4.2、§4.3、§5.1、§6.5、§9 Phase 1）
+
+**v0033：增强 `fluttron create` 支持 `--type web_package`**
+1. 扩展 `packages/fluttron_cli/lib/src/commands/create.dart`，支持 `--type app|web_package`，默认仍为 `app`。
+2. `web_package` 分支走 `templates/web_package/` 拷贝与变量替换（包名、示例工厂名、manifest 占位）。
+3. 为 `create` 补充类型分支测试，覆盖默认行为和向后兼容。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§5.1、§9 Phase 1、§11.3）
+
+**v0034：新增 Web Package Manifest 解析与校验**
+1. 新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`，定义 manifest 模型与解析器。
+2. 校验核心字段：`version`、`viewFactories`、`assets.js`（可选 `assets.css`、`events`）。
+3. 对非法 manifest 提供可读报错（字段缺失、路径非法、命名模式不匹配）。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§4.2、§7、§8、§9 Phase 1、§14.B）
+
+**v0035：基于 `package_config.json` 的依赖发现**
+1. 新增 `packages/fluttron_cli/lib/src/utils/web_package_discovery.dart`，从 `ui/.dart_tool/package_config.json` 解析依赖根路径。
+2. 对每个依赖尝试读取 `fluttron_web_package.json`，命中后加入待处理包列表（包含包名与根目录）。
+3. 覆盖 path/git/hosted 依赖场景，补充缺失 `package_config.json` 的错误提示。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§6.1、§9 Phase 2、§10）
+
+**v0036：构建产物阶段新增资源收集器**
+1. 新增 `packages/fluttron_cli/lib/src/utils/web_package_collector.dart`，复制依赖包的 JS/CSS 到 `ui/build/web/ext/packages/<pkg>/`。
+2. 维持目录结构稳定，确保 host 侧最终可携带同样目录。
+3. 增加“自包含 JS”基础校验（至少做文件存在与引用完整性校验，不做运行时全量静态分析）。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§6.2、§6.6、§9 Phase 2）
+
+**v0037：HTML 注入器（占位符替换）**
+1. 新增 `packages/fluttron_cli/lib/src/utils/html_injector.dart`，在 `ui/build/web/index.html` 注入包级 JS/CSS 标签。
+2. 约定占位符：`<!-- FLUTTRON_PACKAGES_JS -->`、`<!-- FLUTTRON_PACKAGES_CSS -->`；缺失占位符时给出清晰失败信息。
+3. 保持现有 `ext/main.js` 与 `flutter_bootstrap.js` 顺序不被破坏。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§6.3、§9 Phase 3）
+
+**v0038：生成视图注册代码**
+1. 新增 `packages/fluttron_cli/lib/src/utils/registration_generator.dart`，生成 `ui/lib/generated/web_package_registrations.dart`。
+2. 输出 `registerFluttronWebPackages()`，自动注册 `FluttronWebViewRegistry`，并加 `@generated` 头注释。
+3. 冲突策略按“runtime warning + last-wins”执行，保证行为与 PRD 一致。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§6.4、§9 Phase 3、§10）
+
+**v0039：接入 `UiBuildPipeline` 主流程**
+1. 在 `packages/fluttron_cli/lib/src/utils/ui_build_pipeline.dart` 中加入新阶段：Discovery -> Collection -> Injection -> Registration Generation。
+2. 保持条件执行：无 web package 时跳过新阶段，不影响现有 app 构建。
+3. 与现有前端构建、JS 校验、host 资产复制流程打通并补充集成测试。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§5.2、§9 Phase 4、§11.1、§11.3）
+
+**v0040：新增 `fluttron packages list` 诊断命令**
+1. 新增命令入口（建议 `packages/fluttron_cli/lib/src/commands/packages_list.dart`）并接入 `cli.dart`。
+2. 输出包名、版本、暴露 `viewFactories` 的表格信息，用于排错与可视化检查。
+3. 复用 Discovery + Manifest 解析结果，避免重复实现。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§5.3、§9 Phase 4）
+
+**v0041：验收与回归测试矩阵**
+1. 按 PRD 三段验收流程补齐自动化与手工脚本：创建包、应用接入、端到端运行。
+2. 新增 CLI 侧回归测试，覆盖“无 web package 不回归”和“有 web package 产物正确注入”。
+3. 在 `docs/dev_plan.md` 与相关 README 明确 MVP 边界：Hot Reload、pub.dev 分发、类型安全事件生成均不进入当前迭代。
+- 引用：`docs/feature/fluttron_web_package_prd.md`（§13.1、§13.2、§13.3、§12）
+
+### 建议执行顺序（Commit 粒度）
+
+1. `v0032` + `v0033` + `v0034`（先打通创建与元数据）
+2. `v0035` + `v0036`（打通依赖发现与产物收集）
+3. `v0037` + `v0038`（打通运行时注入与注册生成）
+4. `v0039` + `v0040` + `v0041`（整合、诊断与验收收口）
