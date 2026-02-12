@@ -282,6 +282,7 @@ bridge.on('my.editor.change').listen((data) {
 - v0031：已完成 CLI 自动 `pnpm install`：修改 `packages/fluttron_cli/lib/src/utils/frontend_builder.dart`，在执行 `pnpm run js:build` 之前检查 `node_modules` 目录是否存在，若不存在且 `package.json` 有依赖则自动执行 `pnpm install`；新增 `_hasDependencies()` 和 `_parsePackageJson()` 辅助方法。验收通过：创建新项目后删除 `node_modules`，执行 `fluttron build` 自动安装依赖并构建成功。
 - v0032：已完成 `web_package` 模板骨架：新增 `templates/web_package/` 目录，包含 `pubspec.yaml`（含 `fluttron_web_package: true` 标记）、`fluttron_web_package.json` manifest、`frontend/` 前端构建链路（`package.json` + `scripts/build-frontend.mjs` + `src/main.js`）、`web/ext/` 默认产物（`main.js` + `main.css`）、`lib/` Dart 库（入口 + 示例 widget）、`README.md`（含 CSS 命名隔离约定 BEM 指南）。验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过。
 - v0033：已完成 `fluttron create --type web_package` 支持：扩展 `packages/fluttron_cli/lib/src/commands/create.dart` 新增 `--type` 选项（`app|web_package`，默认 `app`）；新增 `packages/fluttron_cli/lib/src/utils/web_package_copier.dart` 实现 web_package 模板的变量替换逻辑（支持 snake_case/PascalCase/camelCase/kebab-case 命名转换，自动跳过 `node_modules`/`.dart_tool`/`build` 目录）；新增测试 `packages/fluttron_cli/test/src/utils/web_package_copier_test.dart` 和 `packages/fluttron_cli/test/src/commands/create_command_test.dart` 覆盖类型分支与向后兼容。验收通过：`dart test`（`packages/fluttron_cli`）全部通过。
+- v0034：已完成 Web Package Manifest 解析与校验：新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`，定义 `WebPackageManifest`、`ViewFactory`、`Assets`、`Event` 模型类，实现 `WebPackageManifestLoader` 加载器；校验规则包括 `version` 必须为 `"1"`、`type` 匹配 `^[a-z0-9_]+\.[a-z0-9_]+$`、`jsFactoryName` 匹配 `^fluttronCreate[A-Z][a-zA-Z0-9]*View$`、JS/CSS 路径格式、事件命名空间格式等；对非法 manifest 提供可读报错。新增测试 `packages/fluttron_cli/test/src/utils/web_package_manifest_test.dart` 覆盖合法解析与各种非法场景（30 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）68 个测试全部通过。
 
 ## Backlog (未来)
 
@@ -296,28 +297,30 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0033：增强 `fluttron create` 支持 `--type web_package` ✅ 已完成**
+**v0034：新增 Web Package Manifest 解析与校验 ✅ 已完成**
 
-### v0033 完成结果
+### v0034 完成结果
 
-- 扩展 `packages/fluttron_cli/lib/src/commands/create.dart`：
-  - 新增 `--type` 选项，支持 `app|web_package`，默认为 `app`
-  - 重构 `run()` 方法，根据类型分发到 `_createAppProject()` 或 `_createWebPackageProject()`
-  - `_createAppProject()` 现在显式拷贝 `templates/fluttron.json` 到目标目录
-- 新增 `packages/fluttron_cli/lib/src/utils/web_package_copier.dart`：
-  - `WebPackageCopier` 类实现 web_package 模板的拷贝与变量替换
-  - 支持 snake_case/PascalCase/camelCase/kebab-case 四种命名转换
-  - 自动跳过 `node_modules`、`.dart_tool`、`build`、`.idea` 目录
-  - 对二进制文件（`.map`、图片、字体等）直接拷贝不做文本转换
-  - 特殊处理 `pubspec.yaml`（更新 name 字段）和 `fluttron_web_package.json`（更新 type/jsFactoryName/events）
-- 新增测试：
-  - `packages/fluttron_cli/test/src/utils/web_package_copier_test.dart`：覆盖命名转换、文件重命名、内容替换
-  - `packages/fluttron_cli/test/src/commands/create_command_test.dart`：覆盖 `--type` 选项、默认行为、向后兼容
-- 验收通过：`dart test`（`packages/fluttron_cli`）38 个测试全部通过
+- 新增 `packages/fluttron_cli/lib/src/utils/web_package_manifest.dart`：
+  - 定义 manifest 模型类：`WebPackageManifest`、`ViewFactory`、`Assets`、`Event`、`EventDirection`
+  - 实现 `WebPackageManifestLoader` 加载器与校验器
+  - 手写 `fromJson`/`toJson`，避免 build_runner 依赖
+  - 提供 `load()` 和 `tryLoad()` 两种加载方式
+- 校验规则（严格遵循 PRD）：
+  - `version`: 必须为 `"1"`
+  - `viewFactories[].type`: `^[a-z0-9_]+\.[a-z0-9_]+$` (package.type 格式)
+  - `viewFactories[].jsFactoryName`: `^fluttronCreate[A-Z][a-zA-Z0-9]*View$`
+  - `assets.js`: 必需，路径匹配 `^web/ext/[^/]+\.js$`
+  - `assets.css`: 可选，路径匹配 `^web/ext/[^/]+\.css$`
+  - `events[].name`: `^fluttron\.[a-z0-9_]+\.[a-z0-9_.]+$`
+  - `events[].direction`: 枚举 `js_to_dart` | `dart_to_js` | `bidirectional`
+- 新增测试 `packages/fluttron_cli/test/src/utils/web_package_manifest_test.dart`：
+  - 30 个测试覆盖：合法解析、可选字段、非法校验（版本/类型/路径/事件）、边界情况
+- 验收通过：`dart test`（`packages/fluttron_cli`）68 个测试全部通过
 
 ### 下一步
 
-- v0034：新增 Web Package Manifest 解析与校验（参见「新增重大需求拆解（Web Package）」）
+- v0035：基于 `package_config.json` 的依赖发现（参见「新增重大需求拆解（Web Package）」）
 
 ## 我的问题
 
