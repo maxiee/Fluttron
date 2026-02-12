@@ -313,6 +313,9 @@ bridge.on('my.editor.change').listen((data) {
     - `fluttron_web_package_template.dart` - 库入口
     - `src/example_widget.dart` - 示例 widget + 事件订阅辅助
   - `README.md` - 模板文档，含 CSS 命名隔离约定（BEM）指南
+- 更新 `templates/ui/web/index.html`，预置 `<!-- FLUTTRON_PACKAGES_JS -->` 和 `<!-- FLUTTRON_PACKAGES_CSS -->` 占位符
+- 更新 `.gitignore`，忽略 `node_modules/` 和 `*.map` 文件
+- 更新 PRD（v0.2.0 → v0.3.0），将类型冲突策略改为严格模式
 - 验收通过：`pnpm install` + `pnpm run js:build` + `pnpm run js:clean` 链路验证通过
 
 ### 下一步
@@ -327,7 +330,7 @@ bridge.on('my.editor.change').listen((data) {
 
 ### 需求来源
 
-- 主文档：`docs/feature/fluttron_web_package_prd.md`（v0.2.0-draft，2026-02-12）
+- 主文档：`docs/feature/fluttron_web_package_prd.md`（v0.3.0-draft，2026-02-12）
 - 目标：落地 `fluttron_web_package` 项目类型，并将“依赖发现 -> 资源收集 -> HTML 注入 -> 视图注册生成”接入现有 CLI 构建链路
 
 ### 子需求清单（按依赖顺序）
@@ -364,14 +367,14 @@ bridge.on('my.editor.change').listen((data) {
 
 **v0037：HTML 注入器（占位符替换）**
 1. 新增 `packages/fluttron_cli/lib/src/utils/html_injector.dart`，在 `ui/build/web/index.html` 注入包级 JS/CSS 标签。
-2. 约定占位符：`<!-- FLUTTRON_PACKAGES_JS -->`、`<!-- FLUTTRON_PACKAGES_CSS -->`；缺失占位符时给出清晰失败信息。
+2. 占位符 `<!-- FLUTTRON_PACKAGES_JS -->`、`<!-- FLUTTRON_PACKAGES_CSS -->` 已预置在模板中；注入器只需替换占位符内容。
 3. 保持现有 `ext/main.js` 与 `flutter_bootstrap.js` 顺序不被破坏。
 - 引用：`docs/feature/fluttron_web_package_prd.md`（§6.3、§9 Phase 3）
 
 **v0038：生成视图注册代码**
 1. 新增 `packages/fluttron_cli/lib/src/utils/registration_generator.dart`，生成 `ui/lib/generated/web_package_registrations.dart`。
 2. 输出 `registerFluttronWebPackages()`，自动注册 `FluttronWebViewRegistry`，并加 `@generated` 头注释。
-3. 冲突策略按“runtime warning + last-wins”执行，保证行为与 PRD 一致。
+3. 冲突策略采用严格模式：同一 type 不同 jsFactoryName 将在运行时抛出 `StateError`，强制开发者显式解决冲突。
 - 引用：`docs/feature/fluttron_web_package_prd.md`（§6.4、§9 Phase 3、§10）
 
 **v0039：接入 `UiBuildPipeline` 主流程**

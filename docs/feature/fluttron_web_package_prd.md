@@ -1,6 +1,6 @@
 # Fluttron Web Package - Product Requirements Document (PRD)
 
-**Version:** 0.2.0-draft  
+**Version:** 0.3.0-draft  
 **Date:** 2026-02-12  
 **Status:** Draft  
 **Author:** Fluttron Architecture Team
@@ -14,7 +14,7 @@
 | **Package Discovery** | `.dart_tool/package_config.json` | Stable, cross-environment consistent, Dart official mechanism |
 | **JS Dependencies** | Self-contained | Each package's JS must be fully bundled (esbuild), no cross-package JS dependencies |
 | **CSS Isolation** | Convention over configuration | Framework does not process CSS; package authors must use BEM/CSS Modules |
-| **Type Conflict** | Runtime warning + last-wins | Later registration overrides earlier, prints warning |
+| **Type Conflict** | Strict error (throws StateError) | Conflicting registrations throw exception, forcing explicit resolution |
 | **Hot Reload** | Not in MVP | Future iteration |
 | **Distribution** | Path/Git dependencies first | pub.dev support later |
 
@@ -459,23 +459,28 @@ void main() {
 
 **Type Conflict Resolution:**
 
-When multiple packages register the same `type`:
-1. Runtime warning is printed: `Warning: View type "chartjs.editor" already registered by "chartjs_wrapper_v1", overriding with "chartjs_wrapper_v2"`
-2. Later registration wins (last-wins semantics)
-3. This allows intentional overrides when needed
+When multiple packages register the same `type` with different `jsFactoryName`:
+1. `StateError` is thrown with detailed message
+2. Build fails immediately, forcing developers to resolve the conflict
+3. Resolution options: remove duplicate dependency, use different type names, or exclude conflicting package
 
 **Implementation in `FluttronWebViewRegistry`:**
 ```dart
 static void register(FluttronWebViewRegistration registration) {
   final existing = _registrations[registration.type];
   if (existing != null && existing.jsFactoryName != registration.jsFactoryName) {
-    // Runtime warning, but allow override
-    debugPrint('Warning: View type "${registration.type}" already registered by '
-        '"${existing.jsFactoryName}", overriding with "${registration.jsFactoryName}"');
+    // Throw error - conflict must be resolved explicitly
+    throw StateError(
+      'Conflicting FluttronWebViewRegistration for type '
+      '"${registration.type}". Existing jsFactoryName="${existing.jsFactoryName}", '
+      'incoming jsFactoryName="${registration.jsFactoryName}".',
+    );
   }
   _registrations[registration.type] = registration;
 }
 ```
+
+**Rationale for strict mode:** Silent overrides can cause subtle bugs when multiple packages accidentally use the same type name. Failing fast forces explicit conflict resolution.
 
 ---
 
@@ -902,3 +907,4 @@ Stream<String> milkdownChanges() {
 |---------|------|--------|---------|
 | 0.1.0-draft | 2026-02-12 | Architecture Team | Initial draft |
 | 0.2.0-draft | 2026-02-12 | Architecture Team | Architecture decisions confirmed: package_config.json discovery, self-contained JS, CSS convention, runtime warning + last-wins for conflicts |
+| 0.3.0-draft | 2026-02-12 | Architecture Team | Type conflict strategy changed to strict mode (throws StateError); HTML placeholder injection points clarified |
