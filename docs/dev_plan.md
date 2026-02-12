@@ -303,33 +303,44 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0040：新增 `fluttron packages list` 诊断命令 ✅ 已完成**
+**v0041：验收与回归测试矩阵 ✅ 已完成**
 
-### v0040 完成结果
+### v0041 完成结果
 
-- 新增 `packages/fluttron_cli/lib/src/commands/packages.dart`：
-  - `PackagesCommand` 作为父命令（命名空间）
-  - `PackagesListCommand` 实现列表子命令
-  - 支持 `-p/--project` 选项指定项目路径
-- 新增 `packages/fluttron_cli/lib/src/utils/pubspec_loader.dart`：
-  - `PubspecInfo` 模型类（name、version、description）
-  - `PubspecLoader` 工具类从 `pubspec.yaml` 读取版本信息
-  - 简易 YAML 解析器（仅支持 top-level 键值对）
-- 输出格式：
-  - 表格形式显示包名、版本、视图工厂列表
-  - 无包时显示友好提示
-  - 支持多包场景
-- 复用现有 API：
-  - `WebPackageDiscovery` 发现依赖中的 web packages
-  - `WebPackageManifest` 获取 viewFactories 信息
-- 新增测试：
-  - `packages/fluttron_cli/test/src/utils/pubspec_loader_test.dart`（15 个测试）
-  - `packages/fluttron_cli/test/src/commands/packages_list_command_test.dart`（8 个测试）
-- 验收通过：`dart test`（`packages/fluttron_cli`）166 个测试全部通过
+- 新增 `packages/fluttron_cli/test/src/acceptance/` 验收测试目录：
+  - `web_package_acceptance_test.dart` - PRD §13 验收测试（19 个测试）
+    - PRD §13.1: 创建 web package（manifest 合约、pubspec 标记、前端构建脚本、JS 工厂）
+    - PRD §13.2: 使用 web package（发现、收集、注入、注册生成）
+    - PRD §13.3: 端到端验证（生成代码语法、类型映射、脚本顺序）
+    - 回归测试：无 web package 不回归、有 web package 正确注入
+- 新增 `scripts/acceptance_test.sh` - 手动验收脚本，支持 PRD §13 三段验收
+- 验收通过：`dart test`（`packages/fluttron_cli`）185 个测试全部通过
+
+### v0041 MVP 边界说明
+
+以下功能**不包含**在当前 web package MVP 中：
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| Hot Reload | 不在 MVP | 未来：开发时自动重构建 web packages |
+| pub.dev 分发 | 不在 MVP | 当前：仅支持 path/git 依赖 |
+| 类型安全事件生成 | 不在 MVP | 当前：手动事件处理 |
+| 按需加载 | 不在 MVP | 当前：启动时加载所有 packages |
+| CSS 自动作用域 | 不在 MVP | 当前：约定式 BEM 命名 |
+| 远程包（CDN） | 不在 MVP | 未来：运行时加载 |
+
+**当前分发方式：**
+- Path 依赖：本地开发、monorepo
+- Git 依赖：远程仓库
+
+详见：`docs/feature/fluttron_web_package_prd.md` §12
 
 ### 下一步
 
-- v0041：验收与回归测试矩阵
+Web Package MVP 已完成。可继续：
+- 添加更多 web package 示例
+- 完善文档与教程
+- 规划下一阶段功能（Hot Reload / pub.dev 分发等）
 
 ## 我的问题
 
