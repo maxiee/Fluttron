@@ -4,6 +4,7 @@ import 'package:args/command_runner.dart';
 
 import 'commands/build.dart';
 import 'commands/create.dart';
+import 'commands/packages.dart';
 import 'commands/run.dart';
 
 Future<int> runCli(List<String> args) async {
@@ -11,7 +12,8 @@ Future<int> runCli(List<String> args) async {
       CommandRunner<int>('fluttron', 'Fluttron command-line interface.')
         ..addCommand(CreateCommand())
         ..addCommand(BuildCommand())
-        ..addCommand(RunCommand());
+        ..addCommand(RunCommand())
+        ..addCommand(PackagesCommand());
 
   try {
     final result = await runner.run(args);

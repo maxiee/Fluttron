@@ -288,6 +288,7 @@ bridge.on('my.editor.change').listen((data) {
 - v0037：已完成 HTML 注入器（占位符替换）：新增 `packages/fluttron_cli/lib/src/utils/html_injector.dart`，定义 `HtmlInjector` 类实现 `inject()` 和 `injectSync()` 方法；定义 `InjectionResult` 模型类（injectedJsCount、injectedCssCount、outputPath、hasInjections）；定义 `HtmlInjectorException` 异常类；支持替换占位符 `<!-- FLUTTRON_PACKAGES_JS -->` 和 `<!-- FLUTTRON_PACKAGES_CSS -->`；为 JS 资产生成 `<script>` 标签，为 CSS 资产生成 `<link rel="stylesheet">` 标签；校验占位符存在性，缺失时抛出可读错误；保持现有 `ext/main.js` 与 `flutter_bootstrap.js` 顺序不被破坏；新增测试 `packages/fluttron_cli/test/src/utils/html_injector_test.dart`（18 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）124 个测试全部通过。
 - v0038：已完成视图注册代码生成器：新增 `packages/fluttron_cli/lib/src/utils/registration_generator.dart`，定义 `RegistrationGenerator` 类实现 `generate()` 和 `generateSync()` 方法；定义 `RegistrationResult` 模型类（outputPath、packageCount、factoryCount、hasGenerated）；定义 `RegistrationGeneratorException` 异常类；输出 `registerFluttronWebPackages()` 函数到 `ui/lib/generated/web_package_registrations.dart`；支持多包多工厂注册，按包名分组注释；自动创建输出目录；空包时生成占位文件；单引号转义处理；`@generated` 头注释与 `ignore_for_file: directives_ordering`。新增测试 `packages/fluttron_cli/test/src/utils/registration_generator_test.dart`（14 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）138 个测试全部通过。
 - v0039：已完成 `UiBuildPipeline` 主流程接入：修改 `packages/fluttron_cli/lib/src/utils/ui_build_pipeline.dart`，集成四个新阶段（Discovery -> Registration Generation -> Collection -> Injection）；新增四个函数类型定义和默认实现；条件执行（无 web package 时跳过 Collection/Injection）；各阶段失败立即中止构建；新增 7 个集成测试覆盖各种场景。验收通过：`dart test`（`packages/fluttron_cli`）144 个测试全部通过。
+- v0040：已完成 `fluttron packages list` 诊断命令：新增 `packages/fluttron_cli/lib/src/commands/packages.dart`，实现 `PackagesCommand`（父命令）和 `PackagesListCommand`（子命令）结构；新增 `packages/fluttron_cli/lib/src/utils/pubspec_loader.dart` 用于从 `pubspec.yaml` 读取包版本；输出格式化表格显示包名、版本、视图工厂列表；复用 `WebPackageDiscovery` 和 `WebPackageManifest` API；新增测试覆盖空项目、单包、多包等场景（共 8 个测试）。验收通过：`dart test`（`packages/fluttron_cli`）166 个测试全部通过。
 
 ## Backlog (未来)
 
@@ -302,33 +303,33 @@ bridge.on('my.editor.change').listen((data) {
 
 ## 当前任务
 
-**v0039：接入 `UiBuildPipeline` 主流程 ✅ 已完成**
+**v0040：新增 `fluttron packages list` 诊断命令 ✅ 已完成**
 
-### v0039 完成结果
+### v0040 完成结果
 
-- 修改 `packages/fluttron_cli/lib/src/utils/ui_build_pipeline.dart`：
-  - 导入四个新工具类（discovery、collector、injector、registration_generator）
-  - 新增四个函数类型定义（`WebPackageDiscoveryFn`、`WebPackageCollectFn`、`HtmlInjectFn`、`RegistrationGenerateFn`）
-  - 构造函数新增四个可选依赖参数，提供默认实现
-- 集成四个新阶段到构建流程：
-  1. **Discovery**（在 Flutter build 之前）：发现依赖中的 web packages
-  2. **Registration Generation**（在 Flutter build 之前）：生成 `lib/generated/web_package_registrations.dart`
-  3. **Collection**（在 Flutter build 之后）：收集 JS/CSS 资源到 `build/web/ext/packages/`
-  4. **Injection**（在 Collection 之后）：注入 JS/CSS 标签到 `index.html`
-- 条件执行：无 web package 时跳过 Collection 和 Injection 阶段
-- 错误处理：各阶段失败时立即中止构建并返回错误码
-- 新增 7 个集成测试：
-  - 无 web package 时跳过 Collection/Injection 阶段
-  - 有 web package 时正确执行所有阶段
-  - Discovery 失败时中止
-  - Registration 失败时中止
-  - Collection 失败时中止
-  - Injection 失败时中止
-- 验收通过：`dart test`（`packages/fluttron_cli`）144 个测试全部通过
+- 新增 `packages/fluttron_cli/lib/src/commands/packages.dart`：
+  - `PackagesCommand` 作为父命令（命名空间）
+  - `PackagesListCommand` 实现列表子命令
+  - 支持 `-p/--project` 选项指定项目路径
+- 新增 `packages/fluttron_cli/lib/src/utils/pubspec_loader.dart`：
+  - `PubspecInfo` 模型类（name、version、description）
+  - `PubspecLoader` 工具类从 `pubspec.yaml` 读取版本信息
+  - 简易 YAML 解析器（仅支持 top-level 键值对）
+- 输出格式：
+  - 表格形式显示包名、版本、视图工厂列表
+  - 无包时显示友好提示
+  - 支持多包场景
+- 复用现有 API：
+  - `WebPackageDiscovery` 发现依赖中的 web packages
+  - `WebPackageManifest` 获取 viewFactories 信息
+- 新增测试：
+  - `packages/fluttron_cli/test/src/utils/pubspec_loader_test.dart`（15 个测试）
+  - `packages/fluttron_cli/test/src/commands/packages_list_command_test.dart`（8 个测试）
+- 验收通过：`dart test`（`packages/fluttron_cli`）166 个测试全部通过
 
 ### 下一步
 
-- v0040：新增 `fluttron packages list` 诊断命令
+- v0041：验收与回归测试矩阵
 
 ## 我的问题
 
