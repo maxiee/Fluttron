@@ -78,7 +78,7 @@ void main() {
   FluttronWebViewRegistry.registerAll([
     FluttronWebViewRegistration(
       type: 'myapp.editor',
-      jsFactoryName: 'window.fluttronCreateMyAppEditorView',
+      jsFactoryName: 'fluttronCreateMyAppEditorView',
     ),
   ]);
 
@@ -93,7 +93,7 @@ Embed Web content (HTML/JS/CSS) into your Flutter Web app:
 ```dart
 FluttronHtmlView(
   type: 'myapp.editor',
-  args: {'initialText': 'Hello, World!'},
+  args: ['Hello, World!'],
   loadingBuilder: (context) => const CircularProgressIndicator(),
   errorBuilder: (context, error) => Text('Error: $error'),
 )
@@ -130,7 +130,11 @@ When creating a JavaScript factory for `FluttronHtmlView`, follow this contract:
 
 ```javascript
 // Factory function naming convention:
-// window.fluttronCreate<YourViewType>View(viewId, ...args)
+// jsFactoryName in Dart uses the global function name only:
+// 'fluttronCreateMyAppEditorView'
+//
+// JavaScript exposes it on `window`:
+// window.fluttronCreateMyAppEditorView(viewId, ...args)
 
 window.fluttronCreateMyAppEditorView = function(viewId, initialText) {
   const container = document.createElement('div');

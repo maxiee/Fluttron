@@ -1,6 +1,6 @@
 # Fluttron Web Package Template
 
-This template creates a reusable Fluttron web package that can be distributed and used across multiple Fluttron apps.
+This template creates a reusable Fluttron web package that can be shared across multiple Fluttron apps.
 
 ## What is a Web Package?
 
@@ -56,7 +56,7 @@ Add to your app's `ui/pubspec.yaml`:
 ```yaml
 dependencies:
   my_package:
-    path: ../my_package
+    path: ../../my_package
 ```
 
 Then run `fluttron build` - the CLI will automatically:
@@ -199,14 +199,14 @@ window.fluttronCreateSharedUtilsView  // ❌ Not available
 
 ---
 
-## Publishing
+## Distribution Scope (MVP)
 
-Web packages can be published to pub.dev like any Dart package. Users can then add them as dependencies:
+Current MVP workflow focuses on:
 
-```yaml
-dependencies:
-  milkdown_editor: ^1.0.0
-```
+- Path dependencies (local development)
+- Git dependencies (shared repositories)
+
+Template default is `publish_to: none`, so pub.dev publishing is not part of the default generated setup.
 
 ---
 

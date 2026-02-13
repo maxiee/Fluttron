@@ -54,6 +54,19 @@ Fluttron uses a dual-layer model: a native Host (Flutter Desktop) and a Renderer
 - Renders UI and runs business logic
 - Calls host services through `FluttronClient`
 - Uses Dart JS interop to access the bridge
+- Loads local `ext/main.js` and injected package assets from `ext/packages/<pkg>/...`
+
+## Web Package Build Flow
+
+When app dependencies include web packages, `fluttron build` adds these stages:
+
+1. Discover packages from `ui/.dart_tool/package_config.json`
+2. Filter by `fluttron_web_package: true` and valid `fluttron_web_package.json`
+3. Generate `ui/lib/generated/web_package_registrations.dart`
+4. Build Flutter Web
+5. Copy package assets to `ui/build/web/ext/packages/<pkg>/...`
+6. Inject JS/CSS references into `ui/build/web/index.html`
+7. Validate and sync to `host/assets/www`
 
 ## Communication Protocol
 

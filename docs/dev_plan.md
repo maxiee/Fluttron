@@ -219,14 +219,14 @@ Host 端:
 FluttronWebViewRegistry.register(
   FluttronWebViewRegistration(
     type: 'my.editor',
-    jsFactoryName: 'window.fluttronCreateMyEditorView',
+    jsFactoryName: 'fluttronCreateMyEditorView',
   ),
 );
 
 // 2. 渲染时使用 type + args
 FluttronHtmlView(
   type: 'my.editor',
-  args: {'initialContent': 'Hello'},
+  args: ['Hello'],
 )
 
 // 3. 监听 JS 事件
@@ -238,6 +238,7 @@ bridge.on('my.editor.change').listen((data) {
 
 **JS 工厂命名约定**：
 - 全局函数：`window.fluttronCreate<Package><Feature>View`
+- 注册名：`fluttronCreate<Package><Feature>View`（`jsFactoryName` 不带 `window.`）
 - 示例：`window.fluttronCreatePlaygroundMilkdownEditorView`
 
 **设计决策**：
@@ -307,14 +308,13 @@ bridge.on('my.editor.change').listen((data) {
 
 ### v0041 完成结果
 
-- 新增 `packages/fluttron_cli/test/src/acceptance/` 验收测试目录：
-  - `web_package_acceptance_test.dart` - PRD §13 验收测试（19 个测试）
-    - PRD §13.1: 创建 web package（manifest 合约、pubspec 标记、前端构建脚本、JS 工厂）
-    - PRD §13.2: 使用 web package（发现、收集、注入、注册生成）
-    - PRD §13.3: 端到端验证（生成代码语法、类型映射、脚本顺序）
-    - 回归测试：无 web package 不回归、有 web package 正确注入
+- 新增 `packages/fluttron_cli/test/integration/` 验收与回归测试目录：
+  - `acceptance_test.dart` - PRD §13 三段验收（创建包、应用接入、端到端构建产物）
+  - `with_web_package_regression_test.dart` - 有 web package 场景回归
+  - `no_web_package_regression_test.dart` - 无 web package 场景不回归
+  - `test_helper.dart` - 集成测试脚手架
 - 新增 `scripts/acceptance_test.sh` - 手动验收脚本，支持 PRD §13 三段验收
-- 验收通过：`dart test`（`packages/fluttron_cli`）185 个测试全部通过
+- 验收通过：`dart test test/integration/acceptance_test.dart`（`packages/fluttron_cli`）通过；manual 用例默认跳过（需显式环境触发）
 
 ### v0041 MVP 边界说明
 

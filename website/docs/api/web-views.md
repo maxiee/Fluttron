@@ -19,7 +19,7 @@ Central registry for Web view types and their JavaScript factories.
 FluttronWebViewRegistry.register(
   FluttronWebViewRegistration(
     type: 'myapp.editor',
-    jsFactoryName: 'window.fluttronCreateMyAppEditorView',
+    jsFactoryName: 'fluttronCreateMyAppEditorView',
   ),
 );
 
@@ -27,11 +27,11 @@ FluttronWebViewRegistry.register(
 FluttronWebViewRegistry.registerAll([
   FluttronWebViewRegistration(
     type: 'myapp.editor',
-    jsFactoryName: 'window.fluttronCreateMyAppEditorView',
+    jsFactoryName: 'fluttronCreateMyAppEditorView',
   ),
   FluttronWebViewRegistration(
     type: 'myapp.chart',
-    jsFactoryName: 'window.fluttronCreateMyAppChartView',
+    jsFactoryName: 'fluttronCreateMyAppChartView',
   ),
 ]);
 ```
@@ -46,7 +46,7 @@ if (FluttronWebViewRegistry.isRegistered('myapp.editor')) {
 
 // Get registration details
 final registration = FluttronWebViewRegistry.lookup('myapp.editor');
-print(registration?.jsFactoryName);
+print(registration.jsFactoryName);
 ```
 
 ### FluttronWebViewRegistration
@@ -67,9 +67,9 @@ Widget for rendering embedded Web content.
 ```dart
 FluttronHtmlView({
   required String type,      // View type (must be registered)
-  Map<String, dynamic>? args, // Optional arguments passed to JS factory
+  List<dynamic>? args,       // Optional arguments passed to JS factory
   WidgetBuilder? loadingBuilder,
-  Widget Function(BuildContext, String)? errorBuilder,
+  Widget Function(BuildContext, Object)? errorBuilder,
 })
 ```
 
@@ -78,9 +78,9 @@ FluttronHtmlView({
 | Property | Type | Description |
 |----------|------|-------------|
 | `type` | `String` | Registered view type |
-| `args` | `Map<String, dynamic>?` | Arguments passed to JavaScript factory |
+| `args` | `List<dynamic>?` | Arguments passed to JavaScript factory |
 | `loadingBuilder` | `WidgetBuilder?` | Custom loading widget |
-| `errorBuilder` | `Widget Function(BuildContext, String)?` | Custom error widget |
+| `errorBuilder` | `Widget Function(BuildContext, Object)?` | Custom error widget |
 
 #### Usage Example
 
@@ -91,10 +91,7 @@ class EditorPage extends StatelessWidget {
     return Scaffold(
       body: FluttronHtmlView(
         type: 'myapp.editor',
-        args: {
-          'initialText': 'Hello, World!',
-          'theme': 'dark',
-        },
+        args: ['Hello, World!', 'dark'],
         loadingBuilder: (context) => const Center(
           child: CircularProgressIndicator(),
         ),
@@ -169,7 +166,7 @@ class _EditorPageState extends State<EditorPage> {
         Expanded(
           child: FluttronHtmlView(
             type: 'myapp.editor',
-            args: {'initialText': _content},
+            args: [_content],
           ),
         ),
         Text('Current content: $_content'),
@@ -186,7 +183,11 @@ class _EditorPageState extends State<EditorPage> {
 Create a factory function following this naming convention:
 
 ```javascript
-// Convention: window.fluttronCreate<ViewType>View(viewId, ...args)
+// Register in Dart as:
+// jsFactoryName: 'fluttronCreateMyAppEditorView'
+//
+// Expose globally in JS:
+// window.fluttronCreateMyAppEditorView = function(viewId, ...args)
 
 window.fluttronCreateMyAppEditorView = function(viewId, initialText, theme) {
   const container = document.createElement('div');
@@ -236,6 +237,13 @@ When using `args`, Fluttron generates a unique `resolvedViewType` using FNV-1a h
 
 This ensures that different argument combinations don't collide.
 
+## Registration Conflict Behavior
+
+`FluttronWebViewRegistry.register(...)` is strict for conflicting types:
+
+- Same `type` + same `jsFactoryName`: accepted (idempotent)
+- Same `type` + different `jsFactoryName`: throws `StateError`
+
 ## Best Practices
 
 ### 1. Register at App Startup
@@ -280,7 +288,7 @@ void dispose() {
 FluttronHtmlView(
   type: 'myapp.editor',
   loadingBuilder: (context) => const SkeletonLoader(),
-  errorBuilder: (context, error) => ErrorCard(message: error),
+  errorBuilder: (context, error) => ErrorCard(message: error.toString()),
 )
 ```
 

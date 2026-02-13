@@ -1,56 +1,59 @@
 # Web Packages
 
-Web packages are reusable Dart packages that include Flutter widgets, JavaScript bundles, and CSS. They can be distributed via pub.dev and used across multiple Fluttron apps.
+Web packages are reusable Dart packages that bundle Flutter widgets, JavaScript factories, and optional CSS assets for Fluttron apps.
 
-## Overview
+## What Is Implemented
 
-A web package encapsulates:
-- **Dart Library**: Flutter Web compatible widgets
-- **JavaScript Assets**: Bundled JS with view factory implementations
-- **CSS Styles**: Bundled stylesheets (with isolation conventions)
-- **Manifest**: `fluttron_web_package.json` defining the package contract
+Web Package support is fully integrated in the CLI build flow:
 
-## Creating a Web Package
+- `fluttron create --type web_package` scaffold
+- Dependency discovery from `ui/.dart_tool/package_config.json`
+- Manifest + marker validation (`fluttron_web_package.json` + `fluttron_web_package: true`)
+- Asset collection into `ext/packages/<package>/...`
+- HTML injection for package JS/CSS
+- Auto-generation of `ui/lib/generated/web_package_registrations.dart`
+- Diagnostics command: `fluttron packages list -p <app>`
 
-### 1. Create the Package
+## Create a Web Package
 
 ```bash
 fluttron create ./my_editor --name my_editor --type web_package
-```
-
-### 2. Project Structure
-
-```
-my_editor/
-├── fluttron_web_package.json    # Package manifest
-├── pubspec.yaml                  # Dart package definition
-├── lib/
-│   ├── my_editor.dart           # Library entry point
-│   └── src/
-│       └── editor_widget.dart   # Widget implementation
-├── frontend/
-│   ├── package.json             # pnpm + esbuild config
-│   ├── scripts/
-│   │   └── build-frontend.mjs   # Build script
-│   └── src/
-│       └── main.js              # View factory implementations
-└── web/
-    └── ext/
-        ├── main.js              # Bundled JS output
-        └── main.css             # Bundled CSS output
-```
-
-### 3. Build Assets
-
-```bash
-cd my_editor/frontend
+cd my_editor
+dart pub get
+cd frontend
 pnpm install
 pnpm run js:build
 ```
 
-## Package Manifest
+Notes:
 
-The `fluttron_web_package.json` file defines the package's capabilities:
+- Template `pubspec.yaml` includes `fluttron_web_package: true`.
+- Template default is `publish_to: none` (MVP distribution is path/git first).
+- `create` rewrites local Fluttron dependency paths so local builds work immediately.
+
+## Package Structure
+
+```text
+my_editor/
+├── fluttron_web_package.json
+├── pubspec.yaml
+├── lib/
+│   ├── my_editor.dart
+│   └── src/
+│       └── example_widget.dart
+├── frontend/
+│   ├── package.json
+│   ├── scripts/build-frontend.mjs
+│   └── src/main.js
+└── web/
+    └── ext/
+        ├── main.js
+        └── main.css
+```
+
+## Manifest Contract
+
+`fluttron_web_package.json`:
 
 ```json
 {
@@ -59,7 +62,7 @@ The `fluttron_web_package.json` file defines the package's capabilities:
     {
       "type": "my_editor.editor",
       "jsFactoryName": "fluttronCreateMyEditorEditorView",
-      "description": "Markdown editor component"
+      "description": "Editor component"
     }
   ],
   "assets": {
@@ -70,291 +73,148 @@ The `fluttron_web_package.json` file defines the package's capabilities:
     {
       "name": "fluttron.my_editor.editor.change",
       "direction": "js_to_dart",
-      "payloadType": "{ content: string, timestamp: number }"
+      "payloadType": "{ content: string }"
     }
   ]
 }
 ```
 
-### Fields
+Field summary:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `version` | Yes | Manifest version (currently `"1"`) |
-| `viewFactories` | Yes | Array of view factory definitions |
-| `viewFactories[].type` | Yes | Unique type identifier |
-| `viewFactories[].jsFactoryName` | Yes | JavaScript factory function name |
-| `viewFactories[].description` | No | Human-readable description |
-| `assets.js` | Yes | Array of JavaScript file paths |
-| `assets.css` | No | Array of CSS file paths |
-| `events` | No | Array of event definitions |
+- `version`: must be `"1"`
+- `viewFactories`: required, at least one
+- `assets.js`: required
+- `assets.css`: optional
+- `events`: optional
 
-## Naming Conventions
+## Integrate Into an App
 
-### View Types
-
-Format: `<package>.<feature>`
-
-```dart
-// Good
-'my_editor.editor'
-'my_editor.preview'
-'chart_viewer.bar'
-
-// Avoid
-'editor'  // Too generic
-'MyEditor'  // Wrong case
-```
-
-### JavaScript Factory Names
-
-Format: `fluttronCreate<Package><Feature>View`
-
-```javascript
-// Package: my_editor, Feature: editor
-window.fluttronCreateMyEditorEditorView = function(viewId, initialContent) {
-  // ...
-};
-```
-
-### Events
-
-Format: `fluttron.<package>.<feature>.<action>`
-
-```javascript
-// Dispatch event
-element.dispatchEvent(new CustomEvent('fluttron.my_editor.editor.change', {
-  detail: { content: newContent },
-  bubbles: true,
-}));
-```
-
-## CSS Isolation
-
-**Critical**: Web packages must use CSS isolation to avoid conflicts when multiple packages are loaded.
-
-### Recommended: BEM Naming
-
-```css
-/* Format: .<package>__<element>--<modifier> */
-
-.my-editor__toolbar { }
-.my-editor__button--active { }
-.my-editor__editor--focused { }
-```
-
-### Alternative: Container Scoping
-
-```css
-.fluttron-my-editor .toolbar { }
-.fluttron-my-editor .button { }
-```
-
-### What NOT to Do
-
-```css
-/* ❌ These will conflict with other packages */
-.toolbar { }
-.active { }
-.container { }
-```
-
-## Dart Widget Implementation
-
-```dart
-import 'package:fluttron_ui/fluttron_ui.dart';
-import 'package:flutter/material.dart';
-
-class MyEditorWidget extends StatelessWidget {
-  const MyEditorWidget({
-    super.key,
-    this.initialContent = '',
-    this.onContentChanged,
-  });
-
-  final String initialContent;
-  final ValueChanged<Map<String, dynamic>>? onContentChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return FluttronHtmlView(
-      type: 'my_editor.editor',
-      args: [initialContent],
-    );
-  }
-}
-
-// Event stream helper
-Stream<Map<String, dynamic>> myEditorChanges() {
-  return FluttronEventBridge()
-      .on('fluttron.my_editor.editor.change')
-      .map((event) => Map<String, dynamic>.from(event as Map));
-}
-```
-
-## JavaScript Implementation
-
-```javascript
-const EDITOR_CHANGE_EVENT = 'fluttron.my_editor.editor.change';
-
-window.fluttronCreateMyEditorEditorView = function(viewId, initialContent) {
-  const container = document.createElement('div');
-  container.id = `my-editor-${viewId}`;
-  container.className = 'my-editor';
-  
-  // Create your editor UI
-  const textarea = document.createElement('textarea');
-  textarea.value = initialContent || '';
-  textarea.className = 'my-editor__textarea';
-  
-  textarea.addEventListener('input', () => {
-    // Dispatch event to Flutter
-    container.dispatchEvent(new CustomEvent(EDITOR_CHANGE_EVENT, {
-      detail: { content: textarea.value },
-      bubbles: true,
-    }));
-  });
-  
-  container.appendChild(textarea);
-  return container;
-};
-```
-
-## Using in an App
-
-### 1. Add Dependency
-
-In your app's `ui/pubspec.yaml`:
+1. Add dependency in `ui/pubspec.yaml`:
 
 ```yaml
 dependencies:
   my_editor:
-    path: ../my_editor
-    # Or from pub.dev:
-    # my_editor: ^1.0.0
+    path: ../../my_editor
 ```
 
-### 2. Register Views (Future)
-
-*Note: Automatic registration via CLI is planned for v0038-v0039.*
-
-Currently, register manually:
-
-```dart
-import 'package:fluttron_ui/fluttron_ui.dart';
-
-void main() {
-  FluttronWebViewRegistry.register(
-    FluttronWebViewRegistration(
-      type: 'my_editor.editor',
-      jsFactoryName: 'window.fluttronCreateMyEditorEditorView',
-    ),
-  );
-  
-  runFluttronUi(home: const MyApp());
-}
-```
-
-### 3. Use the Widget
-
-```dart
-import 'package:my_editor/my_editor.dart';
-
-class EditorPage extends StatefulWidget {
-  @override
-  _EditorPageState createState() => _EditorPageState();
-}
-
-class _EditorPageState extends State<EditorPage> {
-  String _content = '';
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _subscription = myEditorChanges().listen((data) {
-      setState(() => _content = data['content'] ?? '');
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: MyEditorWidget(
-            initialContent: _content,
-            onContentChanged: (data) {
-              print('Content: ${data['content']}');
-            },
-          ),
-        ),
-        Text('Word count: ${_content.split(' ').length}'),
-      ],
-    );
-  }
-}
-```
-
-## Publishing
-
-Web packages can be published to pub.dev like any Dart package:
+2. Resolve UI dependencies:
 
 ```bash
-cd my_editor
-dart pub publish
+cd my_app/ui
+flutter pub get
 ```
 
-Users can then add them as dependencies:
+3. Build app:
 
-```yaml
-dependencies:
-  my_editor: ^1.0.0
+```bash
+cd ..
+fluttron build -p .
 ```
 
-## Best Practices
+During `fluttron build`, the pipeline runs:
 
-1. **CSS Isolation**: Always use prefixed class names
-2. **Self-Contained JS**: Don't assume other packages' JS is loaded
-3. **Document Events**: List all events your package emits in README
-4. **Semantic Versioning**: Follow SemVer for package versions
-5. **Example Widget**: Include a working example widget
+1. UI frontend build (`pnpm run js:build`)
+2. UI source JS validation
+3. Web package discovery
+4. Registration generation
+5. `flutter build web`
+6. Package asset collection
+7. HTML injection
+8. Build output JS validation
+9. Copy to `host/assets/www`
+10. Host asset JS validation
+
+## Auto Registration
+
+Generated file:
+
+- `ui/lib/generated/web_package_registrations.dart`
+
+Template apps already import and call:
+
+```dart
+import 'generated/web_package_registrations.dart';
+
+void main() {
+  registerFluttronWebPackages();
+  runFluttronUi(title: 'My App', home: const MyHomePage());
+}
+```
+
+## JavaScript Factory Contract
+
+Register function name in manifest without `window.` prefix, for example:
+
+- `jsFactoryName: "fluttronCreateMyEditorEditorView"`
+
+Expose it globally in JS:
+
+```javascript
+window.fluttronCreateMyEditorEditorView = function(viewId, initialContent) {
+  const container = document.createElement('div');
+  container.id = `my-editor-${viewId}`;
+  return container;
+};
+```
+
+## Conflict Strategy
+
+Type conflicts are strict:
+
+- Same `type` + same `jsFactoryName`: idempotent
+- Same `type` + different `jsFactoryName`: throws `StateError`
+
+This is enforced by `FluttronWebViewRegistry` at runtime.
+
+## Diagnose Dependencies
+
+List discovered web packages:
+
+```bash
+fluttron packages list -p ./my_app
+```
+
+Output includes package name, version, and exposed view factory types.
+
+## MVP Distribution Scope
+
+Current supported distribution paths:
+
+- Path dependencies (local development)
+- Git dependencies
+
+Out of current MVP scope:
+
+- Direct pub.dev distribution workflow
 
 ## Troubleshooting
 
-### View Factory Not Found
+### Package not discovered
 
-Ensure:
-- `fluttron_web_package.json` exists and is valid
-- `pubspec.yaml` has `fluttron_web_package: true`
-- `web/ext/main.js` exists and exports the factory
-- The view is registered in your app
+Check all of the following in the package root:
 
-### CSS Conflicts
+- `fluttron_web_package.json` exists
+- `pubspec.yaml` contains `fluttron_web_package: true`
+- `ui/.dart_tool/package_config.json` is present (`flutter pub get` in `ui/`)
 
-Check for:
-- Generic class names (`.container`, `.button`, etc.)
-- Global styles affecting other elements
-- Missing BEM prefixes
+### View factory not found
 
-### Build Fails
+Check:
 
-Run manually:
+- `jsFactoryName` in manifest does not include `window.`
+- Corresponding function is attached on `window` in JS
+- `web/ext/main.js` was rebuilt (`pnpm run js:build`)
+
+### Asset injection missing
+
+Run:
+
 ```bash
-cd frontend
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-pnpm run js:build
+fluttron build -p ./my_app
+fluttron packages list -p ./my_app
 ```
 
-## Next Steps
+Then inspect:
 
-- [Web Views API](./web-views.md) - Core Web View APIs
-- [Services API](./services.md) - Host services reference
-- [Architecture Overview](../architecture/overview.md) - System architecture
+- `host/assets/www/index.html`
+- `host/assets/www/ext/packages/<package>/...`

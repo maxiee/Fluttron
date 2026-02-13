@@ -26,7 +26,7 @@ const FeatureList = [
     Svg: require('@site/static/img/web-eco.svg').default,
     description: (
       <>
-        Embed any JavaScript library in Flutter Web. Create reusable web packages with `--type web_package` and share them across apps.
+        Embed JavaScript libraries in Flutter Web. Build reusable web packages and integrate them through `fluttron build` with automatic discovery, asset injection, and registration generation.
       </>
     ),
   },

@@ -12,16 +12,17 @@ Renderer (Flutter Web)          Host (Flutter Desktop)
        ├─────────────────────────────>│
        │     callHandler('fluttron')  │
        │                              │
-       │                              │ 2. Parse Request
-       │                              │ 3. Route to Service
-       │                              │ 4. Execute Method
+       │                              │ 2. Validate Payload
+       │                              │ 3. Parse Request
+       │                              │ 4. Route to Service
+       │                              │ 5. Execute Method
        │                              │
-       │  5. FluttronResponse         │
+       │  6. FluttronResponse         │
        │     (JSON)                   │
        │<─────────────────────────────┤
        │                              │
-       │  6. Parse Response           │
-       │  7. Update UI                │
+       │  7. Parse Response           │
+       │  8. Update UI                │
 ```
 
 ## Protocol
@@ -66,7 +67,7 @@ Error:
 Errors use `CODE:message` for expected failures, or `internal_error:...` when
 an unexpected exception occurs.
 
-## Host Implementation (概览)
+## Host Implementation (Overview)
 
 ```dart
 class HostBridge {
@@ -77,21 +78,38 @@ class HostBridge {
     controller.addJavaScriptHandler(
       handlerName: 'fluttron',
       callback: (args) async {
-        final request = FluttronRequest.fromJson(
-          Map<String, dynamic>.from(args.first as Map),
-        );
-        final result = await registry.dispatch(
-          request.method,
-          request.params,
-        );
-        return FluttronResponse.ok(request.id, result).toJson();
+        if (args.isEmpty) {
+          return FluttronResponse.err('missing', 'missing_args').toJson();
+        }
+
+        final raw = args.first;
+        if (raw is! Map) {
+          return FluttronResponse.err('invalid', 'invalid_payload').toJson();
+        }
+
+        final req = FluttronRequest.fromJson(Map<String, dynamic>.from(raw));
+        if (req.id.isEmpty || req.method.isEmpty) {
+          return FluttronResponse.err(
+            req.id.isEmpty ? 'invalid' : req.id,
+            'bad_request',
+          ).toJson();
+        }
+
+        try {
+          final result = await registry.dispatch(req.method, req.params);
+          return FluttronResponse.ok(req.id, result).toJson();
+        } on FluttronError catch (e) {
+          return FluttronResponse.err(req.id, '${e.code}:${e.message}').toJson();
+        } catch (e) {
+          return FluttronResponse.err(req.id, 'internal_error:$e').toJson();
+        }
       },
     );
   }
 }
 ```
 
-## Renderer Implementation (概览)
+## Renderer Implementation (Overview)
 
 ```dart
 final result = await window.flutter_inappwebview.callHandler(
@@ -108,6 +126,17 @@ final platform = await client.getPlatform();
 await client.kvSet('hello', 'world');
 final value = await client.kvGet('hello');
 ```
+
+## Error Semantics
+
+- Expected service errors are returned as `CODE:message`
+- Validation failures return normalized protocol errors (`missing_args`, `invalid_payload`, `bad_request`)
+- Unexpected runtime failures are wrapped as `internal_error:<message>`
+
+## Relation to Web Packages
+
+Web Package loading (discovery, asset injection, registration generation) is a
+build-time pipeline concern. It does not change the bridge protocol itself.
 
 ## Next Steps
 

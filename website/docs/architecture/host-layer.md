@@ -83,6 +83,33 @@ controller.addJavaScriptHandler(
 );
 ```
 
+### Web Asset Loader
+
+Host loads Renderer assets via a custom scheme (`fluttron://local/...`) and maps
+them to `host/assets/www/...` at runtime.
+
+```dart
+InAppWebView(
+  initialUrlRequest: URLRequest(
+    url: WebUri('fluttron://local/index.html'),
+  ),
+  initialSettings: InAppWebViewSettings(
+    resourceCustomSchemes: ['fluttron'],
+  ),
+  onLoadResourceWithCustomScheme: (controller, request) async {
+    final assetPath = 'assets/www${request.url.path}';
+    // load bytes from Flutter assets and return CustomSchemeResponse
+  },
+)
+```
+
+This means any files synced by `fluttron build` are directly available to the
+WebView, including:
+
+- Core UI assets (`index.html`, `flutter_bootstrap.js`, Flutter-generated files)
+- Template frontend assets (`ext/main.js`, optional `ext/main.css`)
+- Web package assets (`ext/packages/<package>/...`)
+
 ### Services
 
 All services implement:
@@ -100,6 +127,18 @@ abstract class FluttronService {
 |---------|-----------|-------------|
 | SystemService | `system` | Platform information |
 | StorageService | `storage` | In-memory key-value store |
+
+## Bridge Error Behavior
+
+`HostBridge` validates payload shape and returns normalized error responses.
+
+| Scenario | Response error |
+|---------|-----------------|
+| Missing JS handler args | `missing_args` |
+| Non-map payload | `invalid_payload` |
+| Empty request id/method | `bad_request` |
+| Known service error (`FluttronError`) | `CODE:message` |
+| Unexpected exception | `internal_error:<message>` |
 
 ## Custom Services
 
@@ -160,6 +199,11 @@ print(result['message']); // "Hello from custom service!"
 ### Template Example
 
 When you create a new Fluttron project, the Host template includes a `greeting_service.dart` file with a commented-out example service. Uncomment it and follow the instructions to enable custom services.
+
+## Relation to Web Packages
+
+Web Package integration does not require Host-side service changes. The Host
+simply serves whatever was produced by the CLI build pipeline in `assets/www/`.
 
 ## Next Steps
 

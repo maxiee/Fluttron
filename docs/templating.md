@@ -63,12 +63,14 @@ See `ui/lib/main.dart` for the registration pattern and `ui/frontend/src/main.js
 
 ## Web Package Template Structure
 
-Web packages are reusable Dart packages that can be distributed and used across multiple Fluttron apps.
+Web packages are reusable Dart packages that can be shared across Fluttron apps (MVP: path/git dependencies first).
 
 Create with:
 
 ```bash
 fluttron create ./my_package --name my_package --type web_package
+cd my_package
+dart pub get
 ```
 
 ### Directory Structure
@@ -107,8 +109,10 @@ dependencies:
   flutter:
     sdk: flutter
   fluttron_ui:
-    path: ../packages/fluttron_ui
+    path: ../../packages/fluttron_ui
 ```
+
+During `fluttron create`, the CLI rewrites template local paths to your actual repo location.
 
 #### fluttron_web_package.json
 
@@ -215,8 +219,22 @@ Add to your app's `ui/pubspec.yaml`:
 ```yaml
 dependencies:
   my_package:
-    path: ../my_package
+    path: ../../my_package
 ```
+
+Then run:
+
+```bash
+cd ui
+flutter pub get
+cd ..
+fluttron build -p .
+fluttron packages list -p .
+```
+
+`fluttron build` will auto-generate `ui/lib/generated/web_package_registrations.dart`,
+collect package assets into `ui/build/web/ext/packages/<pkg>/...`, and inject script/style
+tags into `build/web/index.html`.
 
 ---
 

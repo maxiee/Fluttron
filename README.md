@@ -59,7 +59,7 @@ graph TD
   - `FluttronEventBridge` - JS→Flutter event communication
   - `FluttronWebViewRegistry` - Type-driven view registration
 - [x] Host custom service extension with template example
-- [x] Web Package support - Create reusable web components as Dart packages
+- [x] Web Package support - discovery, asset injection, and generated registrations
 - [ ] Plugin system
 - [ ] Typed bridge codegen
 
@@ -96,6 +96,8 @@ Web packages are reusable Dart packages that include Flutter widgets, JavaScript
 
 ```bash
 fluttron create ./my_editor --name my_editor --type web_package
+cd my_editor
+dart pub get
 ```
 
 This creates a package structure with:
@@ -117,8 +119,20 @@ Then add to your app's `ui/pubspec.yaml`:
 ```yaml
 dependencies:
   my_editor:
-    path: ../my_editor
+    path: ../../my_editor
 ```
+
+Resolve dependencies in the app UI and build:
+
+```bash
+cd ../my_app/ui
+flutter pub get
+cd ..
+fluttron build -p .
+fluttron packages list -p .
+```
+
+Current MVP distribution mode is path/git dependencies first.
 
 ## CLI Commands
 
@@ -128,6 +142,7 @@ dependencies:
 | `fluttron create <path> --type web_package` | Create a web package |
 | `fluttron build -p <path>` | Build the UI and copy to host |
 | `fluttron run -p <path>` | Run the host application |
+| `fluttron packages list -p <path>` | List discovered web packages |
 
 ## Project Types
 
@@ -144,6 +159,7 @@ my_app/
 │   └── assets/www/
 └── ui/
     ├── lib/main.dart
+    ├── lib/generated/web_package_registrations.dart
     ├── frontend/src/main.js
     ├── pubspec.yaml
     └── web/ext/
@@ -178,6 +194,8 @@ Default template frontend contract:
 - Clean behavior: `pnpm run js:clean` removes JS/CSS outputs and sourcemaps
 
 During `fluttron build`, UI web output is copied to Host assets (`host/assets/www`).
+For Web Package dependencies, package assets are collected into `host/assets/www/ext/packages/<pkg>/...`
+and registration code is generated to `ui/lib/generated/web_package_registrations.dart`.
 
 ## Documentation
 

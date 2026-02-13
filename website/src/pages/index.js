@@ -15,7 +15,7 @@ function HomepageHeader() {
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <p className={styles.statusText}>
-          MVP is live: CLI create/build/run, Host-Renderer bridge, and template frontend ext asset pipeline (v0025).
+          MVP is live: CLI create/build/run, Host-Renderer bridge, Web View/Event APIs, and Web Package pipeline (discovery, asset injection, auto registration).
         </p>
         <div className={styles.buttons}>
           <Link

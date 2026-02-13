@@ -35,6 +35,8 @@ Web packages are reusable components that can be shared across Fluttron apps:
 
 ```bash
 fluttron create ./my_editor --name my_editor --type web_package
+cd my_editor
+dart pub get
 ```
 
 This generates:
@@ -86,6 +88,7 @@ The default demo includes:
 | `fluttron create <path> --type web_package` | Create a web package |
 | `fluttron build -p <path>` | Build the UI and copy to host |
 | `fluttron run -p <path>` | Run the host application |
+| `fluttron packages list -p <path>` | List discovered web packages in app dependencies |
 
 ## Custom Services
 
@@ -109,10 +112,19 @@ The template includes a commented-out custom service example:
    ```yaml
    dependencies:
      my_widget:
-       path: ../my_widget
+       path: ../../my_widget
    ```
 
-4. Use the widget in your app:
+4. Resolve UI dependencies and build:
+   ```bash
+   cd my_app/ui
+   flutter pub get
+   cd ..
+   fluttron build -p .
+   fluttron packages list -p .
+   ```
+
+5. Use the widget in your app:
    ```dart
    import 'package:my_widget/my_widget.dart';
    
@@ -132,6 +144,7 @@ Frontend pipeline notes:
 - `ui/frontend/src/main.js` is bundled into `ui/web/ext/main.js`
 - `pnpm run js:clean` removes JS/CSS artifacts and sourcemaps in `ui/web/ext/`
 - `fluttron build` copies final web assets into `host/assets/www/`
+- For Web Packages, `fluttron build` also generates `ui/lib/generated/web_package_registrations.dart`
 
 ## Next Steps
 
