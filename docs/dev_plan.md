@@ -223,6 +223,8 @@
 4. 在 Dart 侧建立公共导出 `lib/fluttron_milkdown.dart` 与最小 `MilkdownEditor`（仅封装 `FluttronHtmlView(type: 'milkdown.editor')`）。
 5. 运行并提交 `web/ext/main.js` 与 `web/ext/main.css` 产物（确保依赖方无需先本地打包才能理解结构）。
 
+注意：创建 fluttron_milkdown 工程必须通过 `fluttron create -t web_package fluttron_milkdown`，以确保正确的模板结构。
+
 **涉及文件（最小清单）**
 
 - `web_packages/fluttron_milkdown/fluttron_web_package.json`
