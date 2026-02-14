@@ -33,7 +33,7 @@
 
 ---
 
-## 当前阶段目标（更新于 2026-02-14）
+## 当前阶段目标（更新于 2026-02-15）
 
 ### 北极星目标
 
@@ -155,6 +155,7 @@
 | v0001-v0019 | 基础框架与 CLI 主链路 | Host/UI/Shared/CLI create-build-run 全链路建立 |
 | v0020-v0031 | 前端集成能力沉淀 | `HtmlView/EventBridge` 核心能力抽象，模板与 playground 对齐 |
 | v0032-v0041 | Web Package MVP | 机制完整落地并完成验收 |
+| v0042 | `fluttron_milkdown` 骨架 | 包骨架、最小编辑器、构建产物完成 |
 
 注：详细历史记录以 Git 提交与 PRD 文档为准，不再在本文件重复堆叠逐条流水账。
 
@@ -208,44 +209,35 @@
 
 > 状态标记：`[ ]` 未开始，`[~]` 进行中，`[x]` 已完成
 
-### [ ] v0042 - `fluttron_milkdown` 包骨架与最小可运行编辑器
+### [x] v0042 - `fluttron_milkdown` 包骨架与最小可运行编辑器 ✅
+
+**完成日期**: 2026-02-15
 
 **目标**
 
 - 在 `web_packages/fluttron_milkdown` 建立完整包骨架。
 - 完成最小编辑器渲染（可显示、可输入、可构建）。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. 创建目录与基础文件：`pubspec.yaml`、`fluttron_web_package.json`、`analysis_options.yaml`、`README.md`、`CHANGELOG.md`。
-2. 建立 `frontend/` 构建链路：`package.json`、`scripts/build-frontend.mjs`、`src/main.js`。
-3. 在 JS 侧实现最小工厂函数 `window.fluttronCreateMilkdownEditorView(viewId, config)`，支持 config 归一化：`initialMarkdown/theme/readonly`。
-4. 在 Dart 侧建立公共导出 `lib/fluttron_milkdown.dart` 与最小 `MilkdownEditor`（仅封装 `FluttronHtmlView(type: 'milkdown.editor')`）。
-5. 运行并提交 `web/ext/main.js` 与 `web/ext/main.css` 产物（确保依赖方无需先本地打包才能理解结构）。
+1. ✅ 创建目录与基础文件：`pubspec.yaml`、`fluttron_web_package.json`、`analysis_options.yaml`、`README.md`、`CHANGELOG.md`。
+2. ✅ 建立 `frontend/` 构建链路：`package.json`、`scripts/build-frontend.mjs`、`src/main.js`。
+3. ✅ 在 JS 侧实现最小工厂函数 `window.fluttronCreateMilkdownEditorView(viewId, config)`，支持 config 归一化：`initialMarkdown/theme/readonly`。
+4. ✅ 在 Dart 侧建立公共导出 `lib/fluttron_milkdown.dart` 与最小 `MilkdownEditor`（仅封装 `FluttronHtmlView(type: 'milkdown.editor')`）。
+5. ✅ 运行并提交 `web/ext/main.js` 与 `web/ext/main.css` 产物。
 
-注意：创建 fluttron_milkdown 工程必须通过 `fluttron create -t web_package fluttron_milkdown`，以确保正确的模板结构。
+**验收结果**
 
-**涉及文件（最小清单）**
+- `dart analyze`: 无问题 ✅
+- `pnpm run js:build`: 成功 ✅
+- 产物文件：
+  - `web/ext/main.js`: 5.2MB（含 KaTeX 字体内联）
+  - `web/ext/main.css`: 1.5MB
+- `fluttron_web_package.json` 中 `type/jsFactoryName/assets` 与实现一致 ✅
 
-- `web_packages/fluttron_milkdown/fluttron_web_package.json`
-- `web_packages/fluttron_milkdown/frontend/package.json`
-- `web_packages/fluttron_milkdown/frontend/scripts/build-frontend.mjs`
-- `web_packages/fluttron_milkdown/frontend/src/main.js`
-- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart`
-- `web_packages/fluttron_milkdown/web/ext/main.js`
-- `web_packages/fluttron_milkdown/web/ext/main.css`
+**注意事项**
 
-**验收命令**
-
-- `cd web_packages/fluttron_milkdown && dart analyze`
-- `cd web_packages/fluttron_milkdown/frontend && pnpm install && pnpm run js:build`
-
-**完成定义（DoD）**
-
-- 分析通过。
-- JS/CSS 产物存在且非空。
-- `fluttron_web_package.json` 中 `type/jsFactoryName/assets` 与实现一致。
+- Bundle 体积较大（5.2MB JS + 1.5MB CSS），主要因为 KaTeX 字体内联和完整 CodeMirror 语言支持，后续可优化。
 
 **设计引用**
 
@@ -253,7 +245,7 @@
 
 ---
 
-### [ ] v0043 - playground 接入并跑通 Web Package 全链路
+### [~] v0043 - playground 接入并跑通 Web Package 全链路
 
 **目标**
 
@@ -576,7 +568,17 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0042`
-- 第一提交目标：完成包骨架 + 最小编辑器渲染 + 可构建产物
-- 完成后立即进入 `v0043` 做 playground 全链路验证，不要提前并行开发 v0044+
+- 当前起始版本：`v0043`
+- 第一提交目标：playground 接入 `fluttron_milkdown`，验证 Discovery/Collection/Injection/Registration 四阶段
+- 完成后立即进入 `v0044` 做编辑能力扩展，不要提前并行开发后续版本
+
+### v0042 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| 包骨架创建 | ✅ |
+| JS 工厂函数 | ✅ `fluttronCreateMilkdownEditorView` |
+| Dart Widget | ✅ `MilkdownEditor` |
+| 构建产物 | ✅ main.js (5.2MB) + main.css (1.5MB) |
+| dart analyze | ✅ 无问题 |
 
