@@ -1,0 +1,37 @@
+{
+  "$schema": "https://fluttron.dev/schemas/web_package.json",
+  "version": "1",
+  "viewFactories": [
+    {
+      "type": "milkdown.editor",
+      "jsFactoryName": "fluttronCreateMilkdownEditorView",
+      "description": "Milkdown WYSIWYG markdown editor (Crepe)"
+    }
+  ],
+  "assets": {
+    "js": ["web/ext/main.js"],
+    "css": ["web/ext/main.css"]
+  },
+  "events": [
+    {
+      "name": "fluttron.milkdown.editor.change",
+      "direction": "js_to_dart",
+      "payloadType": "{ viewId: number, markdown: string, characterCount: number, lineCount: number, updatedAt: string }"
+    },
+    {
+      "name": "fluttron.milkdown.editor.ready",
+      "direction": "js_to_dart",
+      "payloadType": "{ viewId: number }"
+    },
+    {
+      "name": "fluttron.milkdown.editor.focus",
+      "direction": "js_to_dart",
+      "payloadType": "{ viewId: number }"
+    },
+    {
+      "name": "fluttron.milkdown.editor.blur",
+      "direction": "js_to_dart",
+      "payloadType": "{ viewId: number }"
+    }
+  ]
+}
