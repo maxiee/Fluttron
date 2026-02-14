@@ -25,6 +25,7 @@ flutter:
   assets:
     - assets/www/
     - assets/www/ext/
+    - assets/www/ext/packages/
     - assets/www/assets/
     - assets/www/assets/fonts/
     - assets/www/assets/packages/cupertino_icons/assets/

@@ -245,41 +245,49 @@
 
 ---
 
-### [~] v0043 - playground 接入并跑通 Web Package 全链路
+### [x] v0043 - playground 接入并跑通 Web Package 全链路 ✅
+
+**完成日期**: 2026-02-15
 
 **目标**
 
 - 让 playground 通过 path 依赖接入 `fluttron_milkdown`。
 - 验证 Discovery/Collection/Injection/Registration 四阶段在真实包上可用。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. 在 `playground/ui/pubspec.yaml` 添加 `fluttron_milkdown` path 依赖并执行 `flutter pub get`。
-2. 执行 `fluttron build -p playground`，检查构建日志必须出现 web package 发现与注入阶段。
-3. 校验以下构建产物：
+1. ✅ 在 `playground/ui/pubspec.yaml` 添加 `fluttron_milkdown` path 依赖并执行 `flutter pub get`。
+2. ✅ 执行 `fluttron build -p playground`，检查构建日志出现 web package 发现与注入阶段。
+3. ✅ 校验以下构建产物：
    - `playground/ui/build/web/ext/packages/fluttron_milkdown/main.js`
    - `playground/ui/build/web/ext/packages/fluttron_milkdown/main.css`
    - `playground/ui/build/web/index.html` 中存在对应 `<script>` 与 `<link>`。
-4. 校验注册代码：`playground/ui/lib/generated/web_package_registrations.dart` 包含 `milkdown.editor` 注册。
-5. playground 页面改用 `MilkdownEditor` 最小渲染，确保 macOS 宿主可见编辑器。
+4. ✅ 校验注册代码：`playground/ui/lib/generated/web_package_registrations.dart` 包含 `milkdown.editor` 注册。
+5. ✅ playground 页面改用 `MilkdownEditor` 最小渲染，确保 macOS 宿主可见编辑器。
 
-**涉及文件（最小清单）**
+**额外完成**
 
-- `playground/ui/pubspec.yaml`
-- `playground/ui/lib/main.dart`
-- `playground/ui/lib/generated/web_package_registrations.dart`（生成文件）
+6. ✅ 实现 CLI 自动更新 host pubspec.yaml 功能 (`HostPubspecUpdater`)。
+7. ✅ 更新模板 `templates/host/pubspec.yaml` 预声明 `assets/www/ext/packages/`。
 
-**验收命令**
+**验收结果**
 
-- `cd playground/ui && flutter pub get`
-- `fluttron build -p playground`
-- `fluttron run -p playground --no-build -d macos`
+- `fluttron build -p playground`: 成功 ✅
+  - Found 1 web package(s): fluttron_milkdown ✅
+  - Collected 2 asset(s) from 1 package(s) ✅
+  - Injected 1 JS and 1 CSS reference(s) ✅
+- `flutter run -d macos`: 成功 ✅
+  - 资产加载无错误 ✅
+  - 编辑器在 playground 可见并可输入 ✅
 
-**完成定义（DoD）**
+**涉及文件**
 
-- 构建与运行成功。
-- 编辑器在 playground 可见并可输入。
-- 注入与注册文件均正确生成。
+- `playground/ui/pubspec.yaml` (添加 fluttron_milkdown 依赖)
+- `playground/ui/lib/main.dart` (使用 MilkdownEditor + registerFluttronWebPackages)
+- `playground/host/pubspec.yaml` (CLI 自动更新添加 asset 声明)
+- `packages/fluttron_cli/lib/src/utils/host_pubspec_updater.dart` (新增)
+- `packages/fluttron_cli/lib/src/utils/ui_build_pipeline.dart` (集成自动更新)
+- `templates/host/pubspec.yaml` (预声明 ext/packages/)
 
 **设计引用**
 
@@ -568,9 +576,9 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0043`
-- 第一提交目标：playground 接入 `fluttron_milkdown`，验证 Discovery/Collection/Injection/Registration 四阶段
-- 完成后立即进入 `v0044` 做编辑能力扩展，不要提前并行开发后续版本
+- 当前起始版本：`v0044`
+- 第一提交目标：编辑能力扩展（GFM + 高亮 + 编辑体验）
+- 完成后立即进入 `v0045` 做事件系统完善，不要提前并行开发后续版本
 
 ### v0042 完成记录
 
@@ -581,4 +589,17 @@
 | Dart Widget | ✅ `MilkdownEditor` |
 | 构建产物 | ✅ main.js (5.2MB) + main.css (1.5MB) |
 | dart analyze | ✅ 无问题 |
+
+### v0043 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| playground 依赖添加 | ✅ fluttron_milkdown path 依赖 |
+| Web Package Discovery | ✅ Found 1 web package |
+| Asset Collection | ✅ 2 assets (JS + CSS) |
+| HTML Injection | ✅ script + link 标签 |
+| Registration Code | ✅ milkdown.editor 注册 |
+| playground main.dart | ✅ 使用 MilkdownEditor + registerFluttronWebPackages |
+| macOS 运行 | ✅ 编辑器可见可输入 |
+| CLI 自动更新 host pubspec | ✅ HostPubspecUpdater |
 

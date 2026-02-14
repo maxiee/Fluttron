@@ -109,7 +109,8 @@ const initializeCrepeEditor = async (viewId, container, options) => {
   emitEditorChange(viewId, options.initialMarkdown);
 };
 
-const createMilkdownEditorView = async (viewId, config) => {
+// Flutter HtmlElementView expects the factory to return an HTMLElement synchronously.
+const createMilkdownEditorView = (viewId, config) => {
   const options = normalizeConfig(config);
 
   const container = document.createElement('div');

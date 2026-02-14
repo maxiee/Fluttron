@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'file_ops.dart';
 import 'frontend_builder.dart';
+import 'host_pubspec_updater.dart';
 import 'html_injector.dart';
 import 'js_asset_validator.dart';
 import 'registration_generator.dart';
@@ -339,7 +340,45 @@ class UiBuildPipeline {
       destinationDir: hostAssetsDir,
     );
 
-    // Step 12: Validate host assets
+    // Step 12: Update host pubspec.yaml with web package asset declarations
+    if (webPackages.isNotEmpty) {
+      final packageNames = webPackages
+          .map((pkg) => pkg.packageName)
+          .whereType<String>()
+          .toList();
+
+      if (packageNames.isNotEmpty) {
+        // hostAssetsDir is like 'host/assets/www', so we need to go up two levels to get 'host'
+        final hostDir = hostAssetsDir.parent.parent;
+        final hostPubspecFile = File(p.join(hostDir.path, 'pubspec.yaml'));
+
+        if (hostPubspecFile.existsSync()) {
+          try {
+            final updater = HostPubspecUpdater();
+            final updated = updater.updateSync(
+              hostPubspecFile: hostPubspecFile,
+              packageNames: packageNames,
+            );
+
+            if (updated) {
+              _writeOut(
+                'Updated host pubspec.yaml with web package asset declarations.\n'
+                'Please run "flutter pub get" in the host directory to apply changes.',
+              );
+            }
+          } on HostPubspecUpdaterException catch (error) {
+            _writeErr(
+              'Warning: Failed to update host pubspec.yaml: ${error.message}',
+            );
+            _writeErr(
+              'You may need to manually add asset declarations for web packages.',
+            );
+          }
+        }
+      }
+    }
+
+    // Step 13: Validate host assets
     final hostAssetLabel = p.normalize(manifest.entry.hostAssetPath);
     if (!_validateJsAssets(
       stageLabel: hostAssetLabel,
