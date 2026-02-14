@@ -173,6 +173,7 @@ Host 端:
 		- lib/src/event_bridge.dart - `FluttronEventBridge`，JS→Flutter 事件桥，监听浏览器 CustomEvent 并转换为 Dart Stream
 		- lib/src/web_view_registry.dart - `FluttronWebViewRegistry`，Web 视图注册中心，实现"先注册后渲染"模式
 		- lib/src/html_view_runtime.dart - 运行时解析层，支持 args canonicalization 与 FNV-1a hash 签名生成
+- web_packages/（Fluttron 官方维护的 Fluttron Web Packages）
 
 ### 模板与清单约定
 
