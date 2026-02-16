@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:fluttron_host/src/bridge/host_bridge.dart';
+import 'package:fluttron_host/src/services/clipboard_service.dart';
+import 'package:fluttron_host/src/services/dialog_service.dart';
 import 'package:fluttron_host/src/services/file_service.dart';
 import 'package:fluttron_host/src/services/service_registry.dart';
 import 'package:fluttron_host/src/services/storage_service.dart';
@@ -15,7 +17,9 @@ void runFluttronHost({ServiceRegistry? registry}) {
       (ServiceRegistry()
         ..register(SystemService())
         ..register(StorageService())
-        ..register(FileService()));
+        ..register(FileService())
+        ..register(DialogService())
+        ..register(ClipboardService()));
 
   runApp(FluttronHostApp(registry: serviceRegistry));
 }

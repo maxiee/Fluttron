@@ -58,12 +58,14 @@
 | playground 包化迁移 | ✅ | 已移除历史手写集成路径，统一走 web package 机制 |
 | 机制验证闭环 | ✅ | `fluttron_milkdown` V1-V12 验证清单全部通过 |
 | FileService | ✅ | 文件读写、目录列表、状态查询等 8 个方法已落地 |
+| DialogService | ✅ | 原生文件/目录选择对话框 4 个方法已落地 |
+| ClipboardService | ✅ | 系统剪贴板读写 3 个方法已落地 |
 
 ### 当前剩余差距
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | `markdown_editor` DialogService + ClipboardService 待落地 | v0052 进行中 |
+| 1 | `markdown_editor` app 待建立 | v0053 进行中 |
 | 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
 | 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
 | 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
@@ -235,7 +237,7 @@
 | 版本 | 阶段 | 最小可执行任务 | 依赖 | 最小验收 | 状态 |
 |---|---|---|---|---|---|
 | v0051 | Phase 1 | 在 `fluttron_host` 新增 `FileService`（`read/write/list/stat/create/delete/rename/exists`），完成注册与单测 | 无 | playground 通过 `FluttronClient.invoke('file.readFile', ...)` 读文件成功 | ✅ 完成 |
-| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 | 进行中 |
+| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 | ✅ 完成 |
 | v0053 | Phase 1 | 用 `fluttron create` 建立 `examples/markdown_editor`，接入 `fluttron_milkdown`，打通 build/run | v0051,v0052 | `fluttron build -p examples/markdown_editor` 成功，macOS 可运行并显示编辑器 | 待开始 |
 | v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 | 待开始 |
 | v0055 | Phase 2 | 实现"点击文件加载到编辑器"，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 | 待开始 |
@@ -267,12 +269,17 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0052`
+- 当前起始版本：`v0053`
 - 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
 - v0051 已完成：
   - `FileService` 在 `fluttron_host` 落地（8 个方法：read/write/list/stat/create/delete/rename/exists）
   - `FileEntry` 模型在 `fluttron_shared` 落地
   - 30 个单元测试全部通过
+- v0052 已完成：
+  - `DialogService` 在 `fluttron_host` 落地（4 个方法：openFile/openFiles/openDirectory/saveFile）
+  - `ClipboardService` 在 `fluttron_host` 落地（3 个方法：getText/setText/hasText）
+  - 7 个单元测试全部通过（参数校验 + 错误处理）
+  - 实际对话框/剪贴板功能需手动验证
 - 下一步最小动作：
-  1. 开始 `v0052`（`DialogService` + `ClipboardService`）并完成验收。
-  2. 完成后按依赖顺序推进 `v0053`（app scaffold），确保每版独立验收后再进入下一版。
+  1. 开始 `v0053`（创建 `examples/markdown_editor` app scaffold + 接入 `fluttron_milkdown`）
+  2. 确保每版独立验收后再进入下一版。
