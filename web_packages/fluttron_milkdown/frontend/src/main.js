@@ -1,6 +1,9 @@
 import { Crepe } from '@milkdown/crepe';
 import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
+import '@milkdown/crepe/theme/frame-dark.css';
+import '@milkdown/crepe/theme/nord.css';
+import '@milkdown/crepe/theme/nord-dark.css';
 
 import {
   emitEditorChange,
@@ -68,7 +71,6 @@ const mapToCrepeFeatures = (features) => ({
 const clearThemeClasses = (container) => {
   const themeClasses = [
     'milkdown-theme-frame', 'milkdown-theme-frame-dark',
-    'milkdown-theme-classic', 'milkdown-theme-classic-dark',
     'milkdown-theme-nord', 'milkdown-theme-nord-dark',
   ];
   themeClasses.forEach(cls => container.classList.remove(cls));
@@ -226,7 +228,7 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
         if (params == null || typeof params.theme !== 'string') {
           return { ok: false, error: 'setTheme requires params.theme (string)' };
         }
-        const validThemes = ['frame', 'frame-dark', 'classic', 'classic-dark', 'nord', 'nord-dark'];
+        const validThemes = ['frame', 'frame-dark', 'nord', 'nord-dark'];
         if (!validThemes.includes(params.theme)) {
           return { ok: false, error: `Invalid theme "${params.theme}". Valid themes: ${validThemes.join(', ')}` };
         }

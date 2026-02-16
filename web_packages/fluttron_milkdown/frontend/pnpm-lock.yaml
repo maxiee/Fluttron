@@ -9,10 +9,10 @@ importers:
   .:
     dependencies:
       '@milkdown/crepe':
-        specifier: ^7.6.4
+        specifier: ^7.18.0
         version: 7.18.0(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.6)
       '@milkdown/kit':
-        specifier: ^7.6.4
+        specifier: ^7.18.0
         version: 7.18.0(@codemirror/language@6.12.1)(@codemirror/state@6.5.4)(@codemirror/view@6.39.14)
     devDependencies:
       esbuild:

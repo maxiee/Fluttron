@@ -19,6 +19,7 @@
 library;
 
 import 'milkdown_interop.dart';
+import 'milkdown_theme.dart';
 
 /// Controller for Milkdown editor runtime operations.
 ///
@@ -137,12 +138,11 @@ class MilkdownController {
 
   /// Sets the editor theme.
   ///
-  /// [theme] - The theme name (e.g., 'frame', 'frame-dark', 'classic',
-  /// 'classic-dark', 'nord', 'nord-dark').
+  /// [theme] - The theme to apply (e.g., [MilkdownTheme.nord], [MilkdownTheme.frameDark]).
   ///
   /// Throws [StateError] if the operation fails.
-  Future<void> setTheme(String theme) async {
-    final result = _call('setTheme', {'theme': theme});
+  Future<void> setTheme(MilkdownTheme theme) async {
+    final result = _call('setTheme', {'theme': theme.value});
     if (!result.ok) {
       throw StateError('Failed to set theme: ${result.error}');
     }

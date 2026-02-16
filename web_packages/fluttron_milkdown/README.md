@@ -8,6 +8,7 @@ Milkdown WYSIWYG markdown editor as a Fluttron web package.
 - **CommonMark + GFM**: Support for standard markdown and GitHub Flavored Markdown
 - **Code Highlighting**: Prism-based syntax highlighting in code blocks
 - **Event System**: `change`, `ready`, `focus`, `blur` events
+- **Multi-Theme Support**: 4 built-in themes with runtime switching
 - **Configurable**: Initial markdown, readonly mode, theme support
 
 ## Installation
@@ -27,7 +28,8 @@ import 'package:fluttron_milkdown/fluttron_milkdown.dart';
 
 MilkdownEditor(
   initialMarkdown: '# Hello World',
-  onChanged: (markdown) => print(markdown),
+  theme: MilkdownTheme.nord,
+  onChanged: (event) => print(event.markdown),
 )
 ```
 
@@ -47,12 +49,64 @@ pnpm run js:build
 
 ```dart
 MilkdownEditor({
-  String initialMarkdown = '',    // Initial markdown content
-  bool readonly = false,          // Read-only mode
-  ValueChanged<String>? onChanged, // Content change callback
-  WidgetBuilder? loadingBuilder,  // Custom loading widget
+  MilkdownController? controller,   // Runtime control
+  String initialMarkdown = '',      // Initial content
+  MilkdownTheme theme = MilkdownTheme.frame,  // Visual theme
+  bool readonly = false,            // Read-only mode
+  ValueChanged<MilkdownChangeEvent>? onChanged, // Content change callback
+  VoidCallback? onReady,            // Editor ready callback
+  VoidCallback? onFocus,            // Focus callback
+  VoidCallback? onBlur,             // Blur callback
+  WidgetBuilder? loadingBuilder,    // Custom loading widget
   FluttronHtmlViewErrorBuilder? errorBuilder, // Custom error widget
 })
+```
+
+### MilkdownController
+
+```dart
+final controller = MilkdownController();
+
+MilkdownEditor(
+  controller: controller,
+  onReady: () {
+    // Controller is ready to use
+  },
+);
+
+// After ready:
+final content = await controller.getContent();
+await controller.setContent('# New content');
+await controller.focus();
+await controller.insertText('text at cursor');
+await controller.setReadonly(true);
+await controller.setTheme(MilkdownTheme.nordDark);
+```
+
+## Themes
+
+4 built-in themes from @milkdown/crepe:
+
+| Theme | Description |
+|-------|-------------|
+| `MilkdownTheme.frame` | Modern frame style (light) |
+| `MilkdownTheme.frameDark` | Modern frame style (dark) |
+| `MilkdownTheme.nord` | Nord color palette (light) |
+| `MilkdownTheme.nordDark` | Nord color palette (dark) |
+
+Set initial theme:
+
+```dart
+MilkdownEditor(
+  theme: MilkdownTheme.nordDark,
+  ...
+)
+```
+
+Runtime switching:
+
+```dart
+await controller.setTheme(MilkdownTheme.frame);
 ```
 
 ## CSS Isolation
@@ -77,11 +131,12 @@ The package emits the following events via `FluttronEventBridge`:
 
 | Asset | Raw Size | Gzipped |
 |-------|----------|---------|
-| `main.js` | 5.0 MB | 1.16 MB |
-| `main.css` | 1.4 MB | 938 KB |
-| **Total** | **6.4 MB** | **2.1 MB** |
+| `main.js` | 5.0 MB | ~1.2 MB |
+| `main.css` | 1.5 MB | ~940 KB |
+| **Total** | **6.5 MB** | **~2.1 MB** |
 
-The bundle includes all Crepe features by default:
+The bundle includes:
+- All 4 themes (frame, frame-dark, nord, nord-dark)
 - **GFM (GitHub Flavored Markdown)**: Tables, task lists, strikethrough
 - **Code highlighting**: Prism-based syntax highlighting with CodeMirror
 - **Editing experience**: History (undo/redo), slash commands, tooltip toolbar

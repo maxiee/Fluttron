@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'milkdown_controller.dart';
 import 'milkdown_events.dart';
+import 'milkdown_theme.dart';
 
 /// A WYSIWYG markdown editor widget powered by Milkdown.
 ///
@@ -18,6 +19,7 @@ import 'milkdown_events.dart';
 /// MilkdownEditor(
 ///   controller: controller,
 ///   initialMarkdown: '# Hello World',
+///   theme: MilkdownTheme.nord,
 ///   onChanged: (event) => print('Content changed: ${event.markdown}'),
 ///   onReady: () => print('Editor ready'),
 /// );
@@ -27,6 +29,7 @@ class MilkdownEditor extends StatefulWidget {
     super.key,
     this.controller,
     this.initialMarkdown = '',
+    this.theme = MilkdownTheme.frame,
     this.readonly = false,
     this.onChanged,
     this.onReady,
@@ -44,6 +47,12 @@ class MilkdownEditor extends StatefulWidget {
 
   /// Initial markdown content to display.
   final String initialMarkdown;
+
+  /// The visual theme for the editor.
+  ///
+  /// Defaults to [MilkdownTheme.frame]. Can be changed at runtime
+  /// via [MilkdownController.setTheme].
+  final MilkdownTheme theme;
 
   /// Whether the editor starts in readonly mode.
   final bool readonly;
@@ -164,7 +173,7 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
       args: <dynamic>[
         <String, dynamic>{
           'initialMarkdown': widget.initialMarkdown,
-          'theme': 'frame',
+          'theme': widget.theme.value,
           'readonly': widget.readonly,
         },
       ],

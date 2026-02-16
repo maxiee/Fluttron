@@ -8,8 +8,8 @@
     "js:clean": "node scripts/build-frontend.mjs --clean"
   },
   "dependencies": {
-    "@milkdown/crepe": "^7.6.4",
-    "@milkdown/kit": "^7.6.4"
+    "@milkdown/crepe": "^7.18.0",
+    "@milkdown/kit": "^7.18.0"
   },
   "devDependencies": {
     "esbuild": "^0.25.0"
