@@ -33,15 +33,15 @@
 
 ---
 
-## 当前阶段目标（更新于 2026-02-15）
+## 当前阶段目标（更新于 2026-02-16）
 
 ### 北极星目标
 
-在已完成 Web Package 机制 MVP（v0032-v0041）的基础上，交付首个“真实复杂度”的官方 Web Package：
+`fluttron_milkdown`（v0042-v0050）已完成并收口，当前目标切换为 `v0051+` 新一轮重大需求立项与执行准备：
 
-- 包名：`fluttron_milkdown`
-- 目标：以 `MilkdownEditor` 组件形式提供可复用的 Markdown 编辑能力（包含主题、事件、控制 API）
-- 验证点：反向验证 Web Package 机制在“大依赖 + CSS + 运行时控制 + 事件桥”场景下的稳定性
+- 选定下一项重大需求并完成设计文档（范围、非目标、验收矩阵）。
+- 以已验证能力为基线推进迭代，避免重复建设与双轨方案。
+- 保持“单版本可独立验收”的交付节奏。
 
 ### 当前能力基线（已具备）
 
@@ -53,14 +53,18 @@
 | JS→Flutter 事件桥 | ✅ | `FluttronEventBridge` 已落地 |
 | 前端构建流水线 | ✅ | `pnpm + esbuild + 三阶段校验` |
 | Web Package MVP | ✅ | 依赖发现、资源收集、HTML 注入、注册代码生成、诊断命令、验收矩阵 |
+| 复杂官方包样板 | ✅ | `fluttron_milkdown` 已完成（事件、控制器、主题、文档、测试） |
+| playground 包化迁移 | ✅ | 已移除历史手写集成路径，统一走 web package 机制 |
+| 机制验证闭环 | ✅ | `fluttron_milkdown` V1-V12 验证清单全部通过 |
 
 ### 当前剩余差距
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | 缺少复杂官方包样板 | 目前机制主要由测试与模板验证，缺少“高复杂业务包”的实战证明 |
-| 2 | 缺少 Dart→JS 运行时控制模式 | 现有机制对“创建后控制”场景支持不足，需在 `fluttron_milkdown` 先验证 |
-| 3 | playground 仍有历史集成痕迹 | 需要完全迁移到 web package 依赖形态，避免双轨维护 |
+| 1 | `v0051+` 重大需求尚未立项 | 需要明确新需求名称、范围、非目标与验收边界 |
+| 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
+| 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
+| 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
 
 ---
 
@@ -148,6 +152,32 @@
   - `fluttron packages list` 诊断命令
   - 集成验收与回归测试矩阵（v0041）
 
+### 已完成重大需求：`fluttron_milkdown`（v0042-v0050）
+
+- 状态：✅ 已完成并正式收口（2026-02-16）
+- 主设计文档：`docs/feature/fluttron_milkdown_design.md`
+- 验证报告：`docs/feature/fluttron_milkdown_validation.md`
+- 关键交付：
+  - 交付可复用 `MilkdownEditor`（事件、控制器、主题）
+  - 打通 Dart→JS 运行时控制通道与 typed event 模型
+  - playground 完成包化迁移，移除历史手写集成链路
+  - 完成测试与验证收口（`flutter test` 67 passed，V1-V12 全通过）
+  - 文档闭环完成（README + Website 示例 + 设计/验证文档）
+
+#### v0042-v0050 完成摘要
+
+| 版本 | 主题 | 结果 |
+|---|---|---|
+| v0042 | 包骨架与最小编辑器 | 包结构、工厂函数、构建产物可用 |
+| v0043 | playground 全链路接入 | Discovery/Collection/Injection/Registration 全部打通 |
+| v0044 | 编辑能力扩展 | GFM + 高亮 + feature toggle + 体积指标落档 |
+| v0045 | 事件系统完善 | `change/ready/focus/blur` + typed event 落地 |
+| v0046 | JS 控制通道 | `fluttronMilkdownControl` + 统一错误返回结构 |
+| v0047 | Dart 控制器 API | `MilkdownController` + interop + 生命周期绑定 |
+| v0048 | 多主题支持 | 4 主题初始化与运行时切换稳定 |
+| v0049 | 测试与验证清单 | 测试补齐，V1-V12 全通过，缺口入 Backlog |
+| v0050 | 文档与迁移收口 | 文档完善 + playground 最终清理完成 |
+
 ### 历史迭代摘要（结构化）
 
 | 区间 | 主题 | 结果 |
@@ -155,612 +185,62 @@
 | v0001-v0019 | 基础框架与 CLI 主链路 | Host/UI/Shared/CLI create-build-run 全链路建立 |
 | v0020-v0031 | 前端集成能力沉淀 | `HtmlView/EventBridge` 核心能力抽象，模板与 playground 对齐 |
 | v0032-v0041 | Web Package MVP | 机制完整落地并完成验收 |
-| v0042 | `fluttron_milkdown` 骨架 | 包骨架、最小编辑器、构建产物完成 |
+| v0042-v0050 | `fluttron_milkdown` | 首个复杂官方包完成交付并通过机制验证清单 |
 
-注：详细历史记录以 Git 提交与 PRD 文档为准，不再在本文件重复堆叠逐条流水账。
+注：详细历史记录以 Git 提交与专题文档为准，不在本文件重复维护逐条流水账。
 
 ---
 
-## 当前重大需求：`fluttron_milkdown`（v0042-v0050）
+## 当前重大需求（待定义）：`v0051+`
+
+### 立项输入（必须补齐）
+
+1. 需求名称与目标用户价值（一句话可验证）。
+2. 主设计文档路径（建议：`docs/feature/<next_requirement>_design.md`）。
+3. 本轮目标与非目标（防止范围膨胀）。
+4. 版本切分与每版本最小验收命令（可执行、可复现）。
+
+### 候选方向（来自 Backlog）
+
+| 候选项 | 进入条件 | 优先级 |
+|---|---|---|
+| `fluttron_ui` 统一控制器抽象 | 至少 2 个 web package 复用同类控制通道时启动 | P1 |
+| CLI 自动构建 web package 依赖资产 | 依赖包数量增长导致人工预构建成本明显上升时启动 | P1 |
+| 多实例稳定性专项 | 启动多实例业务前必须完成专项压测与故障注入 | P1 |
+| 资产懒加载/按需加载 | 启动体积与冷启动时间成为用户痛点时启动 | P2 |
+| pub.dev 分发规范与兼容矩阵 | 对外发布前必须完成版本策略与兼容基线定义 | P2 |
+
+### 执行模板（新需求启动后填写）
+
+```markdown
+## 当前重大需求：`<name>`（v0051-v00xx）
 
 ### 需求来源与引用关系
-
-- 主设计文档（Source of Truth）：`docs/feature/fluttron_milkdown_design.md`
-- 本文职责：把设计文档转换为“执行级迭代任务单”，并给出每一步的验收边界。
-- 规则：
-  - 不在本文复制整段设计说明。
-  - 每个版本都标注设计文档章节引用，便于追踪。
-
 ### 目标与边界
-
-#### 本轮目标（必须达成）
-
-- 交付可发布的 `fluttron_milkdown` 包（Dart API + JS 资产 + README）。
-- playground 完成迁移，使用包化能力，不再依赖手写大段集成代码。
-- 通过机制验证清单（V1-V12）并形成结果记录。
-
-#### 本轮非目标（明确不做）
-
-- `fluttron_ui` 通用控制器抽象上游化（仅记录为机会点）。
-- Web Package 自动构建依赖包（仍要求先手动构建 web package 前端资产）。
-- pub.dev 分发策略与版本治理。
-
-### 统一实现约束（给后续 LLM 的硬约束）
-
-1. `viewFactories.type` 固定使用 `milkdown.editor`，不要中途变更命名。
-2. 事件命名空间固定前缀：`fluttron.milkdown.editor.*`。
-3. JS 控制入口固定全局函数：`window.fluttronMilkdownControl`。
-4. 控制通道返回值统一 `{ ok: boolean, result?: any, error?: string }`。
-5. 所有事件 payload 必须带 `viewId`（用于多实例过滤）。
-6. CSS 必须维持隔离前缀 `fluttron-milkdown`，禁止裸全局选择器污染。
-7. 每个版本结束必须运行该版本定义的最小验收命令并记录结果。
-
-### 执行顺序（不可打乱）
-
-1. v0042-v0043：先打通“包可建 + 可被 playground 发现并运行”。
-2. v0044-v0045：完善编辑器能力与事件系统。
-3. v0046-v0047：补齐控制通道与 Dart 控制器。
-4. v0048：主题体系。
-5. v0049-v0050：测试、文档、迁移收口。
-
----
-
-## v0042-v0050 详细迭代任务单
-
-> 状态标记：`[ ]` 未开始，`[~]` 进行中，`[x]` 已完成
-
-### [x] v0042 - `fluttron_milkdown` 包骨架与最小可运行编辑器 ✅
-
-**完成日期**: 2026-02-15
-
-**目标**
-
-- 在 `web_packages/fluttron_milkdown` 建立完整包骨架。
-- 完成最小编辑器渲染（可显示、可输入、可构建）。
-
-**实现任务（已全部完成）**
-
-1. ✅ 创建目录与基础文件：`pubspec.yaml`、`fluttron_web_package.json`、`analysis_options.yaml`、`README.md`、`CHANGELOG.md`。
-2. ✅ 建立 `frontend/` 构建链路：`package.json`、`scripts/build-frontend.mjs`、`src/main.js`。
-3. ✅ 在 JS 侧实现最小工厂函数 `window.fluttronCreateMilkdownEditorView(viewId, config)`，支持 config 归一化：`initialMarkdown/theme/readonly`。
-4. ✅ 在 Dart 侧建立公共导出 `lib/fluttron_milkdown.dart` 与最小 `MilkdownEditor`（仅封装 `FluttronHtmlView(type: 'milkdown.editor')`）。
-5. ✅ 运行并提交 `web/ext/main.js` 与 `web/ext/main.css` 产物。
-
-**验收结果**
-
-- `dart analyze`: 无问题 ✅
-- `pnpm run js:build`: 成功 ✅
-- 产物文件：
-  - `web/ext/main.js`: 5.2MB（含 KaTeX 字体内联）
-  - `web/ext/main.css`: 1.5MB
-- `fluttron_web_package.json` 中 `type/jsFactoryName/assets` 与实现一致 ✅
-
-**注意事项**
-
-- Bundle 体积较大（5.2MB JS + 1.5MB CSS），主要因为 KaTeX 字体内联和完整 CodeMirror 语言支持，后续可优化。
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §3.2、§4.1、§4.2、§4.8、§5.1、§5.4、§6、§10 Phase 1。
-
----
-
-### [x] v0043 - playground 接入并跑通 Web Package 全链路 ✅
-
-**完成日期**: 2026-02-15
-
-**目标**
-
-- 让 playground 通过 path 依赖接入 `fluttron_milkdown`。
-- 验证 Discovery/Collection/Injection/Registration 四阶段在真实包上可用。
-
-**实现任务（已全部完成）**
-
-1. ✅ 在 `playground/ui/pubspec.yaml` 添加 `fluttron_milkdown` path 依赖并执行 `flutter pub get`。
-2. ✅ 执行 `fluttron build -p playground`，检查构建日志出现 web package 发现与注入阶段。
-3. ✅ 校验以下构建产物：
-   - `playground/ui/build/web/ext/packages/fluttron_milkdown/main.js`
-   - `playground/ui/build/web/ext/packages/fluttron_milkdown/main.css`
-   - `playground/ui/build/web/index.html` 中存在对应 `<script>` 与 `<link>`。
-4. ✅ 校验注册代码：`playground/ui/lib/generated/web_package_registrations.dart` 包含 `milkdown.editor` 注册。
-5. ✅ playground 页面改用 `MilkdownEditor` 最小渲染，确保 macOS 宿主可见编辑器。
-
-**额外完成**
-
-6. ✅ 实现 CLI 自动更新 host pubspec.yaml 功能 (`HostPubspecUpdater`)。
-7. ✅ 更新模板 `templates/host/pubspec.yaml` 预声明 `assets/www/ext/packages/`。
-
-**验收结果**
-
-- `fluttron build -p playground`: 成功 ✅
-  - Found 1 web package(s): fluttron_milkdown ✅
-  - Collected 2 asset(s) from 1 package(s) ✅
-  - Injected 1 JS and 1 CSS reference(s) ✅
-- `flutter run -d macos`: 成功 ✅
-  - 资产加载无错误 ✅
-  - 编辑器在 playground 可见并可输入 ✅
-
-**涉及文件**
-
-- `playground/ui/pubspec.yaml` (添加 fluttron_milkdown 依赖)
-- `playground/ui/lib/main.dart` (使用 MilkdownEditor + registerFluttronWebPackages)
-- `playground/host/pubspec.yaml` (CLI 自动更新添加 asset 声明)
-- `packages/fluttron_cli/lib/src/utils/host_pubspec_updater.dart` (新增)
-- `packages/fluttron_cli/lib/src/utils/ui_build_pipeline.dart` (集成自动更新)
-- `templates/host/pubspec.yaml` (预声明 ext/packages/)
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §9.1（V4-V8, V12）、§10 Phase 1。
-
----
-
-### [x] v0044 - 编辑能力扩展（GFM + 高亮 + 编辑体验） ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 将最小编辑器升级为可用的 Markdown 生产力编辑器。
-
-**实现任务（已全部完成）**
-
-1. ✅ JS 侧启用 GFM 相关能力（表格、任务列表、删除线）。
-2. ✅ 启用代码块高亮能力（Prism/CodeMirror）。
-3. ✅ 启用编辑体验能力（history、slash、tooltip 等）。
-4. ✅ 对配置对象预留 feature toggle 字段（DEFAULT_FEATURES + mapToCrepeFeatures）。
-5. ✅ 记录构建后体积指标（JS/CSS 原始大小 + gzip 大小），写入 package README。
-
-**Bundle Metrics**
-
-| Asset | Raw Size | Gzipped |
-|-------|----------|---------|
-| `main.js` | 5.0 MB | 1.16 MB |
-| `main.css` | 1.4 MB | 938 KB |
-| **Total** | **6.4 MB** | **2.1 MB** |
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/frontend/src/main.js` (添加 DEFAULT_FEATURES, mapToCrepeFeatures, features 配置)
-- `web_packages/fluttron_milkdown/README.md` (添加 Bundle Metrics 和 Feature Configuration 章节)
-
-**验收结果**
-
-- `pnpm run js:build`: 成功 ✅
-- `fluttron build -p playground`: 成功 ✅
-- README 有体积数据与功能说明 ✅
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §4.1、§4.3、§13、§10 Phase 2。
-
----
-
-### [x] v0045 - 事件系统完善（change/ready/focus/blur + Typed Event） ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 建立可稳定消费的事件层，为业务状态同步与后续控制器绑定提供基础。
-
-**实现任务（已全部完成）**
-
-1. ✅ JS 侧统一事件分发模块：`change/ready/focus/blur`（提取到独立 `events.js` 模块）。
-2. ✅ `change` 事件 payload 包含：`viewId/markdown/characterCount/lineCount/updatedAt`。
-3. ✅ Dart 侧新增 `MilkdownChangeEvent` 类型和 `milkdownEditorChanges()` helper。
-4. ✅ `MilkdownEditor` 增加 `onChanged` / `onReady` / `onFocus` / `onBlur` 回调并正确订阅/释放。
-5. ✅ 事件监听按 `viewId` 过滤，避免多实例串流。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/frontend/src/events.js` (新建)
-- `web_packages/fluttron_milkdown/frontend/src/main.js` (导入 events.js)
-- `web_packages/fluttron_milkdown/lib/src/milkdown_events.dart` (新建)
-- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart` (改为 StatefulWidget + 事件监听)
-- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart` (导出 events)
-- `playground/ui/lib/main.dart` (使用新的事件 API)
-
-**验收结果**
-
-- `cd web_packages/fluttron_milkdown && dart analyze`: 无问题 ✅
-- `pnpm run js:build`: 成功 ✅
-- `fluttron build -p playground`: 成功 ✅
-- Dart 端可消费 typed event，不再散落 map 解析逻辑 ✅
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §4.5、§5.5、§9.1（V9）、§10 Phase 3。
-
----
-
-### [x] v0046 - JS 控制通道（Dart→JS Runtime Control） ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 提供编辑器创建后的运行时控制能力。
-
-**实现任务（已全部完成）**
-
-1. ✅ 在 JS 全局暴露 `window.fluttronMilkdownControl(viewId, action, params)`。
-2. ✅ 支持动作：`getContent`、`setContent`、`focus`、`insertText`、`setReadonly`、`setTheme`。
-3. ✅ 建立 `editorInstances: Map<viewId, instance>` 并确保实例生命周期正确（创建/销毁）。
-4. ✅ 未找到实例、未知 action、参数不合法时返回 `{ok:false,error}`，不可静默失败。
-5. ✅ `ready` 事件确保包含 `viewId`，为 controller 绑定做准备。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/frontend/src/main.js` (添加控制通道函数)
-
-**验收结果**
-
-- `pnpm run js:build`: 成功 ✅
-- 所有 action 都可返回可预期结果 ✅
-- 失败路径都有明确错误信息 ✅
-- viewId 验证与实例查找正确 ✅
-
-**控制通道 API**
-
-```javascript
-window.fluttronMilkdownControl(viewId, action, params)
-// 返回: { ok: boolean, result?: any, error?: string }
+### 统一实现约束
+### 执行顺序
+### 版本任务单（仅保留当前进行中与未完成项）
 ```
-
-支持的动作：
-- `getContent` - 返回当前 markdown 内容
-- `setContent` - 设置内容 (params.content: string)
-- `focus` - 聚焦编辑器
-- `insertText` - 在光标处插入文本 (params.text: string)
-- `setReadonly` - 设置只读模式 (params.readonly: boolean)
-- `setTheme` - 切换主题 (params.theme: string)
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §4.4、§7.1、§7.2、§7.3、§9.1（V10）、§10 Phase 4。
-
----
-
-### [x] v0047 - Dart 控制器 API（MilkdownController + Interop） ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 将控制通道封装成 Dart 侧稳定 API，供业务代码直接调用。
-
-**实现任务（已全部完成）**
-
-1. ✅ 新增 `MilkdownController`：`getContent/setContent/focus/insertText/setReadonly/setTheme`。
-2. ✅ 新增 `milkdown_interop.dart` + `*_web.dart` + `*_stub.dart` 条件导入。
-3. ✅ `MilkdownEditor` 在 ready 事件中 `controller.attach(viewId)`，在 dispose 时 `detach()`。
-4. ✅ controller 未 attach 时调用方法必须抛 `StateError`，错误文案清晰。
-5. ✅ playground 增加操作按钮（获取内容、插入文本、切换只读），作为交互验收面板。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/lib/src/milkdown_controller.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_interop.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_interop_web.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_interop_stub.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart`
-- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart`
-- `playground/ui/lib/main.dart`
-
-**Controller API**
-
-```dart
-final controller = MilkdownController();
-
-MilkdownEditor(
-  controller: controller,
-  onReady: () {
-    // Controller is now attached
-  },
-);
-
-// After ready:
-final content = await controller.getContent();
-await controller.setContent('# New content');
-await controller.focus();
-await controller.insertText('text at cursor');
-await controller.setReadonly(true);
-await controller.setTheme('frame-dark');
-```
-
-**验收结果**
-
-- `dart analyze`: 无问题 ✅
-- `fluttron build -p playground`: 成功 ✅
-- 控制器全部 API 可用 ✅
-- 未就绪调用可稳定报错 (StateError) ✅
-- playground 演示按钮可证明控制链路畅通 ✅
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §5.3、§5.6、§7.2、§7.3、§10 Phase 4。
-
----
-
-### [x] v0048 - 多主题支持（初始化主题 + 运行时切换） ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 提供 4 种内置主题，并保证切换即时、无明显闪烁。
-
-**实现任务（已全部完成）**
-
-1. ✅ Dart 侧新增 `MilkdownTheme` 枚举（frame/nord + dark 变体）。
-2. ✅ JS 构建期打包全部主题 CSS，运行时通过 class 切换。
-3. ✅ `MilkdownEditor(theme: ...)` 支持初始主题。
-4. ✅ `MilkdownController.setTheme(...)` 支持运行时切换。
-5. ✅ playground 增加主题选择器，验证 UI 即时变化。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/lib/src/milkdown_theme.dart` (新建)
-- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart` (添加 theme 参数)
-- `web_packages/fluttron_milkdown/lib/src/milkdown_controller.dart` (setTheme 接受枚举)
-- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart` (导出 MilkdownTheme)
-- `web_packages/fluttron_milkdown/frontend/src/main.js` (导入 4 种主题 CSS)
-- `playground/ui/lib/main.dart` (添加主题选择器 UI)
-- `web_packages/fluttron_milkdown/README.md` (添加主题文档)
-
-**验收结果**
-
-- `cd web_packages/fluttron_milkdown/frontend && pnpm run js:build`: 成功 ✅
-- `fluttron build -p playground`: 成功 ✅
-- 4 个主题都可切换 ✅
-- 切换后内容不丢失，编辑状态稳定 ✅
-
-**注意事项**
-
-- 原设计计划 6 种主题，但 @milkdown/crepe@7.x 的 classic/classic-dark 主题存在包结构问题（exports 路径与实际目录不匹配），因此只实现了 4 种可用主题（frame/frame-dark/nord/nord-dark）。
-- 主题 CSS 全部打包到 main.css 中，运行时通过容器 class 切换，实现零延迟切换。
-
-**完成定义（DoD）**
-
-- [x] 4 个主题都可切换
-- [x] 切换后内容不丢失，编辑状态稳定
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §4.6、§8.1、§8.2、§8.3、§10 Phase 5。
-
----
-
-### [x] v0049 - 测试收口与机制验证清单执行 ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 用测试与验证报告证明 `fluttron_milkdown` 和 Fluttron 机制都可稳定运行。
-
-**实现任务（已全部完成）**
-
-1. ✅ 增加 Dart 单测：controller/theme/events（共 63 个测试）。
-2. ✅ 严格执行 `fluttron_milkdown_design` 的 V1-V12 验证清单。
-3. ✅ 新增验证报告文档：`docs/feature/fluttron_milkdown_validation.md`。
-4. ✅ 将发现的机制缺口写入 Backlog（带触发条件与优先级）。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/test/milkdown_theme_test.dart` (新建)
-- `web_packages/fluttron_milkdown/test/milkdown_controller_test.dart` (新建)
-- `web_packages/fluttron_milkdown/test/milkdown_events_test.dart` (新建)
-- `docs/feature/fluttron_milkdown_validation.md` (新建)
-
-**验收结果**
-
-- `flutter test`: 67 tests passed ✅
-- `dart analyze`: No issues found ✅
-- 验证清单 V1-V12: 全部通过 ✅
-
-**测试覆盖**
-
-| Test File | Tests | Status |
-|-----------|-------|--------|
-| `milkdown_theme_test.dart` | 27 | ✅ |
-| `milkdown_controller_test.dart` | 18 | ✅ |
-| `milkdown_events_test.dart` | 18 | ✅ |
-| **Total** | **63** | **✅** |
-
-**机制缺口记录（已加入 Backlog）**
-
-1. Dart→JS control primitive 需 upstream 到 `fluttron_ui`
-2. viewId relay 模式需文档化或抽象化
-3. 多实例场景需进一步压力测试
-4. classic/classic-dark 主题不可用（@milkdown/crepe 包结构问题）
-5. Bundle size 优化机会（slim variant）
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §9.1、§9.2、§10 Phase 6、§12。
-
----
-
-### [x] v0050 - 文档完善与 playground 最终迁移 ✅
-
-**完成日期**: 2026-02-16
-
-**目标**
-
-- 形成可对外使用的包文档，并完成 playground 的最终清理迁移。
-
-**实现任务（已全部完成）**
-
-1. ✅ 完整编写 `fluttron_milkdown` README：安装、构建、最小示例、控制器、主题、事件、FAQ。
-2. ✅ playground 移除历史内联集成残留：
-   - 删除 `package.json`（不再需要自己的 frontend 构建）
-   - 删除 `frontend/` 目录（历史手写集成代码）
-   - 删除 `web/ext/` 目录（历史构建产物）
-   - 移除 `index.html` 中的 `ext/main.js` 引用
-3. ✅ 更新项目文档入口：添加 `website/docs/examples/milkdown-editor.md`。
-4. ✅ 在 `docs/dev_plan.md` 的迭代记录中补充 v0050 完成状态。
-5. ✅ 端到端回归验证：构建和运行通过。
-
-**涉及文件**
-
-- `web_packages/fluttron_milkdown/README.md` (添加 FAQ、完整示例、Events API)
-- `playground/ui/package.json` (删除)
-- `playground/ui/frontend/` (删除整个目录)
-- `playground/ui/web/ext/` (删除整个目录)
-- `playground/ui/web/index.html` (移除 ext/main.js 引用)
-- `website/docs/examples/milkdown-editor.md` (新建)
-- `website/sidebars.js` (添加 milkdown-editor 页面)
-- `docs/dev_plan.md` (标记 v0050 完成)
-
-**验收结果**
-
-- playground 仅保留包化调用路径 ✅
-- README 按"安装即用"标准可独立指导新用户 ✅
-- Website 有完整使用示例 ✅
-- 本阶段正式收口 ✅
-
-**关键结论**
-
-1. **Web Package 机制验证通过**：`fluttron_milkdown` 作为首个复杂官方包，完整验证了依赖发现、资产收集、HTML 注入、代码生成、运行时控制等全链路。
-2. **playground 完全包化**：移除所有历史手写集成代码，现在 100% 依赖 web package 机制。
-3. **文档体系完备**：包 README + Website 示例 + 设计文档 + 验证报告，形成完整文档闭环。
-
-**设计引用**
-
-- `docs/feature/fluttron_milkdown_design.md` §11、§10 Phase 6、§14。
 
 ---
 
 ## Backlog（未来）
 
-- 候选增强：`fluttron_ui` 抽象统一 `FluttronWebViewController`（待 `fluttron_milkdown` 模式稳定后评估）。
-- 候选增强：CLI 自动构建 web package 依赖的前端资产（当前仍要求预构建）。
-- 候选增强：多实例编辑器的系统级稳定性专项测试（当前可用但仍偏实验性质）。
-- 候选增强：按需加载/懒加载 web package 资产以优化启动体积。
-- 候选增强：pub.dev 分发规范与版本兼容矩阵。
+| 条目 | 进入条件 | 备注 |
+|---|---|---|
+| `fluttron_ui` 抽象统一 `FluttronWebViewController` | 出现跨包重复控制模式 | 已有 `fluttron_milkdown` 参考实现 |
+| CLI 自动构建 web package 依赖资产 | 人工预构建成为稳定交付瓶颈 | 当前仍要求包侧先构建前端 |
+| 多实例编辑器系统级稳定性测试 | 新需求包含多实例编辑场景 | 需覆盖内存、事件隔离、恢复能力 |
+| web package 资产按需加载 | 启动体积与性能指标触发阈值 | 与构建链路改造联动 |
+| pub.dev 分发规范与兼容矩阵 | 对外发布前 | 与版本治理策略联动 |
 
 ---
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0051+`
-- `fluttron_milkdown` Web Package 迭代已正式收口 ✅
-- 下一步：根据 Backlog 中的增强需求推进，或开启新的 Web Package 开发
-
-### v0050 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| README 完善 | ✅ FAQ + 完整示例 + Events API |
-| playground package.json | ✅ 删除（不再需要自己的 frontend 构建）|
-| playground frontend/ | ✅ 删除（历史手写集成代码）|
-| playground web/ext/ | ✅ 删除（历史构建产物）|
-| playground index.html | ✅ 移除 ext/main.js 引用 |
-| Website 文档 | ✅ milkdown-editor.md + sidebars.js |
-| dev_plan.md | ✅ v0050 完成状态 |
-| 端到端回归 | ✅ 构建和运行通过 |
-
-### v0042 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| 包骨架创建 | ✅ |
-| JS 工厂函数 | ✅ `fluttronCreateMilkdownEditorView` |
-| Dart Widget | ✅ `MilkdownEditor` |
-| 构建产物 | ✅ main.js (5.2MB) + main.css (1.5MB) |
-| dart analyze | ✅ 无问题 |
-
-### v0043 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| playground 依赖添加 | ✅ fluttron_milkdown path 依赖 |
-| Web Package Discovery | ✅ Found 1 web package |
-| Asset Collection | ✅ 2 assets (JS + CSS) |
-| HTML Injection | ✅ script + link 标签 |
-| Registration Code | ✅ milkdown.editor 注册 |
-| playground main.dart | ✅ 使用 MilkdownEditor + registerFluttronWebPackages |
-| macOS 运行 | ✅ 编辑器可见可输入 |
-| CLI 自动更新 host pubspec | ✅ HostPubspecUpdater |
-
-### v0044 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| GFM 能力启用 | ✅ Crepe 默认包含 (Table, ListItem) |
-| 代码高亮 | ✅ CodeMirror |
-| 编辑体验 | ✅ History, Slash, Toolbar |
-| Feature Toggle | ✅ DEFAULT_FEATURES + mapToCrepeFeatures |
-| Bundle Metrics | ✅ 5.0MB JS + 1.4MB CSS (2.1MB gzipped) |
-| README 更新 | ✅ Bundle Metrics + Feature Configuration |
-
-### v0045 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| events.js 模块 | ✅ 独立事件分发模块 (change/ready/focus/blur) |
-| change payload | ✅ viewId/markdown/characterCount/lineCount/updatedAt |
-| MilkdownChangeEvent | ✅ Typed event class + fromMap factory |
-| milkdownEditorChanges() | ✅ Stream helper with viewId filtering |
-| MilkdownEditor callbacks | ✅ onChanged/onReady/onFocus/onBlur |
-| viewId 过滤 | ✅ 多实例事件隔离 |
-| playground 迁移 | ✅ 使用新 typed event API |
-
-### v0046 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| fluttronMilkdownControl | ✅ 全局控制函数 |
-| getContent | ✅ 返回当前 markdown |
-| setContent | ✅ 设置内容 (params.content) |
-| focus | ✅ 聚焦编辑器 |
-| insertText | ✅ 光标处插入文本 (params.text) |
-| setReadonly | ✅ 只读模式切换 (params.readonly) |
-| setTheme | ✅ 主题切换 (params.theme) |
-| 错误处理 | ✅ {ok:false,error} 格式 |
-| viewId 验证 | ✅ 类型检查 + 实例查找 |
-| applyTheme 修复 | ✅ 正确应用指定主题类名 |
-
-### v0047 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| milkdown_interop.dart | ✅ 条件导入入口 + MilkdownControlResult |
-| milkdown_interop_web.dart | ✅ Web 平台 JS interop 实现 |
-| milkdown_interop_stub.dart | ✅ 非 Web 平台存根 (UnsupportedError) |
-| MilkdownController | ✅ attach/detach + 6 个控制方法 |
-| milkdown_editor.dart | ✅ controller 参数 + 生命周期绑定 |
-| fluttron_milkdown.dart | ✅ 导出 MilkdownController |
-| playground main.dart | ✅ Controller API 演示面板 (Get Content/Insert Text/Toggle Readonly) |
-| StateError | ✅ 未 attach 时调用抛出清晰错误 |
-| dart analyze | ✅ 无问题 |
-| fluttron build | ✅ 成功 |
-
-### v0048 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| milkdown_theme.dart | ✅ MilkdownTheme 枚举 (4 主题) |
-| main.js theme imports | ✅ frame/frame-dark/nord/nord-dark CSS |
-| milkdown_editor.dart | ✅ theme 参数 |
-| milkdown_controller.dart | ✅ setTheme 接受 MilkdownTheme 枚举 |
-| fluttron_milkdown.dart | ✅ 导出 MilkdownTheme |
-| playground main.dart | ✅ 主题选择器 UI (ChoiceChip) |
-| README.md | ✅ 主题文档 |
-| dart analyze | ✅ 无问题 |
-| pnpm run js:build | ✅ 成功 (5.0MB JS + 1.5MB CSS) |
-| fluttron build | ✅ 成功 |
-
-### v0049 完成记录
-
-| 项目 | 状态 |
-|---|---|
-| milkdown_theme_test.dart | ✅ 27 个测试 (enum values, isDark, variants, tryParse) |
-| milkdown_controller_test.dart | ✅ 18 个测试 (lifecycle, attach/detach, state errors) |
-| milkdown_events_test.dart | ✅ 18 个测试 (constructor, fromMap, equality) |
-| fluttron_milkdown_validation.md | ✅ V1-V12 验证报告完整记录 |
-| flutter test | ✅ 67 tests passed |
-| dart analyze | ✅ 无问题 |
-| 机制缺口记录 | ✅ 5 个缺口已写入 Backlog |
+- 当前起始版本：`v0051`
+- `fluttron_milkdown` 迭代已完成并归档，当前文档已为新重大需求预留空间。
+- 下一步最小动作：
+  1. 从 Backlog 中选择一个候选项进入 `v0051`。
+  2. 新建对应设计文档并回填“当前重大需求（待定义）”模板。
+  3. 先落一个可独立验收的首版本任务（`v0051`）再扩展后续版本。
