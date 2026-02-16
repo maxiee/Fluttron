@@ -3,6 +3,7 @@ import {constants} from 'node:fs';
 import {access, mkdir, rm} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {transformThemeCss} from './transform-theme-css.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -47,6 +48,13 @@ async function buildFrontend() {
   await mkdir(path.dirname(outputFile), {recursive: true});
   await build(createBuildOptions());
   console.log(`[frontend] built ${relativePath(sourceFile)} -> ${relativePath(outputFile)}`);
+  
+  // Transform theme CSS to scope rules under parent classes
+  if (outputCssFile) {
+    console.log('[frontend] transforming theme CSS selectors...');
+    await transformThemeCss();
+    console.log(`[frontend] theme CSS transformed`);
+  }
 }
 
 async function cleanFrontend() {

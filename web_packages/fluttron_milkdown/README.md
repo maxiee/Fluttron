@@ -172,6 +172,220 @@ Available features:
 - `table` - GFM tables
 - `latex` - LaTeX math formulas
 
+## Events API (Advanced)
+
+For advanced use cases, you can subscribe to the raw event stream:
+
+```dart
+import 'package:fluttron_milkdown/fluttron_milkdown.dart';
+
+// Subscribe to change events from any MilkdownEditor instance
+milkdownEditorChanges().listen((event) {
+  print('Editor ${event.viewId} changed');
+  print('New content: ${event.markdown}');
+  print('Character count: ${event.characterCount}');
+});
+```
+
+## Complete Example
+
+Here's a complete example showing all features:
+
+```dart
+import 'package:fluttron_milkdown/fluttron_milkdown.dart';
+import 'package:flutter/material.dart';
+
+class MarkdownEditorScreen extends StatefulWidget {
+  const MarkdownEditorScreen({super.key});
+
+  @override
+  State<MarkdownEditorScreen> createState() => _MarkdownEditorScreenState();
+}
+
+class _MarkdownEditorScreenState extends State<MarkdownEditorScreen> {
+  final _controller = MilkdownController();
+  bool _isReady = false;
+  String _content = '';
+  MilkdownTheme _theme = MilkdownTheme.nord;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Markdown Editor'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _isReady ? _saveContent : null,
+          ),
+          PopupMenuButton<MilkdownTheme>(
+            initialValue: _theme,
+            onSelected: (theme) {
+              if (_isReady) {
+                _controller.setTheme(theme);
+                setState(() => _theme = theme);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: MilkdownTheme.frame,
+                child: Text('Frame (Light)'),
+              ),
+              const PopupMenuItem(
+                value: MilkdownTheme.frameDark,
+                child: Text('Frame (Dark)'),
+              ),
+              const PopupMenuItem(
+                value: MilkdownTheme.nord,
+                child: Text('Nord (Light)'),
+              ),
+              const PopupMenuItem(
+                value: MilkdownTheme.nordDark,
+                child: Text('Nord (Dark)'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: MilkdownEditor(
+              controller: _controller,
+              initialMarkdown: '# Hello World\n\nStart editing...',
+              theme: _theme,
+              onChanged: (event) {
+                setState(() => _content = event.markdown);
+              },
+              onReady: () {
+                setState(() => _isReady = true);
+              },
+            ),
+          ),
+          if (_content.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text('${_content.length} characters'),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveContent() async {
+    final content = await _controller.getContent();
+    // Save to your storage...
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Content saved!')),
+    );
+  }
+}
+```
+
+## FAQ
+
+### Why is the bundle size so large?
+
+The bundle includes:
+- All 4 themes (for runtime switching without re-fetching)
+- Full CodeMirror language support (syntax highlighting)
+- KaTeX fonts for mathematical formulas
+- GFM (tables, task lists, strikethrough)
+- History, slash commands, and toolbar
+
+For production, consider enabling gzip compression on your server. The gzipped bundle is ~2.1 MB.
+
+### Can I disable specific features?
+
+Yes, at the JS layer you can pass a `features` object:
+
+```javascript
+fluttronCreateMilkdownEditorView(viewId, {
+  initialMarkdown: '# Hello',
+  features: {
+    latex: false,      // Disable LaTeX (reduces size)
+    imageBlock: false, // Disable image blocks
+    toolbar: false,    // Disable formatting toolbar
+  }
+});
+```
+
+Note: This is currently only configurable via direct JS calls. A Dart API for feature configuration may be added in future versions.
+
+### How do I persist markdown content?
+
+Use the `onChanged` callback to capture changes and save to your storage:
+
+```dart
+String _savedContent = '';
+
+MilkdownEditor(
+  onChanged: (event) {
+    _savedContent = event.markdown;
+    // Or save to host storage:
+    // client.kvSet('markdown', event.markdown);
+  },
+)
+```
+
+To restore content on app restart, load it from storage and pass as `initialMarkdown`.
+
+### Can I have multiple editor instances?
+
+Yes, each `MilkdownEditor` widget gets a unique `viewId`. Events include this `viewId` for filtering:
+
+```dart
+MilkdownEditor(
+  controller: _controller1,
+  onChanged: (event) {
+    // event.viewId identifies which instance
+  },
+)
+```
+
+### Why does `controller.getContent()` throw `StateError`?
+
+The controller must be attached before use. Wait for `onReady`:
+
+```dart
+final controller = MilkdownController();
+
+MilkdownEditor(
+  controller: controller,
+  onReady: () {
+    // Now controller is safe to use
+    controller.getContent();
+  },
+)
+```
+
+### Are classic/classic-dark themes available?
+
+No. The `@milkdown/crepe` package has issues with these themes in v7.x. Only the following 4 themes are supported:
+- `frame` / `frameDark`
+- `nord` / `nordDark`
+
+### How do I integrate with the Fluttron Host storage?
+
+Use `FluttronClient` from `fluttron_ui`:
+
+```dart
+import 'package:fluttron_ui/fluttron_ui.dart';
+
+final _client = FluttronClient();
+
+// Load on startup
+final saved = await _client.kvGet('my.markdown');
+
+// Save on change
+MilkdownEditor(
+  initialMarkdown: saved ?? '',
+  onChanged: (event) {
+    _client.kvSet('my.markdown', event.markdown);
+  },
+)
+```
+
 ## License
 
 MIT

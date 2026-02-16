@@ -583,40 +583,49 @@ await controller.setTheme('frame-dark');
 
 ---
 
-### [ ] v0050 - 文档完善与 playground 最终迁移
+### [x] v0050 - 文档完善与 playground 最终迁移 ✅
+
+**完成日期**: 2026-02-16
 
 **目标**
 
 - 形成可对外使用的包文档，并完成 playground 的最终清理迁移。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. 完整编写 `fluttron_milkdown` README：安装、构建、最小示例、控制器、主题、事件、FAQ。
-2. playground 移除历史内联集成残留（含过时 JS 依赖与手写桥接代码）。
-3. 更新项目文档入口（如 website/docs）加入 `fluttron_milkdown` 使用说明。
-4. 在 `docs/dev_plan.md` 的迭代记录中补充 v0042-v0050 完成状态与关键结论。
-5. 做一次端到端回归：新 clone 场景下按文档可完成构建运行。
+1. ✅ 完整编写 `fluttron_milkdown` README：安装、构建、最小示例、控制器、主题、事件、FAQ。
+2. ✅ playground 移除历史内联集成残留：
+   - 删除 `package.json`（不再需要自己的 frontend 构建）
+   - 删除 `frontend/` 目录（历史手写集成代码）
+   - 删除 `web/ext/` 目录（历史构建产物）
+   - 移除 `index.html` 中的 `ext/main.js` 引用
+3. ✅ 更新项目文档入口：添加 `website/docs/examples/milkdown-editor.md`。
+4. ✅ 在 `docs/dev_plan.md` 的迭代记录中补充 v0050 完成状态。
+5. ✅ 端到端回归验证：构建和运行通过。
 
-**涉及文件（最小清单）**
+**涉及文件**
 
-- `web_packages/fluttron_milkdown/README.md`
-- `playground/ui/frontend/src/main.js`
-- `playground/ui/package.json`
-- `playground/ui/lib/main.dart`
-- `docs/dev_plan.md`
-- `website/` 下对应文档（如存在）
+- `web_packages/fluttron_milkdown/README.md` (添加 FAQ、完整示例、Events API)
+- `playground/ui/package.json` (删除)
+- `playground/ui/frontend/` (删除整个目录)
+- `playground/ui/web/ext/` (删除整个目录)
+- `playground/ui/web/index.html` (移除 ext/main.js 引用)
+- `website/docs/examples/milkdown-editor.md` (新建)
+- `website/sidebars.js` (添加 milkdown-editor 页面)
+- `docs/dev_plan.md` (标记 v0050 完成)
 
-**验收命令**
+**验收结果**
 
-- `fluttron build -p playground`
-- `fluttron run -p playground --no-build -d macos`
-- 文档示例代码 smoke 运行一次
+- playground 仅保留包化调用路径 ✅
+- README 按"安装即用"标准可独立指导新用户 ✅
+- Website 有完整使用示例 ✅
+- 本阶段正式收口 ✅
 
-**完成定义（DoD）**
+**关键结论**
 
-- playground 仅保留包化调用路径。
-- README 按“安装即用”标准可独立指导新用户。
-- 本阶段正式收口。
+1. **Web Package 机制验证通过**：`fluttron_milkdown` 作为首个复杂官方包，完整验证了依赖发现、资产收集、HTML 注入、代码生成、运行时控制等全链路。
+2. **playground 完全包化**：移除所有历史手写集成代码，现在 100% 依赖 web package 机制。
+3. **文档体系完备**：包 README + Website 示例 + 设计文档 + 验证报告，形成完整文档闭环。
 
 **设计引用**
 
@@ -636,9 +645,22 @@ await controller.setTheme('frame-dark');
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0050`
-- 第一提交目标：文档完善与 playground 最终迁移
-- 本阶段正式收口 `fluttron_milkdown` Web Package 迭代
+- 当前起始版本：`v0051+`
+- `fluttron_milkdown` Web Package 迭代已正式收口 ✅
+- 下一步：根据 Backlog 中的增强需求推进，或开启新的 Web Package 开发
+
+### v0050 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| README 完善 | ✅ FAQ + 完整示例 + Events API |
+| playground package.json | ✅ 删除（不再需要自己的 frontend 构建）|
+| playground frontend/ | ✅ 删除（历史手写集成代码）|
+| playground web/ext/ | ✅ 删除（历史构建产物）|
+| playground index.html | ✅ 移除 ext/main.js 引用 |
+| Website 文档 | ✅ milkdown-editor.md + sidebars.js |
+| dev_plan.md | ✅ v0050 完成状态 |
+| 端到端回归 | ✅ 构建和运行通过 |
 
 ### v0042 完成记录
 

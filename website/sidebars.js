@@ -38,6 +38,7 @@ const sidebars = {
       label: 'Examples',
       items: [
         'examples/hello-world',
+        'examples/milkdown-editor',
       ],
     },
   ],
