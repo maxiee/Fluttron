@@ -41,7 +41,8 @@
 
 - 以 `docs/feature/markdown_editor_design.md` 为设计基准推进 v0051-v0060。
 - 以已验证能力为基线推进迭代，避免重复建设与双轨方案。
-- 保持“单版本可独立验收”的交付节奏。
+- 保持"单版本可独立验收"的交付节奏。
+- **v0051 已完成**：`FileService` 已落地并测试通过。
 
 ### 当前能力基线（已具备）
 
@@ -56,12 +57,13 @@
 | 复杂官方包样板 | ✅ | `fluttron_milkdown` 已完成（事件、控制器、主题、文档、测试） |
 | playground 包化迁移 | ✅ | 已移除历史手写集成路径，统一走 web package 机制 |
 | 机制验证闭环 | ✅ | `fluttron_milkdown` V1-V12 验证清单全部通过 |
+| FileService | ✅ | 文件读写、目录列表、状态查询等 8 个方法已落地 |
 
 ### 当前剩余差距
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | `markdown_editor` 首版本尚未落地 | 已完成计划拆解，需先实现并验收 v0051（FileService） |
+| 1 | `markdown_editor` DialogService + ClipboardService 待落地 | v0052 进行中 |
 | 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
 | 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
 | 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
@@ -186,6 +188,7 @@
 | v0020-v0031 | 前端集成能力沉淀 | `HtmlView/EventBridge` 核心能力抽象，模板与 playground 对齐 |
 | v0032-v0041 | Web Package MVP | 机制完整落地并完成验收 |
 | v0042-v0050 | `fluttron_milkdown` | 首个复杂官方包完成交付并通过机制验证清单 |
+| v0051 | FileService | Host 文件服务落地（8 方法 + 30 测试通过） |
 
 注：详细历史记录以 Git 提交与专题文档为准，不在本文件重复维护逐条流水账。
 
@@ -229,18 +232,18 @@
 
 ### 版本任务单（当前进行中与未完成）
 
-| 版本 | 阶段 | 最小可执行任务 | 依赖 | 最小验收 |
-|---|---|---|---|---|
-| v0051 | Phase 1 | 在 `fluttron_host` 新增 `FileService`（`read/write/list/stat/create/delete/rename/exists`），完成注册与单测 | 无 | playground 通过 `FluttronClient.invoke('file.readFile', ...)` 读文件成功 |
-| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 |
-| v0053 | Phase 1 | 用 `fluttron create` 建立 `examples/markdown_editor`，接入 `fluttron_milkdown`，打通 build/run | v0051,v0052 | `fluttron build -p examples/markdown_editor` 成功，macOS 可运行并显示编辑器 |
-| v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 |
-| v0055 | Phase 2 | 实现“点击文件加载到编辑器”，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 |
-| v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 |
-| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 |
-| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 |
-| v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 |
-| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 |
+| 版本 | 阶段 | 最小可执行任务 | 依赖 | 最小验收 | 状态 |
+|---|---|---|---|---|---|
+| v0051 | Phase 1 | 在 `fluttron_host` 新增 `FileService`（`read/write/list/stat/create/delete/rename/exists`），完成注册与单测 | 无 | playground 通过 `FluttronClient.invoke('file.readFile', ...)` 读文件成功 | ✅ 完成 |
+| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 | 进行中 |
+| v0053 | Phase 1 | 用 `fluttron create` 建立 `examples/markdown_editor`，接入 `fluttron_milkdown`，打通 build/run | v0051,v0052 | `fluttron build -p examples/markdown_editor` 成功，macOS 可运行并显示编辑器 | 待开始 |
+| v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 | 待开始 |
+| v0055 | Phase 2 | 实现"点击文件加载到编辑器"，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 | 待开始 |
+| v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 | 待开始 |
+| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | 待开始 |
+| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | 待开始 |
+| v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 | 待开始 |
+| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | 待开始 |
 
 ### 并行与节奏约束
 
@@ -264,9 +267,12 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0051`
+- 当前起始版本：`v0052`
 - 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
+- v0051 已完成：
+  - `FileService` 在 `fluttron_host` 落地（8 个方法：read/write/list/stat/create/delete/rename/exists）
+  - `FileEntry` 模型在 `fluttron_shared` 落地
+  - 30 个单元测试全部通过
 - 下一步最小动作：
-  1. 开始 `v0051` 前先对照阅读 `docs/feature/markdown_editor_design.md` 的 §4、§9、§10、§13。
-  2. 落地 `v0051`（`FileService` + 注册 + 单测）并完成最小验收命令。
-  3. 按依赖顺序推进 `v0052` 与 `v0053`，确保每版独立验收后再进入下一版。
+  1. 开始 `v0052`（`DialogService` + `ClipboardService`）并完成验收。
+  2. 完成后按依赖顺序推进 `v0053`（app scaffold），确保每版独立验收后再进入下一版。
