@@ -4,6 +4,7 @@ import '@milkdown/crepe/theme/frame.css';
 import '@milkdown/crepe/theme/frame-dark.css';
 import '@milkdown/crepe/theme/nord.css';
 import '@milkdown/crepe/theme/nord-dark.css';
+import './theme-overrides.css';
 
 import {
   emitEditorChange,
@@ -25,7 +26,16 @@ const DEFAULT_FEATURES = {
   latex: true,
 };
 
+const VALID_THEMES = ['frame', 'frame-dark', 'nord', 'nord-dark'];
+
 const editorInstances = new Map();
+
+const normalizeTheme = (themeName) => {
+  if (typeof themeName !== 'string') {
+    return 'frame';
+  }
+  return VALID_THEMES.includes(themeName) ? themeName : 'frame';
+};
 
 const normalizeConfig = (config) => {
   if (typeof config === 'string') {
@@ -46,7 +56,7 @@ const normalizeConfig = (config) => {
   }
   return {
     initialMarkdown: typeof config.initialMarkdown === 'string' ? config.initialMarkdown : '',
-    theme: typeof config.theme === 'string' ? config.theme : 'frame',
+    theme: normalizeTheme(config.theme),
     readonly: config.readonly === true,
     features: {
       ...DEFAULT_FEATURES,
@@ -68,18 +78,35 @@ const mapToCrepeFeatures = (features) => ({
   [Crepe.Feature.Latex]: features.latex !== false,
 });
 
-const clearThemeClasses = (container) => {
-  const themeClasses = [
-    'milkdown-theme-frame', 'milkdown-theme-frame-dark',
-    'milkdown-theme-nord', 'milkdown-theme-nord-dark',
-  ];
-  themeClasses.forEach(cls => container.classList.remove(cls));
+const clearThemeClasses = (...elements) => {
+  VALID_THEMES.forEach((themeName) => {
+    const className = `milkdown-theme-${themeName}`;
+    elements.forEach((element) => {
+      if (element) {
+        element.classList.remove(className);
+      }
+    });
+  });
 };
 
-const applyTheme = (container, themeName) => {
-  clearThemeClasses(container);
-  const themeClass = `milkdown-theme-${themeName}`;
+const applyTheme = (container, editorMount, themeName) => {
+  const normalizedTheme = normalizeTheme(themeName);
+  clearThemeClasses(container, editorMount);
+  const themeClass = `milkdown-theme-${normalizedTheme}`;
   container.classList.add(themeClass);
+  if (editorMount) {
+    editorMount.classList.add(themeClass);
+  }
+};
+
+const ensureMilkdownRootClass = (editorMount) => {
+  if (editorMount.classList.contains('milkdown')) {
+    return;
+  }
+
+  // Crepe styles and theme variables are scoped to `.milkdown`.
+  // Make sure the mount root always matches this selector.
+  editorMount.classList.add('milkdown');
 };
 
 const destroyEditor = async (viewId) => {
@@ -98,6 +125,10 @@ const initializeCrepeEditor = async (viewId, container, options) => {
   await destroyEditor(viewId);
 
   const editorMount = container.querySelector('.fluttron-milkdown__editor-mount');
+  if (!editorMount) {
+    throw new Error('Missing editor mount element.');
+  }
+  ensureMilkdownRootClass(editorMount);
 
   const crepeFeatures = mapToCrepeFeatures(options.features);
 
@@ -108,6 +139,7 @@ const initializeCrepeEditor = async (viewId, container, options) => {
   });
 
   await crepe.create();
+  ensureMilkdownRootClass(editorMount);
 
   if (options.readonly) {
     crepe.setReadonly(true);
@@ -122,9 +154,14 @@ const initializeCrepeEditor = async (viewId, container, options) => {
   editorMount.addEventListener('focus', () => emitEditorFocus(viewId), true);
   editorMount.addEventListener('blur', () => emitEditorBlur(viewId), true);
 
-  editorInstances.set(viewId, { crepe, container, theme: options.theme });
+  editorInstances.set(viewId, {
+    crepe,
+    container,
+    editorMount,
+    theme: options.theme,
+  });
 
-  applyTheme(container, options.theme);
+  applyTheme(container, editorMount, options.theme);
 
   emitEditorReady(viewId);
   emitEditorChange(viewId, options.initialMarkdown);
@@ -192,7 +229,7 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
     return { ok: false, error: `No editor instance for viewId ${viewIdKey}` };
   }
 
-  const { crepe, container } = instance;
+  const { crepe, container, editorMount } = instance;
 
   try {
     switch (action) {
@@ -228,11 +265,10 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
         if (params == null || typeof params.theme !== 'string') {
           return { ok: false, error: 'setTheme requires params.theme (string)' };
         }
-        const validThemes = ['frame', 'frame-dark', 'nord', 'nord-dark'];
-        if (!validThemes.includes(params.theme)) {
-          return { ok: false, error: `Invalid theme "${params.theme}". Valid themes: ${validThemes.join(', ')}` };
+        if (!VALID_THEMES.includes(params.theme)) {
+          return { ok: false, error: `Invalid theme "${params.theme}". Valid themes: ${VALID_THEMES.join(', ')}` };
         }
-        applyTheme(container, params.theme);
+        applyTheme(container, editorMount, params.theme);
         instance.theme = params.theme;
         return { ok: true };
       }

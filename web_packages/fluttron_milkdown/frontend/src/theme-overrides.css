@@ -1,0 +1,60 @@
+/* Theme readability overrides scoped to fluttron_milkdown only. */
+.fluttron-milkdown {
+  border: 1px solid #d6d9de;
+  border-radius: 8px;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.fluttron-milkdown.milkdown-theme-frame {
+  background: #ffffff;
+  border-color: #c9cbd1;
+}
+
+.fluttron-milkdown.milkdown-theme-frame-dark {
+  background: #151515;
+  border-color: #474c55;
+}
+
+.fluttron-milkdown.milkdown-theme-nord {
+  background: linear-gradient(180deg, #eaf2ff 0%, #f7faff 100%);
+  border-color: #86a4ca;
+}
+
+.fluttron-milkdown.milkdown-theme-nord-dark {
+  background: linear-gradient(180deg, #141c27 0%, #101722 100%);
+  border-color: #6f93c0;
+}
+
+/* Nord palette overrides for stronger visual distinction. */
+.fluttron-milkdown.milkdown-theme-nord .milkdown,
+.fluttron-milkdown .milkdown-theme-nord.milkdown {
+  --crepe-color-background: #f3f7ff;
+  --crepe-color-surface: #ebf1ff;
+  --crepe-color-surface-low: #e2eafb;
+  --crepe-color-primary: #2e6db3;
+  --crepe-color-hover: #dde8fb;
+  --crepe-color-selected: #d2ddf2;
+  --crepe-font-title:
+    "Avenir Next",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
+
+.fluttron-milkdown.milkdown-theme-nord-dark .milkdown,
+.fluttron-milkdown .milkdown-theme-nord-dark.milkdown {
+  --crepe-color-background: #161f2d;
+  --crepe-color-surface: #111a26;
+  --crepe-color-surface-low: #192535;
+  --crepe-color-primary: #8fbdff;
+  --crepe-color-hover: #202c3d;
+  --crepe-color-selected: #303d50;
+  --crepe-font-title:
+    "Avenir Next",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+}
