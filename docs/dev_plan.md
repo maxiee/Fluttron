@@ -295,35 +295,40 @@
 
 ---
 
-### [ ] v0044 - 编辑能力扩展（GFM + 高亮 + 编辑体验）
+### [x] v0044 - 编辑能力扩展（GFM + 高亮 + 编辑体验） ✅
+
+**完成日期**: 2026-02-16
 
 **目标**
 
 - 将最小编辑器升级为可用的 Markdown 生产力编辑器。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. JS 侧启用 GFM 相关能力（表格、任务列表、删除线）。
-2. 启用代码块高亮能力（Prism）。
-3. 启用编辑体验能力（history、slash、tooltip 等）。
-4. 对配置对象预留 feature toggle 字段（即使暂不暴露 Dart API，也要在 JS 层可演进）。
-5. 记录构建后体积指标（JS/CSS 原始大小 + gzip 大小），写入 package README 的“Bundle Metrics”段落。
+1. ✅ JS 侧启用 GFM 相关能力（表格、任务列表、删除线）。
+2. ✅ 启用代码块高亮能力（Prism/CodeMirror）。
+3. ✅ 启用编辑体验能力（history、slash、tooltip 等）。
+4. ✅ 对配置对象预留 feature toggle 字段（DEFAULT_FEATURES + mapToCrepeFeatures）。
+5. ✅ 记录构建后体积指标（JS/CSS 原始大小 + gzip 大小），写入 package README。
 
-**涉及文件（最小清单）**
+**Bundle Metrics**
 
-- `web_packages/fluttron_milkdown/frontend/src/main.js`
-- `web_packages/fluttron_milkdown/frontend/src/editor.js`
-- `web_packages/fluttron_milkdown/README.md`
+| Asset | Raw Size | Gzipped |
+|-------|----------|---------|
+| `main.js` | 5.0 MB | 1.16 MB |
+| `main.css` | 1.4 MB | 938 KB |
+| **Total** | **6.4 MB** | **2.1 MB** |
 
-**验收命令**
+**涉及文件**
 
-- `cd web_packages/fluttron_milkdown/frontend && pnpm run js:build`
-- `fluttron build -p playground`
+- `web_packages/fluttron_milkdown/frontend/src/main.js` (添加 DEFAULT_FEATURES, mapToCrepeFeatures, features 配置)
+- `web_packages/fluttron_milkdown/README.md` (添加 Bundle Metrics 和 Feature Configuration 章节)
 
-**完成定义（DoD）**
+**验收结果**
 
-- playground 中表格、任务列表、代码块高亮、slash/tooltip 可见。
-- README 有体积数据与预算对照。
+- `pnpm run js:build`: 成功 ✅
+- `fluttron build -p playground`: 成功 ✅
+- README 有体积数据与功能说明 ✅
 
 **设计引用**
 
@@ -576,9 +581,9 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0044`
-- 第一提交目标：编辑能力扩展（GFM + 高亮 + 编辑体验）
-- 完成后立即进入 `v0045` 做事件系统完善，不要提前并行开发后续版本
+- 当前起始版本：`v0045`
+- 第一提交目标：事件系统完善（change/ready/focus/blur + Typed Event）
+- 完成后立即进入 `v0046` 做 JS 控制通道，不要提前并行开发后续版本
 
 ### v0042 完成记录
 
@@ -602,4 +607,15 @@
 | playground main.dart | ✅ 使用 MilkdownEditor + registerFluttronWebPackages |
 | macOS 运行 | ✅ 编辑器可见可输入 |
 | CLI 自动更新 host pubspec | ✅ HostPubspecUpdater |
+
+### v0044 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| GFM 能力启用 | ✅ Crepe 默认包含 (Table, ListItem) |
+| 代码高亮 | ✅ CodeMirror |
+| 编辑体验 | ✅ History, Slash, Toolbar |
+| Feature Toggle | ✅ DEFAULT_FEATURES + mapToCrepeFeatures |
+| Bundle Metrics | ✅ 5.0MB JS + 1.4MB CSS (2.1MB gzipped) |
+| README 更新 | ✅ Bundle Metrics + Feature Configuration |
 

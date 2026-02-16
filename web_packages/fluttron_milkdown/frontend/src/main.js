@@ -4,6 +4,34 @@ import '@milkdown/crepe/theme/frame.css';
 
 const EVENT_PREFIX = 'fluttron.milkdown.editor';
 
+/**
+ * Feature toggle configuration.
+ * All features are enabled by default.
+ * This can be extended in the future to allow fine-grained control.
+ */
+const DEFAULT_FEATURES = {
+  // Code block syntax highlighting with CodeMirror
+  codeMirror: true,
+  // Bullet lists, ordered lists, and task lists (GFM)
+  listItem: true,
+  // Link tooltips
+  linkTooltip: true,
+  // Enhanced cursor experience
+  cursor: true,
+  // Image block support
+  imageBlock: true,
+  // Block editing (slash commands, drag-and-drop)
+  blockEdit: true,
+  // Formatting toolbar
+  toolbar: true,
+  // Placeholder text
+  placeholder: true,
+  // GFM tables
+  table: true,
+  // LaTeX math formulas
+  latex: true,
+};
+
 const editorInstances = new Map();
 
 const emitEditorChange = (viewId, markdown) => {
@@ -38,17 +66,44 @@ const emitEditorBlur = (viewId) => {
 
 const normalizeConfig = (config) => {
   if (typeof config === 'string') {
-    return { initialMarkdown: config, theme: 'frame', readonly: false };
+    return {
+      initialMarkdown: config,
+      theme: 'frame',
+      readonly: false,
+      features: { ...DEFAULT_FEATURES },
+    };
   }
   if (config == null || typeof config !== 'object') {
-    return { initialMarkdown: '', theme: 'frame', readonly: false };
+    return {
+      initialMarkdown: '',
+      theme: 'frame',
+      readonly: false,
+      features: { ...DEFAULT_FEATURES },
+    };
   }
   return {
     initialMarkdown: typeof config.initialMarkdown === 'string' ? config.initialMarkdown : '',
     theme: typeof config.theme === 'string' ? config.theme : 'frame',
     readonly: config.readonly === true,
+    features: {
+      ...DEFAULT_FEATURES,
+      ...(typeof config.features === 'object' && config.features !== null ? config.features : {}),
+    },
   };
 };
+
+const mapToCrepeFeatures = (features) => ({
+  [Crepe.Feature.CodeMirror]: features.codeMirror !== false,
+  [Crepe.Feature.ListItem]: features.listItem !== false,
+  [Crepe.Feature.LinkTooltip]: features.linkTooltip !== false,
+  [Crepe.Feature.Cursor]: features.cursor !== false,
+  [Crepe.Feature.ImageBlock]: features.imageBlock !== false,
+  [Crepe.Feature.BlockEdit]: features.blockEdit !== false,
+  [Crepe.Feature.Toolbar]: features.toolbar !== false,
+  [Crepe.Feature.Placeholder]: features.placeholder !== false,
+  [Crepe.Feature.Table]: features.table !== false,
+  [Crepe.Feature.Latex]: features.latex !== false,
+});
 
 const clearThemeClasses = (container) => {
   const themeClasses = [
@@ -81,9 +136,12 @@ const initializeCrepeEditor = async (viewId, container, options) => {
 
   const editorMount = container.querySelector('.fluttron-milkdown__editor-mount');
 
+  const crepeFeatures = mapToCrepeFeatures(options.features);
+
   const crepe = new Crepe({
     root: editorMount,
     defaultValue: options.initialMarkdown,
+    features: crepeFeatures,
   });
 
   await crepe.create();

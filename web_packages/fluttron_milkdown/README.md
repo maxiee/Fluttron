@@ -73,6 +73,50 @@ The package emits the following events via `FluttronEventBridge`:
 | `fluttron.milkdown.editor.focus` | `{ viewId }` |
 | `fluttron.milkdown.editor.blur` | `{ viewId }` |
 
+## Bundle Metrics
+
+| Asset | Raw Size | Gzipped |
+|-------|----------|---------|
+| `main.js` | 5.0 MB | 1.16 MB |
+| `main.css` | 1.4 MB | 938 KB |
+| **Total** | **6.4 MB** | **2.1 MB** |
+
+The bundle includes all Crepe features by default:
+- **GFM (GitHub Flavored Markdown)**: Tables, task lists, strikethrough
+- **Code highlighting**: Prism-based syntax highlighting with CodeMirror
+- **Editing experience**: History (undo/redo), slash commands, tooltip toolbar
+- **LaTeX**: Mathematical formulas with KaTeX
+- **Image support**: Inline and block images
+
+> **Note**: The bundle is larger than a minimal markdown editor because it includes comprehensive language support for CodeMirror and KaTeX fonts. Future versions may offer slim variants with fewer features.
+
+## Feature Configuration
+
+The editor supports feature toggles via the config object (JS layer). All features are enabled by default:
+
+```javascript
+// Example: Disable specific features
+fluttronCreateMilkdownEditorView(viewId, {
+  initialMarkdown: '# Hello',
+  features: {
+    latex: false,      // Disable LaTeX math support
+    imageBlock: false, // Disable image blocks
+  }
+});
+```
+
+Available features:
+- `codeMirror` - Code block syntax highlighting
+- `listItem` - Bullet/ordered/task lists
+- `linkTooltip` - Link tooltips
+- `cursor` - Enhanced cursor
+- `imageBlock` - Image support
+- `blockEdit` - Slash commands, drag-and-drop
+- `toolbar` - Formatting toolbar
+- `placeholder` - Placeholder text
+- `table` - GFM tables
+- `latex` - LaTeX math formulas
+
 ## License
 
 MIT
