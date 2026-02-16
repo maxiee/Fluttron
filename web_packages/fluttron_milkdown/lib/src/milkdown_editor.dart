@@ -3,11 +3,29 @@ import 'dart:async';
 import 'package:fluttron_ui/fluttron_ui.dart';
 import 'package:flutter/material.dart';
 
+import 'milkdown_controller.dart';
 import 'milkdown_events.dart';
 
+/// A WYSIWYG markdown editor widget powered by Milkdown.
+///
+/// This widget embeds a Milkdown editor in a WebView and provides
+/// event callbacks and optional controller for runtime manipulation.
+///
+/// Example:
+/// ```dart
+/// final controller = MilkdownController();
+///
+/// MilkdownEditor(
+///   controller: controller,
+///   initialMarkdown: '# Hello World',
+///   onChanged: (event) => print('Content changed: ${event.markdown}'),
+///   onReady: () => print('Editor ready'),
+/// );
+/// ```
 class MilkdownEditor extends StatefulWidget {
   const MilkdownEditor({
     super.key,
+    this.controller,
     this.initialMarkdown = '',
     this.readonly = false,
     this.onChanged,
@@ -18,13 +36,37 @@ class MilkdownEditor extends StatefulWidget {
     this.errorBuilder,
   });
 
+  /// Optional controller for runtime editor manipulation.
+  ///
+  /// When provided, the controller will be automatically attached
+  /// when the editor becomes ready and detached when disposed.
+  final MilkdownController? controller;
+
+  /// Initial markdown content to display.
   final String initialMarkdown;
+
+  /// Whether the editor starts in readonly mode.
   final bool readonly;
+
+  /// Called when the editor content changes.
   final ValueChanged<MilkdownChangeEvent>? onChanged;
+
+  /// Called when the editor is ready for interaction.
+  ///
+  /// When a [controller] is provided, it will be attached before
+  /// this callback is invoked.
   final VoidCallback? onReady;
+
+  /// Called when the editor gains focus.
   final VoidCallback? onFocus;
+
+  /// Called when the editor loses focus.
   final VoidCallback? onBlur;
+
+  /// Builder for the loading widget while the editor initializes.
   final WidgetBuilder? loadingBuilder;
+
+  /// Builder for the error widget if the editor fails to initialize.
   final FluttronHtmlViewErrorBuilder? errorBuilder;
 
   @override
@@ -48,6 +90,7 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
 
   @override
   void dispose() {
+    _detachController();
     _detachListeners();
     _eventBridge.dispose();
     super.dispose();
@@ -71,6 +114,13 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
     _blurSubscription = null;
   }
 
+  void _detachController() {
+    final MilkdownController? controller = widget.controller;
+    if (controller != null && controller.isAttached) {
+      controller.detach();
+    }
+  }
+
   void _handleChange(MilkdownChangeEvent event) {
     if (_viewId != null && event.viewId != _viewId) {
       return;
@@ -83,6 +133,13 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
     if (_viewId != null && viewId != _viewId) {
       return;
     }
+
+    // Attach controller before invoking onReady callback
+    final MilkdownController? controller = widget.controller;
+    if (controller != null && !controller.isAttached) {
+      controller.attach(viewId);
+    }
+
     widget.onReady?.call();
   }
 

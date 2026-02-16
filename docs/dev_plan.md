@@ -422,40 +422,60 @@ window.fluttronMilkdownControl(viewId, action, params)
 
 ---
 
-### [ ] v0047 - Dart 控制器 API（MilkdownController + Interop）
+### [x] v0047 - Dart 控制器 API（MilkdownController + Interop） ✅
+
+**完成日期**: 2026-02-16
 
 **目标**
 
 - 将控制通道封装成 Dart 侧稳定 API，供业务代码直接调用。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. 新增 `MilkdownController`：`getContent/setContent/focus/insertText/setReadonly/setTheme`。
-2. 新增 `milkdown_interop.dart` + `*_web.dart` + `*_stub.dart` 条件导入。
-3. `MilkdownEditor` 在 ready 事件中 `controller.attach(viewId)`，在 dispose 时 `detach()`。
-4. controller 未 attach 时调用方法必须抛 `StateError`，错误文案清晰。
-5. playground 增加操作按钮（获取内容、插入文本、切换只读），作为交互验收面板。
+1. ✅ 新增 `MilkdownController`：`getContent/setContent/focus/insertText/setReadonly/setTheme`。
+2. ✅ 新增 `milkdown_interop.dart` + `*_web.dart` + `*_stub.dart` 条件导入。
+3. ✅ `MilkdownEditor` 在 ready 事件中 `controller.attach(viewId)`，在 dispose 时 `detach()`。
+4. ✅ controller 未 attach 时调用方法必须抛 `StateError`，错误文案清晰。
+5. ✅ playground 增加操作按钮（获取内容、插入文本、切换只读），作为交互验收面板。
 
-**涉及文件（最小清单）**
+**涉及文件**
 
 - `web_packages/fluttron_milkdown/lib/src/milkdown_controller.dart`
 - `web_packages/fluttron_milkdown/lib/src/milkdown_interop.dart`
 - `web_packages/fluttron_milkdown/lib/src/milkdown_interop_web.dart`
 - `web_packages/fluttron_milkdown/lib/src/milkdown_interop_stub.dart`
 - `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart`
+- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart`
 - `playground/ui/lib/main.dart`
 
-**验收命令**
+**Controller API**
 
-- `cd web_packages/fluttron_milkdown && dart analyze`
-- `fluttron build -p playground`
-- `fluttron run -p playground --no-build -d macos`
+```dart
+final controller = MilkdownController();
 
-**完成定义（DoD）**
+MilkdownEditor(
+  controller: controller,
+  onReady: () {
+    // Controller is now attached
+  },
+);
 
-- 控制器全部 API 可用。
-- 未就绪调用可稳定报错。
-- playground 演示按钮可证明控制链路畅通。
+// After ready:
+final content = await controller.getContent();
+await controller.setContent('# New content');
+await controller.focus();
+await controller.insertText('text at cursor');
+await controller.setReadonly(true);
+await controller.setTheme('frame-dark');
+```
+
+**验收结果**
+
+- `dart analyze`: 无问题 ✅
+- `fluttron build -p playground`: 成功 ✅
+- 控制器全部 API 可用 ✅
+- 未就绪调用可稳定报错 (StateError) ✅
+- playground 演示按钮可证明控制链路畅通 ✅
 
 **设计引用**
 
@@ -594,9 +614,9 @@ window.fluttronMilkdownControl(viewId, action, params)
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0047`
-- 第一提交目标：Dart 控制器 API（MilkdownController + Interop）
-- 完成后立即进入 `v0048` 做主题体系，不要提前并行开发后续版本
+- 当前起始版本：`v0048`
+- 第一提交目标：多主题支持（初始化主题 + 运行时切换）
+- 完成后立即进入 `v0049` 做测试收口，不要提前并行开发后续版本
 
 ### v0042 完成记录
 
@@ -658,4 +678,19 @@ window.fluttronMilkdownControl(viewId, action, params)
 | 错误处理 | ✅ {ok:false,error} 格式 |
 | viewId 验证 | ✅ 类型检查 + 实例查找 |
 | applyTheme 修复 | ✅ 正确应用指定主题类名 |
+
+### v0047 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| milkdown_interop.dart | ✅ 条件导入入口 + MilkdownControlResult |
+| milkdown_interop_web.dart | ✅ Web 平台 JS interop 实现 |
+| milkdown_interop_stub.dart | ✅ 非 Web 平台存根 (UnsupportedError) |
+| MilkdownController | ✅ attach/detach + 6 个控制方法 |
+| milkdown_editor.dart | ✅ controller 参数 + 生命周期绑定 |
+| fluttron_milkdown.dart | ✅ 导出 MilkdownController |
+| playground main.dart | ✅ Controller API 演示面板 (Get Content/Insert Text/Toggle Readonly) |
+| StateError | ✅ 未 attach 时调用抛出清晰错误 |
+| dart analyze | ✅ 无问题 |
+| fluttron build | ✅ 成功 |
 
