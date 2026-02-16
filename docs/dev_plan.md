@@ -37,9 +37,9 @@
 
 ### 北极星目标
 
-`fluttron_milkdown`（v0042-v0050）已完成并收口，当前目标切换为 `v0051+` 新一轮重大需求立项与执行准备：
+`fluttron_milkdown`（v0042-v0050）已完成并收口，`v0051+` 已正式进入 `markdown_editor` 重大需求执行：
 
-- 选定下一项重大需求并完成设计文档（范围、非目标、验收矩阵）。
+- 以 `docs/feature/markdown_editor_design.md` 为设计基准推进 v0051-v0060。
 - 以已验证能力为基线推进迭代，避免重复建设与双轨方案。
 - 保持“单版本可独立验收”的交付节奏。
 
@@ -61,7 +61,7 @@
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | `v0051+` 重大需求尚未立项 | 需要明确新需求名称、范围、非目标与验收边界 |
+| 1 | `markdown_editor` 首版本尚未落地 | 已完成计划拆解，需先实现并验收 v0051（FileService） |
 | 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
 | 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
 | 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
@@ -191,36 +191,60 @@
 
 ---
 
-## 当前重大需求（待定义）：`v0051+`
-
-### 立项输入（必须补齐）
-
-1. 需求名称与目标用户价值（一句话可验证）。
-2. 主设计文档路径（建议：`docs/feature/<next_requirement>_design.md`）。
-3. 本轮目标与非目标（防止范围膨胀）。
-4. 版本切分与每版本最小验收命令（可执行、可复现）。
-
-### 候选方向（来自 Backlog）
-
-| 候选项 | 进入条件 | 优先级 |
-|---|---|---|
-| `fluttron_ui` 统一控制器抽象 | 至少 2 个 web package 复用同类控制通道时启动 | P1 |
-| CLI 自动构建 web package 依赖资产 | 依赖包数量增长导致人工预构建成本明显上升时启动 | P1 |
-| 多实例稳定性专项 | 启动多实例业务前必须完成专项压测与故障注入 | P1 |
-| 资产懒加载/按需加载 | 启动体积与冷启动时间成为用户痛点时启动 | P2 |
-| pub.dev 分发规范与兼容矩阵 | 对外发布前必须完成版本策略与兼容基线定义 | P2 |
-
-### 执行模板（新需求启动后填写）
-
-```markdown
-## 当前重大需求：`<name>`（v0051-v00xx）
+## 当前重大需求：`markdown_editor`（v0051-v0060）
 
 ### 需求来源与引用关系
-### 目标与边界
-### 统一实现约束
-### 执行顺序
-### 版本任务单（仅保留当前进行中与未完成项）
-```
+
+- 主设计文档：`docs/feature/markdown_editor_design.md`
+- 当前文档职责：执行级任务拆解、版本顺序、验收命令与风险前置提醒。
+- 设计文档职责：架构细节、接口签名、数据模型、测试矩阵、风险清单。
+
+### LLM 实施提示（必须遵守）
+
+- 任一版本开始实现前，先阅读：`docs/feature/markdown_editor_design.md`。
+- 实现 Host Service 时，重点对照 §4（Framework Evolution）与 §9（Framework Tasks）。
+- 实现 UI 与交互时，重点对照 §5（UI Design）、§6（State Management）、§7（UI ↔ Host Communication）。
+- 安排版本与依赖关系时，重点对照 §10（Iterative Execution Plan）与 §11（Dependency Graph）。
+- 编写/补齐测试时，重点对照 §13（Testing Strategy）；验收目标对照 §2 与 §14。
+- 若本文件与设计文档存在冲突：接口与行为细节以设计文档为准，本文件只维护执行顺序与里程碑。
+
+### 目标与边界（本轮）
+
+- 目标：
+  1. 交付可用于真实文件编辑的桌面 Markdown 应用（`examples/markdown_editor/`）。
+  2. 反向推动框架演进，补齐 `file.*`、`dialog.*`、`clipboard.*` 内建服务。
+  3. 形成“官方示例级”最佳实践（脚手架、构建、状态管理、文档与验收）。
+- 非目标：
+  1. 协同编辑（yjs）、多标签页、导出 PDF/HTML、移动端适配。
+  2. 自定义 Milkdown 插件生态扩展与复杂媒体能力。
+
+### 执行顺序（冻结）
+
+1. Phase 1（v0051-v0053）：先补框架服务，再建立可运行 app 骨架。
+2. Phase 2（v0054-v0056）：围绕“打开目录 → 打开文件 → 保存与脏状态”形成主流程闭环。
+3. Phase 3（v0057-v0058）：补状态栏与主题持久化，完善核心可用性。
+4. Phase 4（v0059-v0060）：补新建文件、剪贴板与错误处理/文档收口。
+
+### 版本任务单（当前进行中与未完成）
+
+| 版本 | 阶段 | 最小可执行任务 | 依赖 | 最小验收 |
+|---|---|---|---|---|
+| v0051 | Phase 1 | 在 `fluttron_host` 新增 `FileService`（`read/write/list/stat/create/delete/rename/exists`），完成注册与单测 | 无 | playground 通过 `FluttronClient.invoke('file.readFile', ...)` 读文件成功 |
+| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 |
+| v0053 | Phase 1 | 用 `fluttron create` 建立 `examples/markdown_editor`，接入 `fluttron_milkdown`，打通 build/run | v0051,v0052 | `fluttron build -p examples/markdown_editor` 成功，macOS 可运行并显示编辑器 |
+| v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 |
+| v0055 | Phase 2 | 实现“点击文件加载到编辑器”，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 |
+| v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 |
+| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 |
+| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 |
+| v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 |
+| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 |
+
+### 并行与节奏约束
+
+- 可并行：`v0051` 与 `v0052`（框架服务互不阻塞）。
+- 半并行：`v0057` UI 布局可在 `v0055-v0056` 期间提前搭建，但事件绑定在 `v0056` 后收口。
+- 节奏要求：每个版本保持“单版本可独立验收”，未达到验收标准不得进入下版本。
 
 ---
 
@@ -239,8 +263,8 @@
 ## 立即下一步（执行入口）
 
 - 当前起始版本：`v0051`
-- `fluttron_milkdown` 迭代已完成并归档，当前文档已为新重大需求预留空间。
+- 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
 - 下一步最小动作：
-  1. 从 Backlog 中选择一个候选项进入 `v0051`。
-  2. 新建对应设计文档并回填“当前重大需求（待定义）”模板。
-  3. 先落一个可独立验收的首版本任务（`v0051`）再扩展后续版本。
+  1. 开始 `v0051` 前先对照阅读 `docs/feature/markdown_editor_design.md` 的 §4、§9、§10、§13。
+  2. 落地 `v0051`（`FileService` + 注册 + 单测）并完成最小验收命令。
+  3. 按依赖顺序推进 `v0052` 与 `v0053`，确保每版独立验收后再进入下一版。
