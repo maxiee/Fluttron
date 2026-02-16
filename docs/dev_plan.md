@@ -336,37 +336,37 @@
 
 ---
 
-### [ ] v0045 - 事件系统完善（change/ready/focus/blur + Typed Event）
+### [x] v0045 - 事件系统完善（change/ready/focus/blur + Typed Event） ✅
+
+**完成日期**: 2026-02-16
 
 **目标**
 
 - 建立可稳定消费的事件层，为业务状态同步与后续控制器绑定提供基础。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. JS 侧统一事件分发模块：`change/ready/focus/blur`。
-2. `change` 事件 payload 至少包含：`viewId/markdown/characterCount/lineCount/updatedAt`。
-3. Dart 侧新增 `MilkdownChangeEvent` 类型和 `milkdownEditorChanges()` helper。
-4. `MilkdownEditor` 增加 `onChanged` / `onReady` 回调并正确订阅/释放。
-5. 事件监听必须按 `viewId` 过滤，避免多实例串流。
+1. ✅ JS 侧统一事件分发模块：`change/ready/focus/blur`（提取到独立 `events.js` 模块）。
+2. ✅ `change` 事件 payload 包含：`viewId/markdown/characterCount/lineCount/updatedAt`。
+3. ✅ Dart 侧新增 `MilkdownChangeEvent` 类型和 `milkdownEditorChanges()` helper。
+4. ✅ `MilkdownEditor` 增加 `onChanged` / `onReady` / `onFocus` / `onBlur` 回调并正确订阅/释放。
+5. ✅ 事件监听按 `viewId` 过滤，避免多实例串流。
 
-**涉及文件（最小清单）**
+**涉及文件**
 
-- `web_packages/fluttron_milkdown/frontend/src/events.js`
-- `web_packages/fluttron_milkdown/frontend/src/main.js`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_events.dart`
-- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart`
+- `web_packages/fluttron_milkdown/frontend/src/events.js` (新建)
+- `web_packages/fluttron_milkdown/frontend/src/main.js` (导入 events.js)
+- `web_packages/fluttron_milkdown/lib/src/milkdown_events.dart` (新建)
+- `web_packages/fluttron_milkdown/lib/src/milkdown_editor.dart` (改为 StatefulWidget + 事件监听)
+- `web_packages/fluttron_milkdown/lib/fluttron_milkdown.dart` (导出 events)
+- `playground/ui/lib/main.dart` (使用新的事件 API)
 
-**验收命令**
+**验收结果**
 
-- `cd web_packages/fluttron_milkdown && dart analyze`
-- `fluttron build -p playground`
-- 手工验证：编辑内容时 Dart 侧状态实时更新
-
-**完成定义（DoD）**
-
-- 事件完整触发且 payload 字段稳定。
-- Dart 端可消费 typed event，不再直接散落 map 解析逻辑。
+- `cd web_packages/fluttron_milkdown && dart analyze`: 无问题 ✅
+- `pnpm run js:build`: 成功 ✅
+- `fluttron build -p playground`: 成功 ✅
+- Dart 端可消费 typed event，不再散落 map 解析逻辑 ✅
 
 **设计引用**
 
@@ -581,9 +581,9 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0045`
-- 第一提交目标：事件系统完善（change/ready/focus/blur + Typed Event）
-- 完成后立即进入 `v0046` 做 JS 控制通道，不要提前并行开发后续版本
+- 当前起始版本：`v0046`
+- 第一提交目标：JS 控制通道（Dart→JS Runtime Control）
+- 完成后立即进入 `v0047` 做 Dart 控制器，不要提前并行开发后续版本
 
 ### v0042 完成记录
 
@@ -618,4 +618,16 @@
 | Feature Toggle | ✅ DEFAULT_FEATURES + mapToCrepeFeatures |
 | Bundle Metrics | ✅ 5.0MB JS + 1.4MB CSS (2.1MB gzipped) |
 | README 更新 | ✅ Bundle Metrics + Feature Configuration |
+
+### v0045 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| events.js 模块 | ✅ 独立事件分发模块 (change/ready/focus/blur) |
+| change payload | ✅ viewId/markdown/characterCount/lineCount/updatedAt |
+| MilkdownChangeEvent | ✅ Typed event class + fromMap factory |
+| milkdownEditorChanges() | ✅ Stream helper with viewId filtering |
+| MilkdownEditor callbacks | ✅ onChanged/onReady/onFocus/onBlur |
+| viewId 过滤 | ✅ 多实例事件隔离 |
+| playground 迁移 | ✅ 使用新 typed event API |
 

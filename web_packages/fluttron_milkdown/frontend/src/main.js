@@ -2,67 +2,27 @@ import { Crepe } from '@milkdown/crepe';
 import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
 
-const EVENT_PREFIX = 'fluttron.milkdown.editor';
+import {
+  emitEditorChange,
+  emitEditorReady,
+  emitEditorFocus,
+  emitEditorBlur,
+} from './events.js';
 
-/**
- * Feature toggle configuration.
- * All features are enabled by default.
- * This can be extended in the future to allow fine-grained control.
- */
 const DEFAULT_FEATURES = {
-  // Code block syntax highlighting with CodeMirror
   codeMirror: true,
-  // Bullet lists, ordered lists, and task lists (GFM)
   listItem: true,
-  // Link tooltips
   linkTooltip: true,
-  // Enhanced cursor experience
   cursor: true,
-  // Image block support
   imageBlock: true,
-  // Block editing (slash commands, drag-and-drop)
   blockEdit: true,
-  // Formatting toolbar
   toolbar: true,
-  // Placeholder text
   placeholder: true,
-  // GFM tables
   table: true,
-  // LaTeX math formulas
   latex: true,
 };
 
 const editorInstances = new Map();
-
-const emitEditorChange = (viewId, markdown) => {
-  window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.change`, {
-    detail: {
-      viewId,
-      markdown,
-      characterCount: markdown.length,
-      lineCount: markdown.split('\n').length,
-      updatedAt: new Date().toISOString(),
-    },
-  }));
-};
-
-const emitEditorReady = (viewId) => {
-  window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.ready`, {
-    detail: { viewId },
-  }));
-};
-
-const emitEditorFocus = (viewId) => {
-  window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.focus`, {
-    detail: { viewId },
-  }));
-};
-
-const emitEditorBlur = (viewId) => {
-  window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.blur`, {
-    detail: { viewId },
-  }));
-};
 
 const normalizeConfig = (config) => {
   if (typeof config === 'string') {
