@@ -374,34 +374,47 @@
 
 ---
 
-### [ ] v0046 - JS 控制通道（Dart→JS Runtime Control）
+### [x] v0046 - JS 控制通道（Dart→JS Runtime Control） ✅
+
+**完成日期**: 2026-02-16
 
 **目标**
 
 - 提供编辑器创建后的运行时控制能力。
 
-**实现任务（必须全部完成）**
+**实现任务（已全部完成）**
 
-1. 在 JS 全局暴露 `window.fluttronMilkdownControl(viewId, action, params)`。
-2. 支持动作：`getContent`、`setContent`、`focus`、`insertText`、`setReadonly`、`setTheme`。
-3. 建立 `editorInstances: Map<viewId, instance>` 并确保实例生命周期正确（创建/销毁）。
-4. 未找到实例、未知 action、参数不合法时返回 `{ok:false,error}`，不可静默失败。
-5. `ready` 事件确保包含 `viewId`，为 controller 绑定做准备。
+1. ✅ 在 JS 全局暴露 `window.fluttronMilkdownControl(viewId, action, params)`。
+2. ✅ 支持动作：`getContent`、`setContent`、`focus`、`insertText`、`setReadonly`、`setTheme`。
+3. ✅ 建立 `editorInstances: Map<viewId, instance>` 并确保实例生命周期正确（创建/销毁）。
+4. ✅ 未找到实例、未知 action、参数不合法时返回 `{ok:false,error}`，不可静默失败。
+5. ✅ `ready` 事件确保包含 `viewId`，为 controller 绑定做准备。
 
-**涉及文件（最小清单）**
+**涉及文件**
 
-- `web_packages/fluttron_milkdown/frontend/src/main.js`
-- `web_packages/fluttron_milkdown/frontend/src/editor.js`
+- `web_packages/fluttron_milkdown/frontend/src/main.js` (添加控制通道函数)
 
-**验收命令**
+**验收结果**
 
-- `cd web_packages/fluttron_milkdown/frontend && pnpm run js:build`
-- 在浏览器控制台或 playground 调试按钮验证各 action
+- `pnpm run js:build`: 成功 ✅
+- 所有 action 都可返回可预期结果 ✅
+- 失败路径都有明确错误信息 ✅
+- viewId 验证与实例查找正确 ✅
 
-**完成定义（DoD）**
+**控制通道 API**
 
-- 所有 action 都可返回可预期结果。
-- 失败路径都有明确错误信息。
+```javascript
+window.fluttronMilkdownControl(viewId, action, params)
+// 返回: { ok: boolean, result?: any, error?: string }
+```
+
+支持的动作：
+- `getContent` - 返回当前 markdown 内容
+- `setContent` - 设置内容 (params.content: string)
+- `focus` - 聚焦编辑器
+- `insertText` - 在光标处插入文本 (params.text: string)
+- `setReadonly` - 设置只读模式 (params.readonly: boolean)
+- `setTheme` - 切换主题 (params.theme: string)
 
 **设计引用**
 
@@ -581,9 +594,9 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0046`
-- 第一提交目标：JS 控制通道（Dart→JS Runtime Control）
-- 完成后立即进入 `v0047` 做 Dart 控制器，不要提前并行开发后续版本
+- 当前起始版本：`v0047`
+- 第一提交目标：Dart 控制器 API（MilkdownController + Interop）
+- 完成后立即进入 `v0048` 做主题体系，不要提前并行开发后续版本
 
 ### v0042 完成记录
 
@@ -630,4 +643,19 @@
 | MilkdownEditor callbacks | ✅ onChanged/onReady/onFocus/onBlur |
 | viewId 过滤 | ✅ 多实例事件隔离 |
 | playground 迁移 | ✅ 使用新 typed event API |
+
+### v0046 完成记录
+
+| 项目 | 状态 |
+|---|---|
+| fluttronMilkdownControl | ✅ 全局控制函数 |
+| getContent | ✅ 返回当前 markdown |
+| setContent | ✅ 设置内容 (params.content) |
+| focus | ✅ 聚焦编辑器 |
+| insertText | ✅ 光标处插入文本 (params.text) |
+| setReadonly | ✅ 只读模式切换 (params.readonly) |
+| setTheme | ✅ 主题切换 (params.theme) |
+| 错误处理 | ✅ {ok:false,error} 格式 |
+| viewId 验证 | ✅ 类型检查 + 实例查找 |
+| applyTheme 修复 | ✅ 正确应用指定主题类名 |
 

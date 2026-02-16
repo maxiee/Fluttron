@@ -76,7 +76,8 @@ const clearThemeClasses = (container) => {
 
 const applyTheme = (container, themeName) => {
   clearThemeClasses(container);
-  container.classList.add('milkdown-theme-frame');
+  const themeClass = `milkdown-theme-${themeName}`;
+  container.classList.add(themeClass);
 };
 
 const destroyEditor = async (viewId) => {
@@ -166,3 +167,78 @@ const createMilkdownEditorView = (viewId, config) => {
 };
 
 window.fluttronCreateMilkdownEditorView = createMilkdownEditorView;
+
+/**
+ * Control channel for runtime editor manipulation.
+ * 
+ * @param {number} viewId - The view identifier
+ * @param {string} action - Action to perform
+ * @param {object|null} params - Action parameters
+ * @returns {{ok: boolean, result?: any, error?: string}}
+ */
+window.fluttronMilkdownControl = (viewId, action, params) => {
+  // Validate viewId
+  if (typeof viewId !== 'number' && typeof viewId !== 'string') {
+    return { ok: false, error: `Invalid viewId: expected number or string, got ${typeof viewId}` };
+  }
+
+  const viewIdKey = typeof viewId === 'string' ? parseInt(viewId, 10) : viewId;
+  
+  // Find editor instance
+  const instance = editorInstances.get(viewIdKey);
+  if (!instance) {
+    return { ok: false, error: `No editor instance for viewId ${viewIdKey}` };
+  }
+
+  const { crepe, container } = instance;
+
+  try {
+    switch (action) {
+      case 'getContent':
+        return { ok: true, result: crepe.getMarkdown() };
+
+      case 'setContent':
+        if (params == null || typeof params.content !== 'string') {
+          return { ok: false, error: 'setContent requires params.content (string)' };
+        }
+        crepe.setMarkdown(params.content);
+        return { ok: true };
+
+      case 'focus':
+        crepe.editor?.focus();
+        return { ok: true };
+
+      case 'insertText':
+        if (params == null || typeof params.text !== 'string') {
+          return { ok: false, error: 'insertText requires params.text (string)' };
+        }
+        crepe.editor?.insertText(params.text);
+        return { ok: true };
+
+      case 'setReadonly':
+        if (params == null || typeof params.readonly !== 'boolean') {
+          return { ok: false, error: 'setReadonly requires params.readonly (boolean)' };
+        }
+        crepe.setReadonly(params.readonly);
+        return { ok: true };
+
+      case 'setTheme': {
+        if (params == null || typeof params.theme !== 'string') {
+          return { ok: false, error: 'setTheme requires params.theme (string)' };
+        }
+        const validThemes = ['frame', 'frame-dark', 'classic', 'classic-dark', 'nord', 'nord-dark'];
+        if (!validThemes.includes(params.theme)) {
+          return { ok: false, error: `Invalid theme "${params.theme}". Valid themes: ${validThemes.join(', ')}` };
+        }
+        applyTheme(container, params.theme);
+        instance.theme = params.theme;
+        return { ok: true };
+      }
+
+      default:
+        return { ok: false, error: `Unknown action: ${action}` };
+    }
+  } catch (error) {
+    return { ok: false, error: `Action "${action}" failed: ${error.message}` };
+  }
+};
