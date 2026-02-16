@@ -7,21 +7,32 @@
 
 const EVENT_PREFIX = 'fluttron.milkdown.editor';
 
+const withInstanceToken = (detail, instanceToken) => {
+  if (typeof instanceToken === 'string' && instanceToken.length > 0) {
+    return {
+      ...detail,
+      instanceToken,
+    };
+  }
+  return detail;
+};
+
 /**
  * Emits a change event when the editor content is modified.
  * 
  * @param {number} viewId - The view identifier for filtering
  * @param {string} markdown - The current markdown content
+ * @param {string|null} instanceToken - Optional instance token for strict filtering
  */
-export const emitEditorChange = (viewId, markdown) => {
+export const emitEditorChange = (viewId, markdown, instanceToken = null) => {
   window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.change`, {
-    detail: {
+    detail: withInstanceToken({
       viewId,
       markdown,
       characterCount: markdown.length,
       lineCount: markdown.split('\n').length,
       updatedAt: new Date().toISOString(),
-    },
+    }, instanceToken),
   }));
 };
 
@@ -29,10 +40,11 @@ export const emitEditorChange = (viewId, markdown) => {
  * Emits a ready event when the editor is fully initialized.
  * 
  * @param {number} viewId - The view identifier for filtering
+ * @param {string|null} instanceToken - Optional instance token for strict filtering
  */
-export const emitEditorReady = (viewId) => {
+export const emitEditorReady = (viewId, instanceToken = null) => {
   window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.ready`, {
-    detail: { viewId },
+    detail: withInstanceToken({ viewId }, instanceToken),
   }));
 };
 
@@ -40,10 +52,11 @@ export const emitEditorReady = (viewId) => {
  * Emits a focus event when the editor gains focus.
  * 
  * @param {number} viewId - The view identifier for filtering
+ * @param {string|null} instanceToken - Optional instance token for strict filtering
  */
-export const emitEditorFocus = (viewId) => {
+export const emitEditorFocus = (viewId, instanceToken = null) => {
   window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.focus`, {
-    detail: { viewId },
+    detail: withInstanceToken({ viewId }, instanceToken),
   }));
 };
 
@@ -51,10 +64,11 @@ export const emitEditorFocus = (viewId) => {
  * Emits a blur event when the editor loses focus.
  * 
  * @param {number} viewId - The view identifier for filtering
+ * @param {string|null} instanceToken - Optional instance token for strict filtering
  */
-export const emitEditorBlur = (viewId) => {
+export const emitEditorBlur = (viewId, instanceToken = null) => {
   window.dispatchEvent(new CustomEvent(`${EVENT_PREFIX}.blur`, {
-    detail: { viewId },
+    detail: withInstanceToken({ viewId }, instanceToken),
   }));
 };
 

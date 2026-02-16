@@ -167,7 +167,7 @@ class _ThemedEditorState extends State<ThemedEditor> {
     final newTheme = _theme.isDark
         ? _theme.lightVariant
         : _theme.darkVariant;
-    await _controller.setTheme(newTheme!);
+    await _controller.setTheme(newTheme);
     setState(() => _theme = newTheme);
   }
 }

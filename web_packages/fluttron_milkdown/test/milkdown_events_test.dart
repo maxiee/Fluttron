@@ -60,6 +60,7 @@ void main() {
           'characterCount': 7,
           'lineCount': 1,
           'updatedAt': '2026-02-16T10:00:00.000Z',
+          'instanceToken': 'token-42',
         });
 
         expect(event.viewId, equals(42));
@@ -67,6 +68,7 @@ void main() {
         expect(event.characterCount, equals(7));
         expect(event.lineCount, equals(1));
         expect(event.updatedAt, equals('2026-02-16T10:00:00.000Z'));
+        expect(event.instanceToken, equals('token-42'));
       });
 
       test('handles num types for integers', () {
@@ -250,6 +252,27 @@ void main() {
           characterCount: 4,
           lineCount: 1,
           updatedAt: '2026-02-16T10:01:00.000Z',
+        );
+
+        expect(event1, isNot(equals(event2)));
+      });
+
+      test('different instanceToken makes events unequal', () {
+        const event1 = MilkdownChangeEvent(
+          viewId: 1,
+          markdown: 'test',
+          characterCount: 4,
+          lineCount: 1,
+          updatedAt: '2026-02-16T10:00:00.000Z',
+          instanceToken: 'token-a',
+        );
+        const event2 = MilkdownChangeEvent(
+          viewId: 1,
+          markdown: 'test',
+          characterCount: 4,
+          lineCount: 1,
+          updatedAt: '2026-02-16T10:00:00.000Z',
+          instanceToken: 'token-b',
         );
 
         expect(event1, isNot(equals(event2)));

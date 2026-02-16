@@ -1,5 +1,7 @@
 import 'package:fluttron_ui/fluttron_ui.dart';
 
+final FluttronEventBridge _sharedMilkdownEventBridge = FluttronEventBridge();
+
 class MilkdownChangeEvent {
   const MilkdownChangeEvent({
     required this.viewId,
@@ -7,6 +9,7 @@ class MilkdownChangeEvent {
     required this.characterCount,
     required this.lineCount,
     required this.updatedAt,
+    this.instanceToken,
   });
 
   factory MilkdownChangeEvent.fromMap(Map<String, dynamic> map) {
@@ -16,6 +19,7 @@ class MilkdownChangeEvent {
       characterCount: (map['characterCount'] as num?)?.toInt() ?? 0,
       lineCount: (map['lineCount'] as num?)?.toInt() ?? 0,
       updatedAt: map['updatedAt']?.toString() ?? '',
+      instanceToken: map['instanceToken']?.toString(),
     );
   }
 
@@ -24,6 +28,7 @@ class MilkdownChangeEvent {
   final int characterCount;
   final int lineCount;
   final String updatedAt;
+  final String? instanceToken;
 
   @override
   String toString() =>
@@ -38,54 +43,106 @@ class MilkdownChangeEvent {
           markdown == other.markdown &&
           characterCount == other.characterCount &&
           lineCount == other.lineCount &&
-          updatedAt == other.updatedAt;
+          updatedAt == other.updatedAt &&
+          instanceToken == other.instanceToken;
 
   @override
-  int get hashCode =>
-      Object.hash(viewId, markdown, characterCount, lineCount, updatedAt);
+  int get hashCode => Object.hash(
+    viewId,
+    markdown,
+    characterCount,
+    lineCount,
+    updatedAt,
+    instanceToken,
+  );
 }
 
-Stream<MilkdownChangeEvent> milkdownEditorChanges({int? viewId}) {
-  final stream = FluttronEventBridge().on('fluttron.milkdown.editor.change');
-  final mapped = stream.map(MilkdownChangeEvent.fromMap);
-  if (viewId == null) {
-    return mapped;
+FluttronEventBridge _resolveEventBridge(FluttronEventBridge? eventBridge) {
+  return eventBridge ?? _sharedMilkdownEventBridge;
+}
+
+bool _matchesInstanceToken(Map<String, dynamic> detail, String? instanceToken) {
+  if (instanceToken == null) {
+    return true;
   }
-  return mapped.where((event) => event.viewId == viewId);
+  return detail['instanceToken']?.toString() == instanceToken;
 }
 
-Stream<int> milkdownEditorReady({int? viewId}) {
-  final stream = FluttronEventBridge().on('fluttron.milkdown.editor.ready');
-  final mapped = stream.map((detail) {
-    final rawViewId = detail['viewId'];
-    return rawViewId is num ? rawViewId.toInt() : 0;
+int _extractViewId(Map<String, dynamic> detail) {
+  final rawViewId = detail['viewId'];
+  if (rawViewId is num) {
+    return rawViewId.toInt();
+  }
+  return 0;
+}
+
+Stream<Map<String, dynamic>> _listenMilkdownEvent({
+  required String eventName,
+  int? viewId,
+  String? instanceToken,
+  FluttronEventBridge? eventBridge,
+}) {
+  final bridge = _resolveEventBridge(eventBridge);
+  final stream = bridge.on(eventName);
+  return stream.where((detail) {
+    if (!_matchesInstanceToken(detail, instanceToken)) {
+      return false;
+    }
+    if (viewId == null) {
+      return true;
+    }
+    return _extractViewId(detail) == viewId;
   });
-  if (viewId == null) {
-    return mapped;
-  }
-  return mapped.where((id) => id == viewId);
 }
 
-Stream<int> milkdownEditorFocus({int? viewId}) {
-  final stream = FluttronEventBridge().on('fluttron.milkdown.editor.focus');
-  final mapped = stream.map((detail) {
-    final rawViewId = detail['viewId'];
-    return rawViewId is num ? rawViewId.toInt() : 0;
-  });
-  if (viewId == null) {
-    return mapped;
-  }
-  return mapped.where((id) => id == viewId);
+Stream<MilkdownChangeEvent> milkdownEditorChanges({
+  int? viewId,
+  String? instanceToken,
+  FluttronEventBridge? eventBridge,
+}) {
+  return _listenMilkdownEvent(
+    eventName: 'fluttron.milkdown.editor.change',
+    viewId: viewId,
+    instanceToken: instanceToken,
+    eventBridge: eventBridge,
+  ).map(MilkdownChangeEvent.fromMap);
 }
 
-Stream<int> milkdownEditorBlur({int? viewId}) {
-  final stream = FluttronEventBridge().on('fluttron.milkdown.editor.blur');
-  final mapped = stream.map((detail) {
-    final rawViewId = detail['viewId'];
-    return rawViewId is num ? rawViewId.toInt() : 0;
-  });
-  if (viewId == null) {
-    return mapped;
-  }
-  return mapped.where((id) => id == viewId);
+Stream<int> milkdownEditorReady({
+  int? viewId,
+  String? instanceToken,
+  FluttronEventBridge? eventBridge,
+}) {
+  return _listenMilkdownEvent(
+    eventName: 'fluttron.milkdown.editor.ready',
+    viewId: viewId,
+    instanceToken: instanceToken,
+    eventBridge: eventBridge,
+  ).map(_extractViewId);
+}
+
+Stream<int> milkdownEditorFocus({
+  int? viewId,
+  String? instanceToken,
+  FluttronEventBridge? eventBridge,
+}) {
+  return _listenMilkdownEvent(
+    eventName: 'fluttron.milkdown.editor.focus',
+    viewId: viewId,
+    instanceToken: instanceToken,
+    eventBridge: eventBridge,
+  ).map(_extractViewId);
+}
+
+Stream<int> milkdownEditorBlur({
+  int? viewId,
+  String? instanceToken,
+  FluttronEventBridge? eventBridge,
+}) {
+  return _listenMilkdownEvent(
+    eventName: 'fluttron.milkdown.editor.blur',
+    viewId: viewId,
+    instanceToken: instanceToken,
+    eventBridge: eventBridge,
+  ).map(_extractViewId);
 }

@@ -155,10 +155,9 @@ Injected 1 JS and 1 CSS reference(s)
 **Generated Registration:**
 ```dart
 FluttronWebViewRegistry.register(
-  'milkdown.editor',
-  (viewId, args) => globalContext.callMethodVarArgs(
-    'fluttronCreateMilkdownEditorView'.toJS,
-    [viewId.toJS, ...args],
+  const FluttronWebViewRegistration(
+    type: 'milkdown.editor',
+    jsFactoryName: 'fluttronCreateMilkdownEditorView',
   ),
 );
 ```
@@ -203,8 +202,8 @@ window.fluttronCreateMilkdownEditorView(viewId, config)
 | `fluttron.milkdown.editor.blur` | ✅ |
 
 **Payload Validation:**
-- `change`: `{ viewId, markdown, characterCount, lineCount, updatedAt }`
-- `ready/focus/blur`: `{ viewId }`
+- `change`: `{ viewId, markdown, characterCount, lineCount, updatedAt, instanceToken? }`
+- `ready/focus/blur`: `{ viewId, instanceToken? }`
 
 ---
 
@@ -295,16 +294,18 @@ flutter run -d macos
 
 | Test File | Tests | Status |
 |-----------|-------|--------|
-| `milkdown_theme_test.dart` | 22 | ✅ PASS |
-| `milkdown_controller_test.dart` | 16 | ✅ PASS |
-| `milkdown_events_test.dart` | 21 | ✅ PASS |
-| **Total** | **59** | **✅ ALL PASS** |
+| `milkdown_theme_test.dart` | 27 | ✅ PASS |
+| `milkdown_controller_test.dart` | 18 | ✅ PASS |
+| `milkdown_events_test.dart` | 19 | ✅ PASS |
+| `milkdown_events_stream_test.dart` | 3 | ✅ PASS |
+| **Total** | **67** | **✅ ALL PASS** |
 
 ### Coverage Areas
 
 - **MilkdownTheme**: enum values, isDark, lightVariant, darkVariant, tryParse
 - **MilkdownController**: lifecycle (attach/detach), state errors, viewId access
 - **MilkdownChangeEvent**: construction, fromMap factory, equality, toString
+- **Event stream helpers**: `viewId` / `instanceToken` filtering behavior
 
 ---
 

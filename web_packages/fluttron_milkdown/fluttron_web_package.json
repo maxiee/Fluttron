@@ -16,22 +16,22 @@
     {
       "name": "fluttron.milkdown.editor.change",
       "direction": "js_to_dart",
-      "payloadType": "{ viewId: number, markdown: string, characterCount: number, lineCount: number, updatedAt: string }"
+      "payloadType": "{ viewId: number, markdown: string, characterCount: number, lineCount: number, updatedAt: string, instanceToken?: string }"
     },
     {
       "name": "fluttron.milkdown.editor.ready",
       "direction": "js_to_dart",
-      "payloadType": "{ viewId: number }"
+      "payloadType": "{ viewId: number, instanceToken?: string }"
     },
     {
       "name": "fluttron.milkdown.editor.focus",
       "direction": "js_to_dart",
-      "payloadType": "{ viewId: number }"
+      "payloadType": "{ viewId: number, instanceToken?: string }"
     },
     {
       "name": "fluttron.milkdown.editor.blur",
       "direction": "js_to_dart",
-      "payloadType": "{ viewId: number }"
+      "payloadType": "{ viewId: number, instanceToken?: string }"
     }
   ]
 }

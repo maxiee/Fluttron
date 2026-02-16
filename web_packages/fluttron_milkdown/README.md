@@ -122,10 +122,10 @@ The package emits the following events via `FluttronEventBridge`:
 
 | Event | Payload |
 |-------|---------|
-| `fluttron.milkdown.editor.change` | `{ viewId, markdown, characterCount, lineCount, updatedAt }` |
-| `fluttron.milkdown.editor.ready` | `{ viewId }` |
-| `fluttron.milkdown.editor.focus` | `{ viewId }` |
-| `fluttron.milkdown.editor.blur` | `{ viewId }` |
+| `fluttron.milkdown.editor.change` | `{ viewId, markdown, characterCount, lineCount, updatedAt, instanceToken? }` |
+| `fluttron.milkdown.editor.ready` | `{ viewId, instanceToken? }` |
+| `fluttron.milkdown.editor.focus` | `{ viewId, instanceToken? }` |
+| `fluttron.milkdown.editor.blur` | `{ viewId, instanceToken? }` |
 
 ## Bundle Metrics
 

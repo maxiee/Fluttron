@@ -15,7 +15,7 @@ dependencies:
   flutter:
     sdk: flutter
   fluttron_ui:
-    path: /Volumes/ssd/Code/Fluttron/packages/fluttron_ui
+    path: ../../packages/fluttron_ui
 
 dev_dependencies:
   flutter_test:

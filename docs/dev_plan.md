@@ -556,7 +556,7 @@ await controller.setTheme('frame-dark');
 
 **验收结果**
 
-- `flutter test`: 63 tests passed ✅
+- `flutter test`: 67 tests passed ✅
 - `dart analyze`: No issues found ✅
 - 验证清单 V1-V12: 全部通过 ✅
 
@@ -761,7 +761,6 @@ await controller.setTheme('frame-dark');
 | milkdown_controller_test.dart | ✅ 18 个测试 (lifecycle, attach/detach, state errors) |
 | milkdown_events_test.dart | ✅ 18 个测试 (constructor, fromMap, equality) |
 | fluttron_milkdown_validation.md | ✅ V1-V12 验证报告完整记录 |
-| flutter test | ✅ 63 tests passed |
+| flutter test | ✅ 67 tests passed |
 | dart analyze | ✅ 无问题 |
 | 机制缺口记录 | ✅ 5 个缺口已写入 Backlog |
-

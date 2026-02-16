@@ -7,6 +7,8 @@ import 'milkdown_controller.dart';
 import 'milkdown_events.dart';
 import 'milkdown_theme.dart';
 
+int _milkdownEditorInstanceCounter = 0;
+
 /// A WYSIWYG markdown editor widget powered by Milkdown.
 ///
 /// This widget embeds a Milkdown editor in a WebView and provides
@@ -84,6 +86,7 @@ class MilkdownEditor extends StatefulWidget {
 
 class _MilkdownEditorState extends State<MilkdownEditor> {
   final FluttronEventBridge _eventBridge = FluttronEventBridge();
+  late final String _instanceToken = _createInstanceToken();
   int? _viewId;
 
   StreamSubscription<MilkdownChangeEvent>? _changeSubscription;
@@ -98,6 +101,32 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
   }
 
   @override
+  void didUpdateWidget(covariant MilkdownEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final bool configChanged =
+        oldWidget.initialMarkdown != widget.initialMarkdown ||
+        oldWidget.theme != widget.theme ||
+        oldWidget.readonly != widget.readonly;
+    if (configChanged) {
+      _detachController(controller: oldWidget.controller);
+      _viewId = null;
+    }
+
+    if (oldWidget.controller != widget.controller) {
+      _detachController(controller: oldWidget.controller);
+
+      final MilkdownController? nextController = widget.controller;
+      final int? viewId = _viewId;
+      if (nextController != null &&
+          viewId != null &&
+          !nextController.isAttached) {
+        nextController.attach(viewId);
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _detachController();
     _detachListeners();
@@ -106,10 +135,22 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
   }
 
   void _attachListeners() {
-    _changeSubscription = milkdownEditorChanges().listen(_handleChange);
-    _readySubscription = milkdownEditorReady().listen(_handleReady);
-    _focusSubscription = milkdownEditorFocus().listen(_handleFocus);
-    _blurSubscription = milkdownEditorBlur().listen(_handleBlur);
+    _changeSubscription = milkdownEditorChanges(
+      instanceToken: _instanceToken,
+      eventBridge: _eventBridge,
+    ).listen(_handleChange);
+    _readySubscription = milkdownEditorReady(
+      instanceToken: _instanceToken,
+      eventBridge: _eventBridge,
+    ).listen(_handleReady);
+    _focusSubscription = milkdownEditorFocus(
+      instanceToken: _instanceToken,
+      eventBridge: _eventBridge,
+    ).listen(_handleFocus);
+    _blurSubscription = milkdownEditorBlur(
+      instanceToken: _instanceToken,
+      eventBridge: _eventBridge,
+    ).listen(_handleBlur);
   }
 
   void _detachListeners() {
@@ -123,29 +164,40 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
     _blurSubscription = null;
   }
 
-  void _detachController() {
-    final MilkdownController? controller = widget.controller;
-    if (controller != null && controller.isAttached) {
-      controller.detach();
+  void _detachController({MilkdownController? controller}) {
+    final MilkdownController? targetController =
+        controller ?? widget.controller;
+    if (targetController != null && targetController.isAttached) {
+      targetController.detach();
     }
   }
 
+  String _createInstanceToken() {
+    _milkdownEditorInstanceCounter += 1;
+    return 'milkdown-${DateTime.now().microsecondsSinceEpoch}-$_milkdownEditorInstanceCounter';
+  }
+
   void _handleChange(MilkdownChangeEvent event) {
-    if (_viewId != null && event.viewId != _viewId) {
+    final int? currentViewId = _viewId;
+    if (currentViewId == null || event.viewId != currentViewId) {
       return;
     }
     widget.onChanged?.call(event);
   }
 
   void _handleReady(int viewId) {
-    _viewId ??= viewId;
-    if (_viewId != null && viewId != _viewId) {
-      return;
+    final int? previousViewId = _viewId;
+    if (previousViewId != null && previousViewId != viewId) {
+      _detachController();
     }
+    _viewId = viewId;
 
-    // Attach controller before invoking onReady callback
+    // Attach controller before invoking onReady callback.
     final MilkdownController? controller = widget.controller;
-    if (controller != null && !controller.isAttached) {
+    if (controller != null && controller.isAttached) {
+      controller.detach();
+    }
+    if (controller != null) {
       controller.attach(viewId);
     }
 
@@ -153,14 +205,16 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
   }
 
   void _handleFocus(int viewId) {
-    if (_viewId != null && viewId != _viewId) {
+    final int? currentViewId = _viewId;
+    if (currentViewId == null || viewId != currentViewId) {
       return;
     }
     widget.onFocus?.call();
   }
 
   void _handleBlur(int viewId) {
-    if (_viewId != null && viewId != _viewId) {
+    final int? currentViewId = _viewId;
+    if (currentViewId == null || viewId != currentViewId) {
       return;
     }
     widget.onBlur?.call();
@@ -175,6 +229,7 @@ class _MilkdownEditorState extends State<MilkdownEditor> {
           'initialMarkdown': widget.initialMarkdown,
           'theme': widget.theme.value,
           'readonly': widget.readonly,
+          'instanceToken': _instanceToken,
         },
       ],
       loadingBuilder: widget.loadingBuilder,

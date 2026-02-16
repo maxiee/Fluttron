@@ -29,6 +29,7 @@ const DEFAULT_FEATURES = {
 const VALID_THEMES = ['frame', 'frame-dark', 'nord', 'nord-dark'];
 
 const editorInstances = new Map();
+const lifecycleObservers = new Map();
 
 const normalizeTheme = (themeName) => {
   if (typeof themeName !== 'string') {
@@ -37,12 +38,21 @@ const normalizeTheme = (themeName) => {
   return VALID_THEMES.includes(themeName) ? themeName : 'frame';
 };
 
+const normalizeInstanceToken = (instanceToken) => {
+  if (typeof instanceToken !== 'string') {
+    return null;
+  }
+  const trimmed = instanceToken.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
 const normalizeConfig = (config) => {
   if (typeof config === 'string') {
     return {
       initialMarkdown: config,
       theme: 'frame',
       readonly: false,
+      instanceToken: null,
       features: { ...DEFAULT_FEATURES },
     };
   }
@@ -51,6 +61,7 @@ const normalizeConfig = (config) => {
       initialMarkdown: '',
       theme: 'frame',
       readonly: false,
+      instanceToken: null,
       features: { ...DEFAULT_FEATURES },
     };
   }
@@ -58,6 +69,7 @@ const normalizeConfig = (config) => {
     initialMarkdown: typeof config.initialMarkdown === 'string' ? config.initialMarkdown : '',
     theme: normalizeTheme(config.theme),
     readonly: config.readonly === true,
+    instanceToken: normalizeInstanceToken(config.instanceToken),
     features: {
       ...DEFAULT_FEATURES,
       ...(typeof config.features === 'object' && config.features !== null ? config.features : {}),
@@ -109,9 +121,55 @@ const ensureMilkdownRootClass = (editorMount) => {
   editorMount.classList.add('milkdown');
 };
 
+const disconnectLifecycleObserver = (viewId) => {
+  const observer = lifecycleObservers.get(viewId);
+  if (!observer) {
+    return;
+  }
+  observer.disconnect();
+  lifecycleObservers.delete(viewId);
+};
+
+const attachLifecycleObserver = (viewId, container) => {
+  disconnectLifecycleObserver(viewId);
+  if (typeof MutationObserver !== 'function') {
+    return;
+  }
+
+  const observerRoot = document.documentElement;
+  if (!observerRoot) {
+    return;
+  }
+
+  const observer = new MutationObserver(() => {
+    if (container.isConnected) {
+      return;
+    }
+
+    disconnectLifecycleObserver(viewId);
+    destroyEditor(viewId).catch((error) => {
+      console.warn('[fluttron_milkdown] Failed to dispose editor instance:', error);
+    });
+  });
+
+  observer.observe(observerRoot, { childList: true, subtree: true });
+  lifecycleObservers.set(viewId, observer);
+};
+
 const destroyEditor = async (viewId) => {
+  disconnectLifecycleObserver(viewId);
+
   const instance = editorInstances.get(viewId);
-  if (!instance) return;
+  if (!instance) {
+    return;
+  }
+
+  if (instance.editorMount && instance.handleFocus) {
+    instance.editorMount.removeEventListener('focus', instance.handleFocus, true);
+  }
+  if (instance.editorMount && instance.handleBlur) {
+    instance.editorMount.removeEventListener('blur', instance.handleBlur, true);
+  }
 
   try {
     await instance.crepe.destroy();
@@ -131,6 +189,7 @@ const initializeCrepeEditor = async (viewId, container, options) => {
   ensureMilkdownRootClass(editorMount);
 
   const crepeFeatures = mapToCrepeFeatures(options.features);
+  const instanceToken = normalizeInstanceToken(options.instanceToken);
 
   const crepe = new Crepe({
     root: editorMount,
@@ -147,24 +206,29 @@ const initializeCrepeEditor = async (viewId, container, options) => {
 
   crepe.on((listener) => {
     listener.markdownUpdated((ctx, markdown, prevMarkdown) => {
-      emitEditorChange(viewId, markdown);
+      emitEditorChange(viewId, markdown, instanceToken);
     });
   });
 
-  editorMount.addEventListener('focus', () => emitEditorFocus(viewId), true);
-  editorMount.addEventListener('blur', () => emitEditorBlur(viewId), true);
+  const handleFocus = () => emitEditorFocus(viewId, instanceToken);
+  const handleBlur = () => emitEditorBlur(viewId, instanceToken);
+  editorMount.addEventListener('focus', handleFocus, true);
+  editorMount.addEventListener('blur', handleBlur, true);
 
   editorInstances.set(viewId, {
     crepe,
     container,
     editorMount,
+    handleFocus,
+    handleBlur,
+    instanceToken,
     theme: options.theme,
   });
 
   applyTheme(container, editorMount, options.theme);
 
-  emitEditorReady(viewId);
-  emitEditorChange(viewId, options.initialMarkdown);
+  emitEditorReady(viewId, instanceToken);
+  emitEditorChange(viewId, options.initialMarkdown, instanceToken);
 };
 
 // Flutter HtmlElementView expects the factory to return an HTMLElement synchronously.
@@ -174,6 +238,9 @@ const createMilkdownEditorView = (viewId, config) => {
   const container = document.createElement('div');
   container.id = `fluttron-milkdown-${viewId}`;
   container.className = 'fluttron-milkdown';
+  if (options.instanceToken) {
+    container.dataset.instanceToken = options.instanceToken;
+  }
 
   container.style.cssText = `
     width: 100%;
@@ -192,12 +259,14 @@ const createMilkdownEditorView = (viewId, config) => {
   `;
 
   container.appendChild(editorMount);
+  attachLifecycleObserver(viewId, container);
 
   initializeCrepeEditor(viewId, container, options).catch((error) => {
     console.error('[fluttron_milkdown] Failed to initialize editor:', error);
+    const message = error instanceof Error ? error.message : String(error);
     editorMount.innerHTML = `
       <div style="padding: 16px; color: #dc2626; background: #fef2f2; border-radius: 8px;">
-        Failed to initialize editor: ${error.message}
+        Failed to initialize editor: ${message}
       </div>
     `;
   });
@@ -206,6 +275,19 @@ const createMilkdownEditorView = (viewId, config) => {
 };
 
 window.fluttronCreateMilkdownEditorView = createMilkdownEditorView;
+
+const resolveViewId = (rawViewId) => {
+  if (typeof rawViewId === 'number') {
+    return Number.isInteger(rawViewId) ? rawViewId : null;
+  }
+
+  if (typeof rawViewId === 'string' && rawViewId.trim().length > 0) {
+    const parsed = Number(rawViewId);
+    return Number.isInteger(parsed) ? parsed : null;
+  }
+
+  return null;
+};
 
 /**
  * Control channel for runtime editor manipulation.
@@ -216,12 +298,13 @@ window.fluttronCreateMilkdownEditorView = createMilkdownEditorView;
  * @returns {{ok: boolean, result?: any, error?: string}}
  */
 window.fluttronMilkdownControl = (viewId, action, params) => {
-  // Validate viewId
-  if (typeof viewId !== 'number' && typeof viewId !== 'string') {
-    return { ok: false, error: `Invalid viewId: expected number or string, got ${typeof viewId}` };
+  const viewIdKey = resolveViewId(viewId);
+  if (viewIdKey == null) {
+    return {
+      ok: false,
+      error: `Invalid viewId: expected an integer, got ${typeof viewId}`,
+    };
   }
-
-  const viewIdKey = typeof viewId === 'string' ? parseInt(viewId, 10) : viewId;
   
   // Find editor instance
   const instance = editorInstances.get(viewIdKey);
@@ -244,14 +327,20 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
         return { ok: true };
 
       case 'focus':
-        crepe.editor?.focus();
+        if (!crepe.editor || typeof crepe.editor.focus !== 'function') {
+          return { ok: false, error: 'focus is unavailable: editor API is not ready.' };
+        }
+        crepe.editor.focus();
         return { ok: true };
 
       case 'insertText':
         if (params == null || typeof params.text !== 'string') {
           return { ok: false, error: 'insertText requires params.text (string)' };
         }
-        crepe.editor?.insertText(params.text);
+        if (!crepe.editor || typeof crepe.editor.insertText !== 'function') {
+          return { ok: false, error: 'insertText is unavailable: editor API is not ready.' };
+        }
+        crepe.editor.insertText(params.text);
         return { ok: true };
 
       case 'setReadonly':
@@ -277,6 +366,7 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
         return { ok: false, error: `Unknown action: ${action}` };
     }
   } catch (error) {
-    return { ok: false, error: `Action "${action}" failed: ${error.message}` };
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, error: `Action "${action}" failed: ${message}` };
   }
 };
