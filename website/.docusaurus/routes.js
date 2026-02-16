@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/Fluttron/zh-CN/docs',
-    component: ComponentCreator('/Fluttron/zh-CN/docs', 'c17'),
+    component: ComponentCreator('/Fluttron/zh-CN/docs', '034'),
     routes: [
       {
         path: '/Fluttron/zh-CN/docs',
-        component: ComponentCreator('/Fluttron/zh-CN/docs', 'd3b'),
+        component: ComponentCreator('/Fluttron/zh-CN/docs', 'cb5'),
         routes: [
           {
             path: '/Fluttron/zh-CN/docs',
-            component: ComponentCreator('/Fluttron/zh-CN/docs', '57f'),
+            component: ComponentCreator('/Fluttron/zh-CN/docs', '6a9'),
             routes: [
               {
                 path: '/Fluttron/zh-CN/docs/api/services',
@@ -59,6 +59,12 @@ export default [
               {
                 path: '/Fluttron/zh-CN/docs/examples/hello-world',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/examples/hello-world', '9b8'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/examples/milkdown-editor',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/examples/milkdown-editor', 'cee'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },

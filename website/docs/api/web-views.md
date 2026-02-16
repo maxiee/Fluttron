@@ -201,9 +201,8 @@ window.fluttronCreateMyAppEditorView = function(viewId, initialText, theme) {
     theme: theme,
     onChange: (content) => {
       // Dispatch event to Flutter
-      container.dispatchEvent(new CustomEvent('myapp.editor.change', {
-        detail: { content: content },
-        bubbles: true,
+      window.dispatchEvent(new CustomEvent('myapp.editor.change', {
+        detail: { viewId, content },
       }));
     }
   });
@@ -214,17 +213,17 @@ window.fluttronCreateMyAppEditorView = function(viewId, initialText, theme) {
 
 ### Dispatching Events
 
-Use `CustomEvent` to send data back to Flutter:
+Use `CustomEvent` to send data back to Flutter (`window.dispatchEvent` is recommended):
 
 ```javascript
-element.dispatchEvent(new CustomEvent('event.name', {
+window.dispatchEvent(new CustomEvent('event.name', {
   detail: {
+    viewId: 7,
     key: 'value',
     nested: {
       data: 123
     }
-  },
-  bubbles: true,
+  }
 }));
 ```
 

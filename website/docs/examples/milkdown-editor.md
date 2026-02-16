@@ -14,6 +14,15 @@ This example demonstrates how to integrate `fluttron_milkdown`, a full-featured 
 - **Event system**: Subscribe to content changes, ready, focus, blur events
 - **Controller API**: Get/set content, insert text, toggle readonly, change themes
 
+## Current Status
+
+As of `v0050` completion, `fluttron_milkdown` is in production-ready package mode:
+
+- Iteration scope `v0042-v0050` is complete
+- Runtime control channel (`get/set/focus/insertText/readonly/theme`) is integrated
+- Event payload supports `viewId` and optional `instanceToken` for multi-instance filtering
+- Test baseline is `67` passing tests (`theme 27 + controller 18 + events 19 + events_stream 3`)
+
 ## Installation
 
 ### 1. Add dependency
@@ -48,6 +57,13 @@ flutter pub get
 ```bash
 cd ..
 fluttron build -p .
+```
+
+If build output indicates that host `pubspec.yaml` was updated with new package assets, run:
+
+```bash
+cd your_app/host
+flutter pub get
 ```
 
 ## Basic Usage
@@ -212,6 +228,33 @@ MilkdownEditor(
     // Editor lost focus
   },
 )
+```
+
+### Event Payload
+
+| Event | Payload |
+|-------|---------|
+| `fluttron.milkdown.editor.change` | `{ viewId, markdown, characterCount, lineCount, updatedAt, instanceToken? }` |
+| `fluttron.milkdown.editor.ready` | `{ viewId, instanceToken? }` |
+| `fluttron.milkdown.editor.focus` | `{ viewId, instanceToken? }` |
+| `fluttron.milkdown.editor.blur` | `{ viewId, instanceToken? }` |
+
+### Advanced Filtering (Raw Stream)
+
+For advanced scenarios, use stream helpers with explicit filters:
+
+```dart
+import 'package:fluttron_milkdown/fluttron_milkdown.dart';
+
+void bindEditorEvents() {
+  milkdownEditorChanges(
+    viewId: 7,
+    instanceToken: 'editor-token-7',
+  ).listen((event) {
+    // Only events matching both filters reach here.
+    print(event.markdown);
+  });
+}
 ```
 
 ## Bundle Size

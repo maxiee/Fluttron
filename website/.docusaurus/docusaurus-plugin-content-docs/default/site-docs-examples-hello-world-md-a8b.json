@@ -16,5 +16,9 @@
   "previous": {
     "title": "Web Packages",
     "permalink": "/Fluttron/zh-CN/docs/api/web-packages"
+  },
+  "next": {
+    "title": "Milkdown Editor",
+    "permalink": "/Fluttron/zh-CN/docs/examples/milkdown-editor"
   }
 }

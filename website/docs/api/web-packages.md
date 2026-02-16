@@ -122,7 +122,15 @@ During `fluttron build`, the pipeline runs:
 7. HTML injection
 8. Build output JS validation
 9. Copy to `host/assets/www`
-10. Host asset JS validation
+10. Host `pubspec.yaml` asset declaration sync for discovered packages
+11. Host asset JS validation
+
+If step 10 updates host `pubspec.yaml`, run:
+
+```bash
+cd my_app/host
+flutter pub get
+```
 
 ## Auto Registration
 
@@ -218,3 +226,11 @@ Then inspect:
 
 - `host/assets/www/index.html`
 - `host/assets/www/ext/packages/<package>/...`
+
+### Host runtime cannot load package assets
+
+Check:
+
+- `host/pubspec.yaml` contains `assets/www/ext/packages/` and `assets/www/ext/packages/<package>/`
+- You ran `flutter pub get` inside `host/` after build updated host `pubspec.yaml`
+- Target files exist under `host/assets/www/ext/packages/<package>/`

@@ -1,7 +1,7 @@
 {
   "id": "api/web-packages",
   "title": "Web Packages",
-  "description": "Web packages are reusable Dart packages that include Flutter widgets, JavaScript bundles, and CSS. They can be distributed via pub.dev and used across multiple Fluttron apps.",
+  "description": "Web packages are reusable Dart packages that bundle Flutter widgets, JavaScript factories, and optional CSS assets for Fluttron apps.",
   "source": "@site/docs/api/web-packages.md",
   "sourceDirName": "api",
   "slug": "/api/web-packages",

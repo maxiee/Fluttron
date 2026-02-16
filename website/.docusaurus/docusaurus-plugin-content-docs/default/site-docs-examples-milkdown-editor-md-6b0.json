@@ -1,0 +1,20 @@
+{
+  "id": "examples/milkdown-editor",
+  "title": "Milkdown Editor",
+  "description": "This example demonstrates how to integrate fluttron_milkdown, a full-featured WYSIWYG Markdown editor web package, into your Fluttron app.",
+  "source": "@site/docs/examples/milkdown-editor.md",
+  "sourceDirName": "examples",
+  "slug": "/examples/milkdown-editor",
+  "permalink": "/Fluttron/zh-CN/docs/examples/milkdown-editor",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/examples/milkdown-editor.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Hello World Example",
+    "permalink": "/Fluttron/zh-CN/docs/examples/hello-world"
+  }
+}
