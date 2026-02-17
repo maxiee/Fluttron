@@ -31,7 +31,6 @@ Click **Open Folder** to select a directory containing markdown files.
 ## Next
 
 More features will be added in upcoming versions:
-- Save files to disk
 - Create new files
 - Theme persistence
 ''';
@@ -167,13 +166,19 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     }
   }
 
-  Future<void> _saveInMemory() async {
+  Future<void> _saveCurrentDocument() async {
     if (!_isEditorReady) {
       return;
     }
 
     try {
       final String content = await _controller.getContent();
+      final String? currentFilePath = _state.currentFilePath;
+
+      if (currentFilePath != null && currentFilePath.isNotEmpty) {
+        await _fileClient.writeFile(currentFilePath, content);
+      }
+
       if (!mounted) {
         return;
       }
@@ -185,7 +190,9 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
           lineCount: _computeLineCount(content),
           clearErrorMessage: true,
         );
-        _statusMessage = 'Saved';
+        _statusMessage = (currentFilePath != null && currentFilePath.isNotEmpty)
+            ? 'Saved to disk'
+            : 'Saved in memory (no file selected)';
       });
     } catch (error) {
       if (!mounted) {
@@ -269,7 +276,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   }
 
   void _onSaveShortcut() {
-    unawaited(_saveInMemory());
+    unawaited(_saveCurrentDocument());
   }
 
   @override
@@ -356,7 +363,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
           const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: _isEditorReady && _state.isDirty
-                ? () => unawaited(_saveInMemory())
+                ? () => unawaited(_saveCurrentDocument())
                 : null,
             icon: const Icon(Icons.save_outlined, size: 18),
             label: const Text('Save'),
