@@ -93,7 +93,6 @@ class DialogService extends FluttronService {
   Future<Map<String, dynamic>> _openDirectory(
     Map<String, dynamic> params,
   ) async {
-    final title = params['title'] as String?;
     final initialDirectory = params['initialDirectory'] as String?;
 
     final path = await getDirectoryPath(initialDirectory: initialDirectory);

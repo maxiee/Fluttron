@@ -1,10 +1,15 @@
 import 'dart:async';
 
 import 'package:fluttron_milkdown/fluttron_milkdown.dart';
+import 'package:fluttron_shared/fluttron_shared.dart';
+import 'package:fluttron_ui/fluttron_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'models/editor_state.dart';
+import 'services/dialog_service_client.dart';
+import 'services/file_service_client.dart';
+import 'widgets/sidebar.dart';
 
 const MilkdownTheme _defaultTheme = MilkdownTheme.nord;
 const String _welcomeMarkdown = '''
@@ -12,17 +17,23 @@ const String _welcomeMarkdown = '''
 
 Welcome to the Fluttron markdown editor example.
 
-## What is included in this version
+## Getting Started
 
-- Milkdown WYSIWYG editor integration
+Click **Open Folder** to select a directory containing markdown files.
+
+## Features
+
+- File tree sidebar (`.md` files only)
+- Milkdown WYSIWYG editor
 - Runtime theme switching
-- Cmd/Ctrl + S shortcut for save state
-- Status bar with file name, save state, char count, and line count
+- Save with `Cmd/Ctrl + S`
 
 ## Next
 
-Open-folder file management and Host services (`file.*`, `dialog.*`, `clipboard.*`)
-will be added in follow-up iterations.
+More features will be added in upcoming versions:
+- Save files to disk
+- Create new files
+- Theme persistence
 ''';
 
 class MarkdownEditorApp extends StatefulWidget {
@@ -34,6 +45,9 @@ class MarkdownEditorApp extends StatefulWidget {
 
 class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   final MilkdownController _controller = MilkdownController();
+  final FluttronClient _client = FluttronClient();
+  late final FileServiceClient _fileClient;
+  late final DialogServiceClient _dialogClient;
 
   late EditorState _state = EditorState.initial(
     initialContent: _welcomeMarkdown,
@@ -42,6 +56,72 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
 
   bool _isEditorReady = false;
   String _statusMessage = 'Initializing editor...';
+
+  @override
+  void initState() {
+    super.initState();
+    _fileClient = FileServiceClient(_client);
+    _dialogClient = DialogServiceClient(_client);
+  }
+
+  Future<void> _openFolder() async {
+    try {
+      final path = await _dialogClient.openDirectory(title: 'Open Folder');
+
+      if (path == null) {
+        // User cancelled the dialog
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _state = _state.copyWith(isLoading: true, clearErrorMessage: true);
+        _statusMessage = 'Loading files...';
+      });
+
+      // List directory contents
+      final entries = await _fileClient.listDirectory(path);
+
+      // Filter to only .md files
+      final mdFiles = entries
+          .where((e) => e.isFile && e.name.toLowerCase().endsWith('.md'))
+          .toList();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _state = _state.copyWith(
+          currentDirectoryPath: path,
+          fileTree: mdFiles,
+          isLoading: false,
+        );
+        _statusMessage = 'Opened ${mdFiles.length} markdown files';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _state = _state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to open folder: $error',
+        );
+      });
+    }
+  }
+
+  Future<void> _openFile(FileEntry file) async {
+    // v0055 will implement actual file loading
+    // For now, just show a status message
+    setState(() {
+      _statusMessage = 'Opening ${file.name}... (file loading in v0055)';
+    });
+  }
 
   Future<void> _saveInMemory() async {
     if (!_isEditorReady) {
@@ -156,26 +236,40 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
               _buildToolbar(),
               if (_state.errorMessage != null) _buildErrorBanner(),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: MilkdownEditor(
-                    controller: _controller,
-                    initialMarkdown: _welcomeMarkdown,
-                    theme: _defaultTheme,
-                    onReady: () => unawaited(_handleEditorReady()),
-                    onChanged: _handleEditorChanged,
-                    loadingBuilder: (BuildContext context) {
-                      return const Center(child: CircularProgressIndicator());
-                    },
-                    errorBuilder: (BuildContext context, Object error) {
-                      return Center(
-                        child: SelectableText(
-                          error.toString(),
-                          style: const TextStyle(color: Colors.redAccent),
+                child: Row(
+                  children: [
+                    Sidebar(
+                      directoryPath: _state.currentDirectoryPath,
+                      files: _state.fileTree,
+                      currentFilePath: _state.currentFilePath,
+                      onFileSelected: _openFile,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: MilkdownEditor(
+                          controller: _controller,
+                          initialMarkdown: _welcomeMarkdown,
+                          theme: _defaultTheme,
+                          onReady: () => unawaited(_handleEditorReady()),
+                          onChanged: _handleEditorChanged,
+                          loadingBuilder: (BuildContext context) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                          errorBuilder: (BuildContext context, Object error) {
+                            return Center(
+                              child: SelectableText(
+                                error.toString(),
+                                style: const TextStyle(color: Colors.redAccent),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               _buildStatusBar(),
@@ -202,6 +296,12 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
           ),
           const SizedBox(width: 16),
           FilledButton.icon(
+            onPressed: _state.isLoading ? null : _openFolder,
+            icon: const Icon(Icons.folder_open_outlined, size: 18),
+            label: const Text('Open Folder'),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
             onPressed: _isEditorReady && _state.isDirty
                 ? () => unawaited(_saveInMemory())
                 : null,
@@ -227,10 +327,17 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
                 .toList(growable: false),
           ),
           const Spacer(),
-          Text(
-            _isEditorReady ? 'Ready' : 'Bootstrapping...',
-            style: TextStyle(color: Colors.grey.shade700),
-          ),
+          if (_state.isLoading)
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            Text(
+              _isEditorReady ? 'Ready' : 'Bootstrapping...',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
         ],
       ),
     );
@@ -241,9 +348,26 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       color: const Color(0xFFFFEBEE),
-      child: Text(
-        _state.errorMessage!,
-        style: const TextStyle(color: Color(0xFFB00020)),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _state.errorMessage!,
+              style: const TextStyle(color: Color(0xFFB00020)),
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _state = _state.copyWith(clearErrorMessage: true);
+              });
+            },
+            icon: const Icon(Icons.close, size: 18),
+            color: const Color(0xFFB00020),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
       ),
     );
   }

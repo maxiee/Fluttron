@@ -1,6 +1,9 @@
 import 'package:fluttron_milkdown/fluttron_milkdown.dart';
+import 'package:fluttron_shared/fluttron_shared.dart';
 
+/// Represents the state of the Markdown editor.
 class EditorState {
+  /// Creates an EditorState with the given values.
   const EditorState({
     this.currentFilePath,
     this.currentDirectoryPath,
@@ -14,6 +17,7 @@ class EditorState {
     this.errorMessage,
   });
 
+  /// Creates an initial EditorState with the given content.
   factory EditorState.initial({
     required String initialContent,
     MilkdownTheme currentTheme = MilkdownTheme.frame,
@@ -24,23 +28,44 @@ class EditorState {
       characterCount: initialContent.length,
       lineCount: _computeLineCount(initialContent),
       currentTheme: currentTheme,
-      fileTree: const <String>[],
+      fileTree: const <FileEntry>[],
     );
   }
 
+  /// The path to the currently open file, or null if no file is open.
   final String? currentFilePath;
-  final String? currentDirectoryPath;
-  final String currentContent;
-  final String savedContent;
-  final int characterCount;
-  final int lineCount;
-  final MilkdownTheme currentTheme;
-  final bool isLoading;
-  final String? errorMessage;
-  final List<String> fileTree;
 
+  /// The path to the currently open directory, or null if no folder is open.
+  final String? currentDirectoryPath;
+
+  /// The current markdown content in the editor.
+  final String currentContent;
+
+  /// The last saved version of the content (for dirty checking).
+  final String savedContent;
+
+  /// The character count of the current content.
+  final int characterCount;
+
+  /// The line count of the current content.
+  final int lineCount;
+
+  /// The currently selected theme.
+  final MilkdownTheme currentTheme;
+
+  /// Whether a file operation is in progress.
+  final bool isLoading;
+
+  /// The current error message, or null if no error.
+  final String? errorMessage;
+
+  /// The list of markdown files in the current directory.
+  final List<FileEntry> fileTree;
+
+  /// Whether the current content has unsaved changes.
   bool get isDirty => currentContent != savedContent;
 
+  /// Creates a copy of this state with the given fields replaced.
   EditorState copyWith({
     String? currentFilePath,
     String? currentDirectoryPath,
@@ -52,7 +77,7 @@ class EditorState {
     bool? isLoading,
     String? errorMessage,
     bool clearErrorMessage = false,
-    List<String>? fileTree,
+    List<FileEntry>? fileTree,
   }) {
     return EditorState(
       currentFilePath: currentFilePath ?? this.currentFilePath,
