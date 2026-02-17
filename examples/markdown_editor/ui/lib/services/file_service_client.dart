@@ -34,14 +34,14 @@ class FileServiceClient {
     final result = await _client.invoke('file.listDirectory', {'path': path});
     final entries = result['entries'] as List<dynamic>;
     return entries
-        .map((e) => FileEntry.fromMap(e as Map<String, dynamic>))
+        .map((e) => FileEntry.fromMap(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
 
   /// Gets statistics about a file or directory.
   Future<FileStat> stat(String path) async {
     final result = await _client.invoke('file.stat', {'path': path});
-    return FileStat.fromMap(result as Map<String, dynamic>);
+    return FileStat.fromMap(Map<String, dynamic>.from(result as Map));
   }
 
   /// Creates a new file with optional content.

@@ -45,11 +45,11 @@ class FluttronClient {
       );
     }
 
-    final resp = FluttronResponse.fromJson(Map<String, dynamic>.from(respDart));
+    final resp = FluttronResponse.fromJson(_toStringKeyedMap(respDart));
     if (!resp.ok) {
       throw StateError('Fluttron error: ${resp.error}');
     }
-    return resp.result;
+    return _normalizeJsonLike(resp.result);
   }
 
   Future<String> getPlatform() async {
@@ -72,4 +72,36 @@ class FluttronClient {
     }
     return result?.toString();
   }
+}
+
+Map<String, dynamic> _toStringKeyedMap(Map source) {
+  final Map<String, dynamic> result = <String, dynamic>{};
+  for (final MapEntry<dynamic, dynamic> entry in source.entries) {
+    final Object? key = entry.key;
+    if (key == null) {
+      continue;
+    }
+    result[key.toString()] = _normalizeJsonLike(entry.value);
+  }
+  return result;
+}
+
+Object? _normalizeJsonLike(Object? value) {
+  if (value == null || value is String || value is num || value is bool) {
+    return value;
+  }
+
+  if (value is List) {
+    return List<Object?>.generate(
+      value.length,
+      (int index) => _normalizeJsonLike(value[index]),
+      growable: false,
+    );
+  }
+
+  if (value is Map) {
+    return _toStringKeyedMap(value);
+  }
+
+  return value;
 }
