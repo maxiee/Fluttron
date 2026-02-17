@@ -116,11 +116,55 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   }
 
   Future<void> _openFile(FileEntry file) async {
-    // v0055 will implement actual file loading
-    // For now, just show a status message
+    // Skip if already open and editor is ready
+    if (_state.currentFilePath == file.path && _isEditorReady) {
+      return;
+    }
+
     setState(() {
-      _statusMessage = 'Opening ${file.name}... (file loading in v0055)';
+      _state = _state.copyWith(isLoading: true, clearErrorMessage: true);
+      _statusMessage = 'Opening ${file.name}...';
     });
+
+    try {
+      // Read file content from Host
+      final content = await _fileClient.readFile(file.path);
+
+      if (!mounted) {
+        return;
+      }
+
+      // Set content in editor if ready
+      if (_isEditorReady) {
+        await _controller.setContent(content);
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _state = _state.copyWith(
+          currentFilePath: file.path,
+          currentContent: content,
+          savedContent: content,
+          characterCount: content.length,
+          lineCount: _computeLineCount(content),
+          isLoading: false,
+        );
+        _statusMessage = 'Opened ${file.name}';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _state = _state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to open file: $error',
+        );
+      });
+    }
   }
 
   Future<void> _saveInMemory() async {
@@ -201,6 +245,15 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       _isEditorReady = true;
       _statusMessage = 'Editor ready';
     });
+
+    // If a file was opened before the editor was ready, set its content now
+    if (_state.currentContent != _welcomeMarkdown) {
+      try {
+        await _controller.setContent(_state.currentContent);
+      } catch (error) {
+        // Ignore setContent errors during ready callback
+      }
+    }
 
     if (_state.currentTheme != _defaultTheme) {
       await _selectTheme(_state.currentTheme);
