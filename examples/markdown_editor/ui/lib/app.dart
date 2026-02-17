@@ -26,14 +26,10 @@ Click **Open Folder** to select a directory containing markdown files.
 ## Features
 
 - File tree sidebar (`.md` files only)
+- Create new markdown files
 - Milkdown WYSIWYG editor
 - Runtime theme switching (persisted)
 - Save with `Cmd/Ctrl + S`
-
-## Next
-
-More features will be added in upcoming versions:
-- Create new files
 ''';
 
 class MarkdownEditorApp extends StatefulWidget {
@@ -134,6 +130,143 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         );
       });
     }
+  }
+
+  Future<void> _createNewFile() async {
+    final String? directoryPath = _state.currentDirectoryPath;
+    if (directoryPath == null) {
+      return;
+    }
+
+    // Show dialog to get file name
+    final String? fileName = await _showNewFileDialog();
+    if (fileName == null || fileName.isEmpty) {
+      return;
+    }
+
+    // Ensure .md extension
+    String finalFileName = fileName.trim();
+    if (!finalFileName.toLowerCase().endsWith('.md')) {
+      finalFileName = '$finalFileName.md';
+    }
+
+    final String newFilePath = '$directoryPath/$finalFileName';
+
+    setState(() {
+      _state = _state.copyWith(isLoading: true, clearErrorMessage: true);
+      _statusMessage = 'Creating $finalFileName...';
+    });
+
+    try {
+      // Check if file already exists
+      final alreadyExists = await _fileClient.exists(newFilePath);
+      if (alreadyExists) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _state = _state.copyWith(
+            isLoading: false,
+            errorMessage: 'File already exists: $finalFileName',
+          );
+        });
+        return;
+      }
+
+      // Create the file with default content
+      const String defaultContent = '# New Document\n\nStart writing here...\n';
+      await _fileClient.createFile(newFilePath, content: defaultContent);
+
+      // Refresh file list
+      final entries = await _fileClient.listDirectory(directoryPath);
+      final mdFiles = entries
+          .where((e) => e.isFile && e.name.toLowerCase().endsWith('.md'))
+          .toList();
+
+      if (!mounted) {
+        return;
+      }
+
+      // Find the newly created file entry
+      final newFileEntry = mdFiles.firstWhere(
+        (e) => e.path == newFilePath,
+        orElse: () => FileEntry(
+          name: finalFileName,
+          path: newFilePath,
+          isFile: true,
+          isDirectory: false,
+          size: defaultContent.length,
+          modified: DateTime.now().toIso8601String(),
+        ),
+      );
+
+      // Set content in editor if ready
+      if (_isEditorReady) {
+        await _controller.setContent(defaultContent);
+      }
+
+      setState(() {
+        _state = _state.copyWith(
+          fileTree: mdFiles,
+          currentFilePath: newFilePath,
+          currentContent: defaultContent,
+          savedContent: defaultContent,
+          characterCount: defaultContent.length,
+          lineCount: _computeLineCount(defaultContent),
+          isLoading: false,
+        );
+        _statusMessage = 'Created $finalFileName';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _state = _state.copyWith(
+          isLoading: false,
+          errorMessage: 'Failed to create file: $error',
+        );
+      });
+    }
+  }
+
+  Future<String?> _showNewFileDialog() async {
+    final TextEditingController controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('New File'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Enter file name',
+              labelText: 'File name',
+              suffixText: '.md',
+            ),
+            onSubmitted: (String value) {
+              Navigator.of(context).pop(value.trim());
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(null);
+              },
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text.trim());
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _openFile(FileEntry file) async {
@@ -395,6 +528,14 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
             onPressed: _state.isLoading ? null : _openFolder,
             icon: const Icon(Icons.folder_open_outlined, size: 18),
             label: const Text('Open Folder'),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            onPressed: _state.currentDirectoryPath != null && !_state.isLoading
+                ? () => unawaited(_createNewFile())
+                : null,
+            icon: const Icon(Icons.add_outlined, size: 18),
+            label: const Text('New File'),
           ),
           const SizedBox(width: 8),
           FilledButton.icon(

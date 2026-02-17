@@ -6,6 +6,7 @@
 ## Features
 
 - File tree sidebar (`.md` files only)
+- Create new markdown files
 - Milkdown WYSIWYG editor with GFM support
 - Runtime theme switching (persisted across restarts)
 - Save with `Cmd/Ctrl + S`
