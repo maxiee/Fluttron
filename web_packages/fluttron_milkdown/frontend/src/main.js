@@ -1,4 +1,5 @@
 import { Crepe } from '@milkdown/crepe';
+import { replaceAll } from '@milkdown/kit/utils';
 import '@milkdown/crepe/theme/common/style.css';
 import '@milkdown/crepe/theme/frame.css';
 import '@milkdown/crepe/theme/frame-dark.css';
@@ -323,7 +324,10 @@ window.fluttronMilkdownControl = (viewId, action, params) => {
         if (params == null || typeof params.content !== 'string') {
           return { ok: false, error: 'setContent requires params.content (string)' };
         }
-        crepe.setMarkdown(params.content);
+        if (!crepe.editor || typeof crepe.editor.action !== 'function') {
+          return { ok: false, error: 'setContent is unavailable: editor API is not ready.' };
+        }
+        crepe.editor.action(replaceAll(params.content));
         return { ok: true };
 
       case 'focus':
