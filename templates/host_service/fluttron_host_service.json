@@ -1,0 +1,29 @@
+{
+  "$schema": "https://fluttron.dev/schemas/host_service.json",
+  "version": "1",
+  "name": "template_service",
+  "namespace": "template_service",
+  "description": "A custom Fluttron host service.",
+  "methods": [
+    {
+      "name": "greet",
+      "description": "Returns a greeting message.",
+      "params": {
+        "name": { "type": "string", "required": false, "description": "Name to greet" }
+      },
+      "returns": {
+        "message": { "type": "string", "description": "Greeting message" }
+      }
+    },
+    {
+      "name": "echo",
+      "description": "Echoes back the input text.",
+      "params": {
+        "text": { "type": "string", "required": true, "description": "Text to echo" }
+      },
+      "returns": {
+        "text": { "type": "string", "description": "Echoed text" }
+      }
+    }
+  ]
+}

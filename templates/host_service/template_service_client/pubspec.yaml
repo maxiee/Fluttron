@@ -1,0 +1,20 @@
+name: template_service_client
+description: "UI-side client stub for template_service."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fluttron_ui:
+    path: ../../../packages/fluttron_ui
+  fluttron_shared:
+    path: ../../../packages/fluttron_shared
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
