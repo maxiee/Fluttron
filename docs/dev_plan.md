@@ -269,7 +269,7 @@
 
 | 版本 | 阶段 | 最小可执行任务 | 技术方案必读章节 | 依赖 | 最小验收 | 状态 |
 |---|---|---|---|---|---|---|
-| v0061 | Phase 1 / L1 | 在 `fluttron_ui` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`；`FileStat` 上收至 `fluttron_shared`；更新导出与测试 | §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8 | 无 | `dart analyze packages/fluttron_ui` 与 `dart analyze packages/fluttron_shared` 通过；3 个 client 可从 `fluttron_ui.dart` 导入 | 待开始 |
+| v0061 | Phase 1 / L1 | 在 `fluttron_ui` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`；`FileStat` 上收至 `fluttron_shared`；更新导出与测试 | §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8 | 无 | `dart analyze packages/fluttron_ui` 与 `dart analyze packages/fluttron_shared` 通过；3 个 client 可从 `fluttron_ui.dart` 导入 | ✅ 已完成 |
 | v0062 | Phase 1 / L1 | 新增 `SystemServiceClient`、`StorageServiceClient`；为 `FluttronClient.getPlatform/kvSet/kvGet` 增加 `@Deprecated` | §4.3.4、§4.3.5、§4.5、§4.7、§4.8 | v0061 | 5 个内建 client 全部可用；旧 API 保留但显示废弃提示 | 待开始 |
 | v0063 | Phase 1 / L1 | 迁移 `examples/markdown_editor` 到框架内建 client；删除 app 层重复 client 文件；补回归测试与文档 | §4.6、§4.8、§7(Phase 1)、§10(L1) | v0062 | `fluttron build -p examples/markdown_editor` 成功；`markdown_editor` 运行正常；app 层 client 重复实现已移除 | 待开始 |
 | v0064 | Phase 2 / L3 | 新建 `templates/host_service/`，落地 manifest、host/client 双包模板与 README | §5.2、§5.3.1-§5.3.10、§5.5 | v0063 | 模板目录完整；模板内 Dart 代码可通过分析；文件命名符合 snake/Pascal/camel 规则 | 待开始 |
@@ -286,7 +286,7 @@
 
 ### 并行与节奏约束
 
-- 可立即开始：`v0061`（无前置阻塞）。
+- 可立即开始：`v0062`（依赖 v0061 已完成）。
 - 串行链路：`v0061 → v0062 → v0063 → v0064 → v0065 → v0066 → v0067`。
 - 可并行：`v0070`、`v0071`、`v0072`（共同依赖 `v0069`）。
 - 收口顺序：`v0073` 依赖 `v0070/v0071/v0072` 全完成，`v0074` 最终收口。
@@ -308,16 +308,16 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0061`
+- 当前起始版本：`v0062`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0074 均未开始，先进入 L1 起始版本。
-- v0061 最小任务：
-  - 在 `packages/fluttron_ui/lib/src/services/` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`。
-  - 在 `packages/fluttron_shared/lib/src/file_stat.dart` 上收 `FileStat` 并更新 `fluttron_shared.dart` 导出。
-  - 按 §4.8 补齐 `fluttron_ui` 与 `fluttron_shared` 对应单元测试。
-- v0061 实现前必读：`docs/feature/host_service_evolution_design.md` §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8。
-- v0061 最小验收命令：
+- 当前状态：v0061 已完成，进入 v0062。
+- v0062 最小任务：
+  - 在 `packages/fluttron_ui/lib/src/services/` 新增 `SystemServiceClient`、`StorageServiceClient`。
+  - 为 `FluttronClient.getPlatform/kvSet/kvGet` 增加 `@Deprecated` 注解。
+  - 按 §4.8 补齐对应单元测试。
+- v0062 实现前必读：`docs/feature/host_service_evolution_design.md` §4.3.4、§4.3.5、§4.5、§4.7、§4.8。
+- v0062 最小验收命令：
   - `dart analyze packages/fluttron_ui`
-  - `dart analyze packages/fluttron_shared`
   - `(cd packages/fluttron_ui && flutter test)`
-  - `(cd packages/fluttron_shared && flutter test)`
+  - 验证 5 个内建 client 全部可从 `fluttron_ui.dart` 导入
+  - 验证旧 API 保留但显示废弃提示
