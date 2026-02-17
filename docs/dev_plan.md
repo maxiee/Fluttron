@@ -69,10 +69,9 @@
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | 主题持久化待实现 | v0058 待开始 |
-| 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
-| 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
-| 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
+| 1 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
+| 2 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
+| 3 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
 
 ---
 
@@ -253,7 +252,7 @@
 | v0055 | Phase 2 | 实现"点击文件加载到编辑器"，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 | ✅ 完成 |
 | v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 | ✅ 完成 |
 | v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | ✅ 完成 |
-| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | 待开始 |
+| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | ✅ 完成 |
 | v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 | 待开始 |
 | v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | 待开始 |
 
@@ -279,7 +278,7 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0058`
+- 当前起始版本：`v0059`
 - 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
 - v0051 已完成：
   - `FileService` 在 `fluttron_host` 落地（8 个方法：read/write/list/stat/create/delete/rename/exists）
@@ -314,6 +313,12 @@
   - `StatusBar` 独立 widget（`widgets/status_bar.dart`）
   - 显示文件名、保存状态、字符数、行数
   - 接入 `MilkdownChangeEvent` 实时更新统计数据
+- v0058 已完成：
+  - 主题持久化功能实现（`_themeStorageKey` 常量 + `_loadSavedTheme` 方法）
+  - 应用启动时从 `kv` 存储加载保存的主题
+  - 切换主题时保存偏好到 `kv` 存储
+  - 编辑器就绪后正确应用已加载的主题
+  - 欢迎文档更新，README 更新
 - 下一步最小动作：
-  1. 开始 `v0058`（主题切换与持久化）
+  1. 开始 `v0059`（New File + 剪贴板操作）
   2. 确保每版独立验收后再进入下一版。

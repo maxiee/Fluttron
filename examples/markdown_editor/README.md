@@ -3,6 +3,14 @@
 `markdown_editor` is the production-style Fluttron app example located at
 `examples/markdown_editor/`.
 
+## Features
+
+- File tree sidebar (`.md` files only)
+- Milkdown WYSIWYG editor with GFM support
+- Runtime theme switching (persisted across restarts)
+- Save with `Cmd/Ctrl + S`
+- Status bar with file name, save status, character/line count
+
 ## Structure
 
 - `host/`: Flutter desktop host container

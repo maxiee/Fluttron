@@ -13,6 +13,7 @@ import 'widgets/sidebar.dart';
 import 'widgets/status_bar.dart';
 
 const MilkdownTheme _defaultTheme = MilkdownTheme.nord;
+const String _themeStorageKey = 'markdown_editor.theme';
 const String _welcomeMarkdown = '''
 # Markdown Editor
 
@@ -26,14 +27,13 @@ Click **Open Folder** to select a directory containing markdown files.
 
 - File tree sidebar (`.md` files only)
 - Milkdown WYSIWYG editor
-- Runtime theme switching
+- Runtime theme switching (persisted)
 - Save with `Cmd/Ctrl + S`
 
 ## Next
 
 More features will be added in upcoming versions:
 - Create new files
-- Theme persistence
 ''';
 
 class MarkdownEditorApp extends StatefulWidget {
@@ -62,6 +62,27 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     super.initState();
     _fileClient = FileServiceClient(_client);
     _dialogClient = DialogServiceClient(_client);
+    _loadSavedTheme();
+  }
+
+  Future<void> _loadSavedTheme() async {
+    try {
+      final savedThemeValue = await _client.kvGet(_themeStorageKey);
+      if (savedThemeValue != null) {
+        final savedTheme = MilkdownTheme.tryParse(savedThemeValue);
+        if (savedTheme != null && mounted) {
+          setState(() {
+            _state = _state.copyWith(currentTheme: savedTheme);
+          });
+          // If editor is already ready, apply the theme now
+          if (_isEditorReady) {
+            await _controller.setTheme(savedTheme);
+          }
+        }
+      }
+    } catch (error) {
+      // Ignore theme loading errors - fall back to default
+    }
   }
 
   Future<void> _openFolder() async {
@@ -213,6 +234,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       _state = _state.copyWith(currentTheme: theme, clearErrorMessage: true);
       _statusMessage = 'Theme: ${_themeLabel(theme)}';
     });
+
+    // Persist theme preference to Host KV storage
+    try {
+      await _client.kvSet(_themeStorageKey, theme.value);
+    } catch (error) {
+      // Ignore persistence errors - theme still works in-memory
+    }
 
     if (!_isEditorReady) {
       return;
