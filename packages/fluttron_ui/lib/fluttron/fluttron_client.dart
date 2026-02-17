@@ -52,18 +52,34 @@ class FluttronClient {
     return _normalizeJsonLike(resp.result);
   }
 
+  /// Returns the Host platform identifier.
+  ///
+  /// Deprecated: Use [SystemServiceClient.getPlatform] instead.
+  @Deprecated('Use SystemServiceClient(client).getPlatform() instead.')
   Future<String> getPlatform() async {
     final result = await invoke('system.getPlatform', {});
-    if (result is Map && result['platform'] != null) {
-      return result['platform'].toString();
+    if (result is Map) {
+      final platform = result['platform'];
+      if (platform != null) {
+        return platform.toString();
+      }
+      return 'unknown';
     }
     return result?.toString() ?? 'unknown';
   }
 
+  /// Stores a key-value pair in Host storage.
+  ///
+  /// Deprecated: Use [StorageServiceClient.set] instead.
+  @Deprecated('Use StorageServiceClient(client).set() instead.')
   Future<void> kvSet(String key, String value) async {
     await invoke('storage.kvSet', {'key': key, 'value': value});
   }
 
+  /// Retrieves a value by key from Host storage.
+  ///
+  /// Deprecated: Use [StorageServiceClient.get] instead.
+  @Deprecated('Use StorageServiceClient(client).get() instead.')
   Future<String?> kvGet(String key) async {
     final result = await invoke('storage.kvGet', {'key': key});
     if (result is Map) {
