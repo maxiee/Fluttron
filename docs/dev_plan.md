@@ -43,7 +43,7 @@
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
 - 保持“单版本可独立验收”的交付节奏。
-- **当前起始版本：v0061（未开始）**。
+- **当前起始版本：v0062（v0061 已完成）**。
 
 ### 当前能力基线（已具备）
 
@@ -67,7 +67,7 @@
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | 内建服务 Client 仍分散在应用层 | `FileServiceClient/DialogServiceClient` 仍在 `examples/markdown_editor/ui/lib/services/`，尚未上收到 `fluttron_ui` |
+| 1 | 内建服务 Client 仍分散在应用层 | `FileServiceClient/DialogServiceClient/ClipboardServiceClient` 已上收到 `fluttron_ui`（v0061），但 `markdown_editor` 尚未迁移到框架内建 client（v0063） |
 | 2 | 缺少 `host_service` 一键脚手架 | CLI 仍不支持 `fluttron create --type host_service` 生成 Host/UI 双包 |
 | 3 | 缺少服务契约代码生成 | `FluttronService.handle` 仍需手写 `switch/case`，契约演进成本高 |
 | 4 | 服务文档与迁移路径未闭环 | built-in client API、迁移指南、custom service 教程尚未统一收口 |
@@ -291,6 +291,12 @@
 - 可并行：`v0070`、`v0071`、`v0072`（共同依赖 `v0069`）。
 - 收口顺序：`v0073` 依赖 `v0070/v0071/v0072` 全完成，`v0074` 最终收口。
 - 节奏要求：每个版本保持“单版本可独立验收”，未满足最小验收不得进入下一版本。
+
+#### v0061-v0074 完成摘要
+
+| 版本 | 主题 | 结果 |
+|---|---|---|---|
+| v0061 | 内建 Client 上收（第一批） | `FileServiceClient/DialogServiceClient/ClipboardServiceClient` + `FileStat` 已上收到框架层，测试通过 |
 
 ---
 
