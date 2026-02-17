@@ -14,6 +14,10 @@ class PackageDemoPage extends StatefulWidget {
 
 class _PackageDemoPageState extends State<PackageDemoPage> {
   final FluttronClient _client = FluttronClient();
+  late final SystemServiceClient _systemClient = SystemServiceClient(_client);
+  late final StorageServiceClient _storageClient = StorageServiceClient(
+    _client,
+  );
 
   String _platform = '-';
   String _kvValue = '-';
@@ -25,7 +29,7 @@ class _PackageDemoPageState extends State<PackageDemoPage> {
 
   Future<void> _onGetPlatform() async {
     try {
-      final platform = await _client.getPlatform();
+      final platform = await _systemClient.getPlatform();
       setState(() => _platform = platform);
       _setLog('getPlatform => $platform');
     } catch (error) {
@@ -35,7 +39,7 @@ class _PackageDemoPageState extends State<PackageDemoPage> {
 
   Future<void> _onKvSet() async {
     try {
-      await _client.kvSet('hello', 'world');
+      await _storageClient.set('hello', 'world');
       _setLog('kvSet hello=world => ok');
     } catch (error) {
       _setLog('kvSet ERROR: $error');
@@ -44,7 +48,7 @@ class _PackageDemoPageState extends State<PackageDemoPage> {
 
   Future<void> _onKvGet() async {
     try {
-      final value = await _client.kvGet('hello');
+      final value = await _storageClient.get('hello');
       setState(() => _kvValue = value ?? '(null)');
       _setLog('kvGet hello => ${value ?? "(null)"}');
     } catch (error) {

@@ -26,9 +26,9 @@ The Renderer layer is a Flutter Web application running inside the Host WebView.
 │  └───────────────────┬──────────────────────┘  │
 │                      │                         │
 │  ┌───────────────────▼──────────────────────┐  │
-│  │ FluttronClient                            │  │
+│  │ FluttronClient + Service Clients          │  │
 │  │ • invoke(method, params)                  │  │
-│  │ • getPlatform() / kvSet() / kvGet()       │  │
+│  │ • File/Dialog/Clipboard/System/Storage    │  │
 │  └───────────────────┬──────────────────────┘  │
 │                      │                         │
 │  ┌───────────────────▼──────────────────────┐  │
@@ -59,14 +59,20 @@ void main() {
 Call Host services from the UI:
 
 ```dart
-// Generic invoke
-final result = await FluttronClient.invoke('greeting.greet', {});
+final client = FluttronClient();
 
-// Convenience methods
-final platform = await FluttronClient.getPlatform();
-await FluttronClient.kvSet('key', 'value');
-final value = await FluttronClient.kvGet('key');
+// Generic invoke
+final result = await client.invoke('greeting.greet', {});
+
+// Typed built-in clients
+final system = SystemServiceClient(client);
+final storage = StorageServiceClient(client);
+final platform = await system.getPlatform();
+await storage.set('key', 'value');
+final value = await storage.get('key');
 ```
+
+`FluttronClient.getPlatform()/kvSet()/kvGet()` are deprecated and retained only for backward compatibility.
 
 ### FluttronWebViewRegistry
 

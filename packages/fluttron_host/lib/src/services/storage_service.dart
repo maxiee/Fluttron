@@ -12,7 +12,7 @@ class StorageService extends FluttronService {
     switch (method) {
       case 'kvSet':
         final key = requireString(params, 'key');
-        final value = requireString(params, 'value');
+        final value = requireString(params, 'value', allowEmpty: true);
         _kv[key] = value;
         return {'ok': true};
       case 'kvGet':
@@ -27,9 +27,15 @@ class StorageService extends FluttronService {
     }
   }
 
-  String requireString(Map<String, dynamic> params, String key) {
+  String requireString(
+    Map<String, dynamic> params,
+    String key, {
+    bool allowEmpty = false,
+  }) {
     final v = params[key];
-    if (v is String && v.isNotEmpty) return v;
+    if (v is String && (allowEmpty || v.isNotEmpty)) {
+      return v;
+    }
     throw FluttronError('BAD_PARAMS', 'Missing or invalid "$key"');
   }
 }

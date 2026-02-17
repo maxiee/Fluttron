@@ -192,7 +192,8 @@ void main() {
 3. Call from UI using `FluttronClient`:
 
 ```dart
-final result = await FluttronClient.invoke('greeting.greet', {});
+final client = FluttronClient();
+final result = await client.invoke('greeting.greet', {});
 print(result['message']); // "Hello from custom service!"
 ```
 

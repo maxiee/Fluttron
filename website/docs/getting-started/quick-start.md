@@ -94,7 +94,11 @@ The default demo includes:
 
 The template includes a commented-out custom service example:
 - `host/lib/greeting_service.dart` - Example service skeleton
-- Uncomment to enable and call from UI: `FluttronClient.invoke('greeting.greet', {})`
+- Uncomment to enable and call from UI:
+  ```dart
+  final client = FluttronClient();
+  final result = await client.invoke('greeting.greet', {});
+  ```
 
 ## Using Web Packages in Your App
 
