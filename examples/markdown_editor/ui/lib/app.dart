@@ -10,6 +10,7 @@ import 'models/editor_state.dart';
 import 'services/dialog_service_client.dart';
 import 'services/file_service_client.dart';
 import 'widgets/sidebar.dart';
+import 'widgets/status_bar.dart';
 
 const MilkdownTheme _defaultTheme = MilkdownTheme.nord;
 const String _welcomeMarkdown = '''
@@ -333,7 +334,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
                   ],
                 ),
               ),
-              _buildStatusBar(),
+              StatusBar(
+                fileName: _displayFileName,
+                isDirty: _state.isDirty,
+                characterCount: _state.characterCount,
+                lineCount: _state.lineCount,
+                statusMessage: _statusMessage,
+              ),
             ],
           ),
         ),
@@ -429,45 +436,6 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
             constraints: const BoxConstraints(),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildStatusBar() {
-    return Container(
-      height: 36,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF111827),
-        border: Border(top: BorderSide(color: Colors.grey.shade800)),
-      ),
-      child: Row(
-        children: [
-          _StatusSegment(text: _displayFileName),
-          _StatusSegment(text: _state.isDirty ? 'Unsaved' : 'Saved'),
-          _StatusSegment(text: '${_state.characterCount} chars'),
-          _StatusSegment(text: '${_state.lineCount} lines'),
-          const Spacer(),
-          _StatusSegment(text: _statusMessage),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusSegment extends StatelessWidget {
-  const _StatusSegment({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: Text(
-        text,
-        style: const TextStyle(color: Color(0xFFE5E7EB), fontSize: 12),
       ),
     );
   }

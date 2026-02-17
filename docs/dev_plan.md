@@ -63,12 +63,13 @@
 | markdown_editor app scaffold | ✅ | 官方示例级 app 已创建并集成 MilkdownEditor |
 | Sidebar File Tree | ✅ | 文件树侧栏（仅 `.md` 文件）、Open Folder 功能已落地 |
 | File Loading | ✅ | 点击文件加载到编辑器、当前文件高亮 |
+| StatusBar | ✅ | 文件名、保存状态、字符数、行数实时显示 |
 
 ### 当前剩余差距
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | StatusBar 统计数据待完善 | v0057 待开始 |
+| 1 | 主题持久化待实现 | v0058 待开始 |
 | 2 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
 | 3 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
 | 4 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
@@ -199,6 +200,7 @@
 | v0054 | Open Folder + Sidebar | 文件树侧栏 + 原生目录选择 + macOS entitlements 修复 |
 | v0055 | File Loading | 点击文件加载到编辑器 + currentFilePath/savedContent 维护 + 高亮当前文件 |
 | v0056 | Save + Dirty State | 保存按钮 + Cmd/S + 脏状态检测 + 侧栏未保存指示器 |
+| v0057 | StatusBar | 独立 widget + 文件名/保存状态/字符数/行数 + 接入变更事件 |
 
 注：详细历史记录以 Git 提交与专题文档为准，不在本文件重复维护逐条流水账。
 
@@ -250,7 +252,7 @@
 | v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 | ✅ 完成 |
 | v0055 | Phase 2 | 实现"点击文件加载到编辑器"，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 | ✅ 完成 |
 | v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 | ✅ 完成 |
-| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | 待开始 |
+| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | ✅ 完成 |
 | v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | 待开始 |
 | v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 | 待开始 |
 | v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | 待开始 |
@@ -277,7 +279,7 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0057`
+- 当前起始版本：`v0058`
 - 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
 - v0051 已完成：
   - `FileService` 在 `fluttron_host` 落地（8 个方法：read/write/list/stat/create/delete/rename/exists）
@@ -308,6 +310,10 @@
   - 侧栏文件项添加未保存指示器（圆点）
   - Sidebar 组件添加 `isDirty` 参数
   - 脏状态检测与 UI 同步（状态栏 + 侧栏）
+- v0057 已完成：
+  - `StatusBar` 独立 widget（`widgets/status_bar.dart`）
+  - 显示文件名、保存状态、字符数、行数
+  - 接入 `MilkdownChangeEvent` 实时更新统计数据
 - 下一步最小动作：
-  1. 开始 `v0057`（实现底部 StatusBar）
+  1. 开始 `v0058`（主题切换与持久化）
   2. 确保每版独立验收后再进入下一版。
