@@ -193,13 +193,7 @@
 | v0020-v0031 | 前端集成能力沉淀 | `HtmlView/EventBridge` 核心能力抽象，模板与 playground 对齐 |
 | v0032-v0041 | Web Package MVP | 机制完整落地并完成验收 |
 | v0042-v0050 | `fluttron_milkdown` | 首个复杂官方包完成交付并通过机制验证清单 |
-| v0051 | FileService | Host 文件服务落地（8 方法 + 30 测试通过） |
-| v0052 | DialogService + ClipboardService | Host 对话框/剪贴板服务落地（7 测试通过） |
-| v0053 | markdown_editor scaffold | App 骨架创建 + MilkdownEditor 集成 + build/run 打通 |
-| v0054 | Open Folder + Sidebar | 文件树侧栏 + 原生目录选择 + macOS entitlements 修复 |
-| v0055 | File Loading | 点击文件加载到编辑器 + currentFilePath/savedContent 维护 + 高亮当前文件 |
-| v0056 | Save + Dirty State | 保存按钮 + Cmd/S + 脏状态检测 + 侧栏未保存指示器 |
-| v0057 | StatusBar | 独立 widget + 文件名/保存状态/字符数/行数 + 接入变更事件 |
+| v0051-v0060 | `markdown_editor` | 生产级 Markdown 编辑器完成交付，反向推动框架服务演进 |
 
 注：详细历史记录以 Git 提交与专题文档为准，不在本文件重复维护逐条流水账。
 
@@ -254,7 +248,7 @@
 | v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | ✅ 完成 |
 | v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | ✅ 完成 |
 | v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 | ✅ 完成 |
-| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | 待开始 |
+| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | ✅ 完成 |
 
 ### 并行与节奏约束
 
@@ -325,6 +319,11 @@
   - 自动添加 `.md` 扩展名
   - 文件存在性检查
   - 欢迎文档与 README 更新
-- 下一步最小动作：
-  1. 开始 `v0060`（错误处理、加载态、文档收口）
-  2. 确保每版独立验收后再进入下一版。
+- v0060 已完成：
+  - 错误处理验证：所有文件操作有 try-catch 和错误消息显示
+  - 加载状态验证：`isLoading` 状态管理完善，Toolbar 有加载指示器
+  - Sidebar 空状态处理：空目录/未打开文件夹有友好提示
+  - README 大幅增强：详细功能列表、使用说明、项目结构、架构说明
+  - 截图说明文档：`docs/screenshot.md` 指导如何添加截图
+- **markdown_editor 需求（v0051-v0060）已完成** ✅
+- 下一步：进入 Backlog 需求评估或新需求规划
