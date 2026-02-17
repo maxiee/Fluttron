@@ -302,6 +302,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
                       directoryPath: _state.currentDirectoryPath,
                       files: _state.fileTree,
                       currentFilePath: _state.currentFilePath,
+                      isDirty: _state.isDirty,
                       onFileSelected: _openFile,
                     ),
                     Expanded(

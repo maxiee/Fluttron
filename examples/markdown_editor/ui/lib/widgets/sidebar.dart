@@ -11,6 +11,7 @@ class Sidebar extends StatelessWidget {
     required this.directoryPath,
     required this.files,
     required this.currentFilePath,
+    required this.isDirty,
     required this.onFileSelected,
     super.key,
   });
@@ -24,6 +25,9 @@ class Sidebar extends StatelessWidget {
 
   /// The path to the currently open file, for highlighting.
   final String? currentFilePath;
+
+  /// Whether the current file has unsaved changes.
+  final bool isDirty;
 
   /// Callback when a file is selected.
   final void Function(FileEntry file) onFileSelected;
@@ -105,9 +109,11 @@ class Sidebar extends StatelessWidget {
       itemBuilder: (context, index) {
         final file = files[index];
         final isSelected = file.path == currentFilePath;
+        final showDirtyIndicator = isSelected && isDirty;
         return _FileTreeItem(
           file: file,
           isSelected: isSelected,
+          showDirtyIndicator: showDirtyIndicator,
           onTap: () => onFileSelected(file),
         );
       },
@@ -137,11 +143,13 @@ class _FileTreeItem extends StatelessWidget {
   const _FileTreeItem({
     required this.file,
     required this.isSelected,
+    required this.showDirtyIndicator,
     required this.onTap,
   });
 
   final FileEntry file;
   final bool isSelected;
+  final bool showDirtyIndicator;
   final VoidCallback onTap;
 
   @override
@@ -173,6 +181,18 @@ class _FileTreeItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if (showDirtyIndicator)
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(left: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected
+                        ? Colors.blue.shade700
+                        : Colors.grey.shade600,
+                  ),
+                ),
             ],
           ),
         ),
