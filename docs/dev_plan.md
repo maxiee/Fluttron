@@ -43,7 +43,7 @@
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
 - 保持“单版本可独立验收”的交付节奏。
-- **当前起始版本：v0063（v0061、v0062 已完成）**。
+- **当前起始版本：v0064（v0061-v0063 已完成，Phase 1 / L1 收口）**。
 
 ### 当前能力基线（已具备）
 
@@ -67,7 +67,7 @@
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | 内建服务 Client 仍分散在应用层 | `FileServiceClient/DialogServiceClient/ClipboardServiceClient` 已上收到 `fluttron_ui`（v0061），但 `markdown_editor` 尚未迁移到框架内建 client（v0063） |
+| 1 | ~~内建服务 Client 仍分散在应用层~~ | ✅ 已解决（v0061-v0063）：所有内建 Client 已上收到框架层，`markdown_editor` 已完成迁移 |
 | 2 | 缺少 `host_service` 一键脚手架 | CLI 仍不支持 `fluttron create --type host_service` 生成 Host/UI 双包 |
 | 3 | 缺少服务契约代码生成 | `FluttronService.handle` 仍需手写 `switch/case`，契约演进成本高 |
 | 4 | 服务文档与迁移路径未闭环 | built-in client API、迁移指南、custom service 教程尚未统一收口 |
@@ -271,7 +271,7 @@
 |---|---|---|---|---|---|---|
 | v0061 | Phase 1 / L1 | 在 `fluttron_ui` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`；`FileStat` 上收至 `fluttron_shared`；更新导出与测试 | §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8 | 无 | `dart analyze packages/fluttron_ui` 与 `dart analyze packages/fluttron_shared` 通过；3 个 client 可从 `fluttron_ui.dart` 导入 | ✅ 已完成 |
 | v0062 | Phase 1 / L1 | 新增 `SystemServiceClient`、`StorageServiceClient`；为 `FluttronClient.getPlatform/kvSet/kvGet` 增加 `@Deprecated` | §4.3.4、§4.3.5、§4.5、§4.7、§4.8 | v0061 | 5 个内建 client 全部可用；旧 API 保留但显示废弃提示 | ✅ 已完成 |
-| v0063 | Phase 1 / L1 | 迁移 `examples/markdown_editor` 到框架内建 client；删除 app 层重复 client 文件；补回归测试与文档 | §4.6、§4.8、§7(Phase 1)、§10(L1) | v0062 | `fluttron build -p examples/markdown_editor` 成功；`markdown_editor` 运行正常；app 层 client 重复实现已移除 | 待开始 |
+| v0063 | Phase 1 / L1 | 迁移 `examples/markdown_editor` 到框架内建 client；删除 app 层重复 client 文件；补回归测试与文档 | §4.6、§4.8、§7(Phase 1)、§10(L1) | v0062 | `fluttron build -p examples/markdown_editor` 成功；`markdown_editor` 运行正常；app 层 client 重复实现已移除 | ✅ 已完成 |
 | v0064 | Phase 2 / L3 | 新建 `templates/host_service/`，落地 manifest、host/client 双包模板与 README | §5.2、§5.3.1-§5.3.10、§5.5 | v0063 | 模板目录完整；模板内 Dart 代码可通过分析；文件命名符合 snake/Pascal/camel 规则 | 待开始 |
 | v0065 | Phase 2 / L3 | 实现 `HostServiceCopier`（变量替换、路径改名、双包处理、manifest 特殊处理） | §5.4.2、§5.5、§5.7 | v0064 | `host_service_copier_test` 通过；替换/重命名行为可覆盖主路径 | 待开始 |
 | v0066 | Phase 2 / L3 | 将 `CreateCommand` 接入 `--type host_service`；补 `ProjectType`、成功提示、pubspec path 重写 | §5.4.1、§5.6、§5.7 | v0065 | `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构 | 待开始 |
@@ -298,6 +298,7 @@
 |---|---|---| 
 | v0061 | 内建 Client 上收（第一批） | `FileServiceClient/DialogServiceClient/ClipboardServiceClient` + `FileStat` 已上收到框架层，测试通过 |
 | v0062 | 内建 Client 上收（第二批） | `SystemServiceClient/StorageServiceClient` 已上收；`FluttronClient.getPlatform/kvSet/kvGet` 已标记 `@Deprecated` |
+| v0063 | markdown_editor 迁移 | 已迁移到框架内建 client；删除 app 层重复实现（`FileServiceClient`、`DialogServiceClient`、`FileStat`）；`kvGet/kvSet` 替换为 `StorageServiceClient`；构建与测试通过 |
 
 ---
 
@@ -315,16 +316,17 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0063`
+- 当前起始版本：`v0064`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061、v0062 已完成，进入 v0063。
-- v0063 最小任务：
-  - 迁移 `examples/markdown_editor` 到框架内建 client。
-  - 删除 app 层重复 client 文件（`FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient` 及其 `FileStat` 定义）。
-  - 替换 `FluttronClient().kvSet()` / `kvGet()` 为 `StorageServiceClient(_client).set()` / `.get()`。
-  - 补回归测试与文档。
-- v0063 实现前必读：`docs/feature/host_service_evolution_design.md` §4.6、§4.8、§7(Phase 1)、§10(L1)。
-- v0063 最小验收命令：
-  - `fluttron build -p examples/markdown_editor` 成功
-  - `markdown_editor` 运行正常
-  - app 层 client 重复实现已移除
+- 当前状态：v0061、v0062、v0063 已完成，进入 v0064（Phase 2 / L3）。
+- v0064 最小任务：
+  - 新建 `templates/host_service/` 目录。
+  - 创建 manifest 文件 `fluttron_host_service.json`。
+  - 创建 Host 侧包模板（`template_service_host/`）。
+  - 创建 Client 侧包模板（`template_service_client/`）。
+  - 创建 README 模板。
+- v0064 实现前必读：`docs/feature/host_service_evolution_design.md` §5.2、§5.3.1-§5.3.10、§5.5。
+- v0064 最小验收：
+  - 模板目录完整。
+  - 模板内 Dart 代码可通过分析。
+  - 文件命名符合 snake/Pascal/camel 规则。

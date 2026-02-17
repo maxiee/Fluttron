@@ -8,8 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
 import 'models/editor_state.dart';
-import 'services/dialog_service_client.dart';
-import 'services/file_service_client.dart';
 import 'widgets/sidebar.dart';
 import 'widgets/status_bar.dart';
 
@@ -46,6 +44,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   final FluttronClient _client = FluttronClient();
   late final FileServiceClient _fileClient;
   late final DialogServiceClient _dialogClient;
+  late final StorageServiceClient _storageClient;
 
   late EditorState _state = EditorState.initial(
     initialContent: _welcomeMarkdown,
@@ -60,12 +59,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     super.initState();
     _fileClient = FileServiceClient(_client);
     _dialogClient = DialogServiceClient(_client);
+    _storageClient = StorageServiceClient(_client);
     _loadSavedTheme();
   }
 
   Future<void> _loadSavedTheme() async {
     try {
-      final savedThemeValue = await _client.kvGet(_themeStorageKey);
+      final savedThemeValue = await _storageClient.get(_themeStorageKey);
       if (savedThemeValue != null) {
         final savedTheme = MilkdownTheme.tryParse(savedThemeValue);
         if (savedTheme != null && mounted) {
@@ -524,7 +524,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
 
     // Persist theme preference to Host KV storage
     try {
-      await _client.kvSet(_themeStorageKey, theme.value);
+      await _storageClient.set(_themeStorageKey, theme.value);
     } catch (error) {
       // Ignore persistence errors - theme still works in-memory
     }
