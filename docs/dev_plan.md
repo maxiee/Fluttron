@@ -33,16 +33,17 @@
 
 ---
 
-## 当前阶段目标（更新于 2026-02-16）
+## 当前阶段目标（更新于 2026-02-17）
 
 ### 北极星目标
 
-`fluttron_milkdown`（v0042-v0050）已完成并收口，`v0051+` 已正式进入 `markdown_editor` 重大需求执行：
+`markdown_editor`（v0051-v0060）已完成并收口，当前切换到下一重大需求 `host_service_evolution`（v0061-v0074）：
 
-- 以 `docs/feature/markdown_editor_design.md` 为设计基准推进 v0051-v0060。
-- 以已验证能力为基线推进迭代，避免重复建设与双轨方案。
-- 保持"单版本可独立验收"的交付节奏。
-- **v0051 已完成**：`FileService` 已落地并测试通过。
+- 以 `docs/feature/host_service_evolution_design.md` 为设计基准推进 L1 → L3 → L2。
+- 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
+- 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
+- 保持“单版本可独立验收”的交付节奏。
+- **当前起始版本：v0061（未开始）**。
 
 ### 当前能力基线（已具备）
 
@@ -57,21 +58,19 @@
 | 复杂官方包样板 | ✅ | `fluttron_milkdown` 已完成（事件、控制器、主题、文档、测试） |
 | playground 包化迁移 | ✅ | 已移除历史手写集成路径，统一走 web package 机制 |
 | 机制验证闭环 | ✅ | `fluttron_milkdown` V1-V12 验证清单全部通过 |
-| FileService | ✅ | 文件读写、目录列表、状态查询等 8 个方法已落地 |
-| DialogService | ✅ | 原生文件/目录选择对话框 4 个方法已落地 |
-| ClipboardService | ✅ | 系统剪贴板读写 3 个方法已落地 |
-| markdown_editor app scaffold | ✅ | 官方示例级 app 已创建并集成 MilkdownEditor |
-| Sidebar File Tree | ✅ | 文件树侧栏（仅 `.md` 文件）、Open Folder 功能已落地 |
-| File Loading | ✅ | 点击文件加载到编辑器、当前文件高亮 |
-| StatusBar | ✅ | 文件名、保存状态、字符数、行数实时显示 |
+| 内建 Host Services | ✅ | `file/dialog/clipboard/system/storage` 已落地并稳定可用 |
+| markdown_editor 示例应用 | ✅ | `examples/markdown_editor` 已完成并通过 v0051-v0060 验收 |
+| 文件编辑主流程 | ✅ | Open Folder、File Tree、Load、Save/Dirty、New File 全闭环 |
+| 可用性能力 | ✅ | StatusBar、主题持久化、加载态与错误反馈已落地 |
 
 ### 当前剩余差距
 
 | # | 差距 | 说明 |
 |---|---|---|
-| 1 | 控制通道能力未上游通用抽象 | `fluttron_ui` 仍缺统一 controller primitive |
-| 2 | 多实例与性能专项未系统化 | 需补强多实例压力验证与包体积优化策略 |
-| 3 | 依赖包前端资产仍需手动预构建 | CLI 尚未自动构建 web package 前端资产 |
+| 1 | 内建服务 Client 仍分散在应用层 | `FileServiceClient/DialogServiceClient` 仍在 `examples/markdown_editor/ui/lib/services/`，尚未上收到 `fluttron_ui` |
+| 2 | 缺少 `host_service` 一键脚手架 | CLI 仍不支持 `fluttron create --type host_service` 生成 Host/UI 双包 |
+| 3 | 缺少服务契约代码生成 | `FluttronService.handle` 仍需手写 `switch/case`，契约演进成本高 |
+| 4 | 服务文档与迁移路径未闭环 | built-in client API、迁移指南、custom service 教程尚未统一收口 |
 
 ---
 
@@ -185,6 +184,31 @@
 | v0049 | 测试与验证清单 | 测试补齐，V1-V12 全通过，缺口入 Backlog |
 | v0050 | 文档与迁移收口 | 文档完善 + playground 最终清理完成 |
 
+### 已完成重大需求：`markdown_editor`（v0051-v0060）
+
+- 状态：✅ 已完成并正式收口（2026-02-17）
+- 主设计文档：`docs/feature/markdown_editor_design.md`
+- 关键交付：
+  - 在 `examples/markdown_editor` 交付可用于真实文件编辑的桌面 Markdown 应用。
+  - 打通 `file.*`、`dialog.*`、`clipboard.*` Host Service 与 UI 调用链路。
+  - 完成 Open Folder、File Tree、File Loading、Save/Dirty、StatusBar、主题持久化、New File 全流程闭环。
+  - 完成异常反馈、加载态、README 与截图说明文档收口。
+
+#### v0051-v0060 完成摘要
+
+| 版本 | 主题 | 结果 |
+|---|---|---|
+| v0051 | `FileService` 落地 | 8 个方法 + 模型 + 单测完成 |
+| v0052 | `DialogService`/`ClipboardService` | 原生对话框与剪贴板能力落地 |
+| v0053 | 示例应用骨架 | `examples/markdown_editor` 创建并接入 Milkdown |
+| v0054 | Open Folder + 侧栏树 | 目录选择与 `.md` 文件树可用 |
+| v0055 | 文件加载流程 | 点击文件加载、当前文件高亮与状态维护 |
+| v0056 | 保存与脏状态 | Save 按钮 + `Cmd+S` + UI 状态同步 |
+| v0057 | 状态栏能力 | 文件名/保存状态/字符数/行数实时更新 |
+| v0058 | 主题切换与持久化 | 主题偏好可保存并在重启后恢复 |
+| v0059 | New File 流程 | 新建 `.md`、刷新侧栏、自动打开新文件 |
+| v0060 | 收口与文档 | 错误处理、加载态、README、截图文档完成 |
+
 ### 历史迭代摘要（结构化）
 
 | 区间 | 主题 | 结果 |
@@ -193,68 +217,80 @@
 | v0020-v0031 | 前端集成能力沉淀 | `HtmlView/EventBridge` 核心能力抽象，模板与 playground 对齐 |
 | v0032-v0041 | Web Package MVP | 机制完整落地并完成验收 |
 | v0042-v0050 | `fluttron_milkdown` | 首个复杂官方包完成交付并通过机制验证清单 |
-| v0051-v0060 | `markdown_editor` | 生产级 Markdown 编辑器完成交付，反向推动框架服务演进 |
+| v0051-v0060 | `markdown_editor` | 生产级 Markdown 编辑器完成交付并形成示例级实践 |
 
 注：详细历史记录以 Git 提交与专题文档为准，不在本文件重复维护逐条流水账。
 
 ---
 
-## 当前重大需求：`markdown_editor`（v0051-v0060）
+## 当前重大需求：`host_service_evolution`（v0061-v0074）
 
 ### 需求来源与引用关系
 
-- 主设计文档：`docs/feature/markdown_editor_design.md`
-- 当前文档职责：执行级任务拆解、版本顺序、验收命令与风险前置提醒。
-- 设计文档职责：架构细节、接口签名、数据模型、测试矩阵、风险清单。
+- 主技术方案文档：`docs/feature/host_service_evolution_design.md`
+- 当前文档职责：执行级版本拆解、依赖顺序、最小验收与阶段门控。
+- 技术方案文档职责：接口定义、目录与文件规范、代码生成策略、风险与兼容性细节。
 
 ### LLM 实施提示（必须遵守）
 
-- 任一版本开始实现前，先阅读：`docs/feature/markdown_editor_design.md`。
-- 实现 Host Service 时，重点对照 §4（Framework Evolution）与 §9（Framework Tasks）。
-- 实现 UI 与交互时，重点对照 §5（UI Design）、§6（State Management）、§7（UI ↔ Host Communication）。
-- 安排版本与依赖关系时，重点对照 §10（Iterative Execution Plan）与 §11（Dependency Graph）。
-- 编写/补齐测试时，重点对照 §13（Testing Strategy）；验收目标对照 §2 与 §14。
-- 若本文件与设计文档存在冲突：接口与行为细节以设计文档为准，本文件只维护执行顺序与里程碑。
-
-注意：**请在 examples/markdown_editor 中进行 Markdown App 的开发**，而不是在 playground 中开发。
+- 任一版本开始实现前，先阅读：`docs/feature/host_service_evolution_design.md` 的 §7（Iterative Execution Plan）定位当前版本。
+- 实现 L1（v0061-v0063）时，重点对照 §4（Phase L1）与 §10（Documentation Plan 中 L1 交付项）。
+- 实现 L3（v0064-v0067）时，重点对照 §5（Phase L3）与 §10（Custom Service 文档交付项）。
+- 实现 L2（v0068-v0074）时，重点对照 §6（Phase L2）与 §8（Risk Analysis）。
+- 涉及兼容性与废弃策略时，必须对照 §9（Backward Compatibility）。
+- 若本文件与技术方案文档冲突：接口签名、模型结构、生成规则以技术方案文档为准，本文件只维护执行顺序与里程碑。
 
 ### 目标与边界（本轮）
 
 - 目标：
-  1. 交付可用于真实文件编辑的桌面 Markdown 应用（`examples/markdown_editor/`）。
-  2. 反向推动框架演进，补齐 `file.*`、`dialog.*`、`clipboard.*` 内建服务。
-  3. 形成“官方示例级”最佳实践（脚手架、构建、状态管理、文档与验收）。
+  1. 在框架层提供 5 个内建服务 typed client，并完成 `markdown_editor` 迁移（L1）。
+  2. 在 CLI 提供 `fluttron create --type host_service`，交付 Host/UI 双包脚手架（L3）。
+  3. 在 CLI 提供 `fluttron generate services`，实现契约驱动的 Host/UI/Model 代码生成（L2）。
+  4. 保持向后兼容，`FluttronClient.invoke()` 与现有服务注册链路不破坏。
 - 非目标：
-  1. 协同编辑（yjs）、多标签页、导出 PDF/HTML、移动端适配。
-  2. 自定义 Milkdown 插件生态扩展与复杂媒体能力。
+  1. 运行时自动服务发现与自动注册。
+  2. 跨进程/跨网络传输协议改造（仍基于 WebView JSON Bridge）。
+  3. 移动端一致性专项验证与性能专项优化（桌面优先）。
 
 ### 执行顺序（冻结）
 
-1. Phase 1（v0051-v0053）：先补框架服务，再建立可运行 app 骨架。
-2. Phase 2（v0054-v0056）：围绕“打开目录 → 打开文件 → 保存与脏状态”形成主流程闭环。
-3. Phase 3（v0057-v0058）：补状态栏与主题持久化，完善核心可用性。
-4. Phase 4（v0059-v0060）：补新建文件、剪贴板与错误处理/文档收口。
+1. Phase 1（v0061-v0063）：先完成内建服务 client 上收与示例迁移（L1）。
+2. Phase 2（v0064-v0067）：再交付 `host_service` 模板与 `create --type host_service`（L3）。
+3. Phase 3（v0068-v0074）：最后交付服务契约代码生成 CLI（L2）。
+
+### 版本前决策钩子（来自技术方案 §11）
+
+- v0061 开始前：确认 Q1（built-in clients 是直接导出在 `fluttron_ui.dart` 还是子入口）。
+- v0064 开始前：确认 Q4（`fluttron_host_service.json` 在 L3 是否强制必需）。
+- v0066 开始前：确认 Q2（`ServiceRegistry.register` 是否对 namespace 冲突直接抛错）。
+- v0068 开始前：确认 Q3（L2 的 generated `Base` 类落在 host 包还是 shared 包）。
 
 ### 版本任务单（当前进行中与未完成）
 
-| 版本 | 阶段 | 最小可执行任务 | 依赖 | 最小验收 | 状态 |
-|---|---|---|---|---|---|
-| v0051 | Phase 1 | 在 `fluttron_host` 新增 `FileService`（`read/write/list/stat/create/delete/rename/exists`），完成注册与单测 | 无 | playground 通过 `FluttronClient.invoke('file.readFile', ...)` 读文件成功 | ✅ 完成 |
-| v0052 | Phase 1 | 在 `fluttron_host` 新增 `DialogService` + `ClipboardService`，完成注册、参数校验与 macOS 手测 | v0051 可并行 | 可拉起原生 open/save 对话框，剪贴板读写可用 | ✅ 完成 |
-| v0053 | Phase 1 | 用 `fluttron create` 建立 `examples/markdown_editor`，接入 `fluttron_milkdown`，打通 build/run | v0051,v0052 | `fluttron build -p examples/markdown_editor` 成功，macOS 可运行并显示编辑器 | ✅ 完成 |
-| v0054 | Phase 2 | 实现 Open Folder + Sidebar File Tree（仅 `.md`） | v0053,v0052 | 可选择目录并在侧栏看到 `.md` 文件 | ✅ 完成 |
-| v0055 | Phase 2 | 实现"点击文件加载到编辑器"，维护 `currentFilePath/savedContent`，高亮当前文件 | v0054,v0051 | 点击侧栏文件可在编辑区正确切换内容 | ✅ 完成 |
-| v0056 | Phase 2 | 实现保存与脏状态（按钮 + Cmd+S + 状态同步） | v0055,v0051 | 编辑后显示 Unsaved，保存后显示 Saved，磁盘内容一致 | ✅ 完成 |
-| v0057 | Phase 3 | 实现底部 StatusBar（文件名/保存状态/字符数/行数）并接入变更事件 | v0056 | 状态栏实时更新统计数据 | ✅ 完成 |
-| v0058 | Phase 3 | 实现主题切换与持久化（`MilkdownController.setTheme` + `kv`） | v0057,v0052 | 重启应用后主题偏好可恢复 | ✅ 完成 |
-| v0059 | Phase 4 | 实现 New File 流程并补齐显式剪贴板操作（如需要） | v0058,v0051,v0052 | 可新建 `.md` 文件并自动出现在侧栏且可编辑 | ✅ 完成 |
-| v0060 | Phase 4 | 完成错误处理、加载态、README、截图与文档收口 | v0059 | 关键异常有可见反馈，README 可按步骤复现 | ✅ 完成 |
+| 版本 | 阶段 | 最小可执行任务 | 技术方案必读章节 | 依赖 | 最小验收 | 状态 |
+|---|---|---|---|---|---|---|
+| v0061 | Phase 1 / L1 | 在 `fluttron_ui` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`；`FileStat` 上收至 `fluttron_shared`；更新导出与测试 | §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8 | 无 | `dart analyze packages/fluttron_ui` 与 `dart analyze packages/fluttron_shared` 通过；3 个 client 可从 `fluttron_ui.dart` 导入 | 待开始 |
+| v0062 | Phase 1 / L1 | 新增 `SystemServiceClient`、`StorageServiceClient`；为 `FluttronClient.getPlatform/kvSet/kvGet` 增加 `@Deprecated` | §4.3.4、§4.3.5、§4.5、§4.7、§4.8 | v0061 | 5 个内建 client 全部可用；旧 API 保留但显示废弃提示 | 待开始 |
+| v0063 | Phase 1 / L1 | 迁移 `examples/markdown_editor` 到框架内建 client；删除 app 层重复 client 文件；补回归测试与文档 | §4.6、§4.8、§7(Phase 1)、§10(L1) | v0062 | `fluttron build -p examples/markdown_editor` 成功；`markdown_editor` 运行正常；app 层 client 重复实现已移除 | 待开始 |
+| v0064 | Phase 2 / L3 | 新建 `templates/host_service/`，落地 manifest、host/client 双包模板与 README | §5.2、§5.3.1-§5.3.10、§5.5 | v0063 | 模板目录完整；模板内 Dart 代码可通过分析；文件命名符合 snake/Pascal/camel 规则 | 待开始 |
+| v0065 | Phase 2 / L3 | 实现 `HostServiceCopier`（变量替换、路径改名、双包处理、manifest 特殊处理） | §5.4.2、§5.5、§5.7 | v0064 | `host_service_copier_test` 通过；替换/重命名行为可覆盖主路径 | 待开始 |
+| v0066 | Phase 2 / L3 | 将 `CreateCommand` 接入 `--type host_service`；补 `ProjectType`、成功提示、pubspec path 重写 | §5.4.1、§5.6、§5.7 | v0065 | `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构 | 待开始 |
+| v0067 | Phase 2 / L3 | 增加 `fluttron_host_service.json` 解析与诊断（可选）；补教程与 E2E（创建→注册→调用） | §5.3.1、§5.7、§7(Phase 2)、§10(L3) | v0066 | playground 内完成 custom service 端到端调用；文档可复现 | 待开始 |
+| v0068 | Phase 3 / L2 | 在 `fluttron_shared` 新增 `@FluttronServiceContract` / `@FluttronModel` 注解 | §6.3、§6.4、§7(Phase 3) | v0067 | 注解可导入可使用；示例 contract 可通过编译 | 待开始 |
+| v0069 | Phase 3 / L2 | 实现 Dart AST 解析器，提取 service contract / methods / model 字段 | §6.7、§6.8、§6.11 | v0068 | parser fixture 测试通过（含可选参数、nullable、List/Map） | 待开始 |
+| v0070 | Phase 3 / L2 | 实现 Host 侧生成器（`*_generated.dart`，`switch/case` 路由 + Base 类） | §6.5(Host)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成代码可编译；路由与参数校验行为正确 | 待开始 |
+| v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | 待开始 |
+| v0072 | Phase 3 / L2 | 实现 Model 生成器（`fromMap/toMap`） | §6.5(Models)、§6.8、§6.10、§6.11 | v0069 | 生成模型序列化/反序列化测试通过 | 待开始 |
+| v0073 | Phase 3 / L2 | 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run` | §6.6、§6.10、§6.11 | v0070,v0071,v0072 | CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘 | 待开始 |
+| v0074 | Phase 3 / L2 | 完成边缘场景、错误文案、文档收口与最终验收 | §6.9、§6.11、§8、§9、§10 | v0073 | 真实契约样例生成可用；兼容性说明与使用文档完整 | 待开始 |
 
 ### 并行与节奏约束
 
-- 可并行：`v0051` 与 `v0052`（框架服务互不阻塞）。
-- 半并行：`v0057` UI 布局可在 `v0055-v0056` 期间提前搭建，但事件绑定在 `v0056` 后收口。
-- 节奏要求：每个版本保持“单版本可独立验收”，未达到验收标准不得进入下版本。
+- 可立即开始：`v0061`（无前置阻塞）。
+- 串行链路：`v0061 → v0062 → v0063 → v0064 → v0065 → v0066 → v0067`。
+- 可并行：`v0070`、`v0071`、`v0072`（共同依赖 `v0069`）。
+- 收口顺序：`v0073` 依赖 `v0070/v0071/v0072` 全完成，`v0074` 最终收口。
+- 节奏要求：每个版本保持“单版本可独立验收”，未满足最小验收不得进入下一版本。
 
 ---
 
@@ -272,58 +308,16 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0059`
-- 当前主需求：`markdown_editor`（执行范围：`v0051-v0060`）。
-- v0051 已完成：
-  - `FileService` 在 `fluttron_host` 落地（8 个方法：read/write/list/stat/create/delete/rename/exists）
-  - `FileEntry` 模型在 `fluttron_shared` 落地
-  - 30 个单元测试全部通过
-- v0052 已完成：
-  - `DialogService` 在 `fluttron_host` 落地（4 个方法：openFile/openFiles/openDirectory/saveFile）
-  - `ClipboardService` 在 `fluttron_host` 落地（3 个方法：getText/setText/hasText）
-  - 7 个单元测试全部通过（参数校验 + 错误处理）
-  - 实际对话框/剪贴板功能需手动验证
-- v0053 已完成：
-  - `examples/markdown_editor` app scaffold 已创建
-  - `fluttron_milkdown` 已接入并正确集成
-  - `fluttron build -p examples/markdown_editor` 成功
-  - macOS 可运行并显示 Milkdown 编辑器（含 toolbar、主题切换、状态栏）
-- v0054 已完成：
-  - `FileServiceClient` / `DialogServiceClient` 封装（UI 端类型安全调用）
-  - `Sidebar` 组件（文件树、仅 `.md` 文件、空状态提示）
-  - Open Folder 按钮 + 原生目录选择对话框集成
-  - macOS entitlements 修复（`com.apple.security.files.user-selected.read-write`）
-  - `EditorState` 模型升级（`fileTree: List<FileEntry>`）
-- v0055 已完成：
-  - 点击侧栏文件加载到编辑器功能实现
-  - `currentFilePath` / `savedContent` 状态维护
-  - 当前文件高亮显示（Sidebar 已支持 `currentFilePath` prop）
-  - 边缘情况处理：文件在编辑器就绪前打开时的内容同步
-- v0056 已完成：
-  - 侧栏文件项添加未保存指示器（圆点）
-  - Sidebar 组件添加 `isDirty` 参数
-  - 脏状态检测与 UI 同步（状态栏 + 侧栏）
-- v0057 已完成：
-  - `StatusBar` 独立 widget（`widgets/status_bar.dart`）
-  - 显示文件名、保存状态、字符数、行数
-  - 接入 `MilkdownChangeEvent` 实时更新统计数据
-- v0058 已完成：
-  - 主题持久化功能实现（`_themeStorageKey` 常量 + `_loadSavedTheme` 方法）
-  - 应用启动时从 `kv` 存储加载保存的主题
-  - 切换主题时保存偏好到 `kv` 存储
-  - 编辑器就绪后正确应用已加载的主题
-  - 欢迎文档更新，README 更新
-- v0059 已完成：
-  - Toolbar 添加 "New File" 按钮
-  - `_createNewFile()` 方法实现（文件名对话框 + 创建 + 刷新侧栏 + 打开新文件）
-  - 自动添加 `.md` 扩展名
-  - 文件存在性检查
-  - 欢迎文档与 README 更新
-- v0060 已完成：
-  - 错误处理验证：所有文件操作有 try-catch 和错误消息显示
-  - 加载状态验证：`isLoading` 状态管理完善，Toolbar 有加载指示器
-  - Sidebar 空状态处理：空目录/未打开文件夹有友好提示
-  - README 大幅增强：详细功能列表、使用说明、项目结构、架构说明
-  - 截图说明文档：`docs/screenshot.md` 指导如何添加截图
-- **markdown_editor 需求（v0051-v0060）已完成** ✅
-- 下一步：进入 Backlog 需求评估或新需求规划
+- 当前起始版本：`v0061`
+- 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
+- 当前状态：v0061-v0074 均未开始，先进入 L1 起始版本。
+- v0061 最小任务：
+  - 在 `packages/fluttron_ui/lib/src/services/` 新增 `FileServiceClient`、`DialogServiceClient`、`ClipboardServiceClient`。
+  - 在 `packages/fluttron_shared/lib/src/file_stat.dart` 上收 `FileStat` 并更新 `fluttron_shared.dart` 导出。
+  - 按 §4.8 补齐 `fluttron_ui` 与 `fluttron_shared` 对应单元测试。
+- v0061 实现前必读：`docs/feature/host_service_evolution_design.md` §4.2.1、§4.2.2、§4.3.1-§4.3.3、§4.3.6、§4.4、§4.8。
+- v0061 最小验收命令：
+  - `dart analyze packages/fluttron_ui`
+  - `dart analyze packages/fluttron_shared`
+  - `(cd packages/fluttron_ui && flutter test)`
+  - `(cd packages/fluttron_shared && flutter test)`
