@@ -46,7 +46,7 @@ class FileService extends FluttronService {
   /// Returns:
   /// - content: The file contents as a string.
   Map<String, dynamic> _readFile(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
+    final path = _requirePath(params, 'path');
     final file = File(path);
 
     if (!file.existsSync()) {
@@ -65,8 +65,8 @@ class FileService extends FluttronService {
   ///
   /// Returns: empty object on success.
   Map<String, dynamic> _writeFile(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
-    final content = _requireString(params, 'content');
+    final path = _requirePath(params, 'path');
+    final content = _requireString(params, 'content', allowEmpty: true);
 
     final file = File(path);
 
@@ -88,7 +88,7 @@ class FileService extends FluttronService {
   /// Returns:
   /// - entries: An array of FileEntry objects.
   Map<String, dynamic> _listDirectory(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
+    final path = _requirePath(params, 'path');
     final dir = Directory(path);
 
     if (!dir.existsSync()) {
@@ -105,7 +105,7 @@ class FileService extends FluttronService {
         'path': entity.path,
         'isFile': entity is File,
         'isDirectory': entity is Directory,
-        'size': stat.size,
+        'size': entity is Directory ? 0 : stat.size,
         'modified': stat.modified.toUtc().toIso8601String(),
       });
     }
@@ -135,7 +135,7 @@ class FileService extends FluttronService {
   /// - size: Size in bytes (0 for directories).
   /// - modified: Last modified time in ISO 8601 format.
   Map<String, dynamic> _stat(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
+    final path = _requirePath(params, 'path');
 
     final file = File(path);
     final dir = Directory(path);
@@ -160,7 +160,7 @@ class FileService extends FluttronService {
       'exists': true,
       'isFile': isFile,
       'isDirectory': !isFile,
-      'size': stat.size,
+      'size': isFile ? stat.size : 0,
       'modified': stat.modified.toUtc().toIso8601String(),
     };
   }
@@ -173,8 +173,8 @@ class FileService extends FluttronService {
   ///
   /// Returns: empty object on success.
   Map<String, dynamic> _createFile(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
-    final content = params['content'] as String? ?? '';
+    final path = _requirePath(params, 'path');
+    final content = _optionalString(params, 'content') ?? '';
 
     final file = File(path);
 
@@ -199,7 +199,7 @@ class FileService extends FluttronService {
   ///
   /// Returns: empty object on success.
   Map<String, dynamic> _delete(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
+    final path = _requirePath(params, 'path');
 
     final file = File(path);
     final dir = Directory(path);
@@ -233,8 +233,8 @@ class FileService extends FluttronService {
   ///
   /// Returns: empty object on success.
   Map<String, dynamic> _rename(Map<String, dynamic> params) {
-    final oldPath = _requireString(params, 'oldPath');
-    final newPath = _requireString(params, 'newPath');
+    final oldPath = _requirePath(params, 'oldPath');
+    final newPath = _requirePath(params, 'newPath');
 
     final file = File(oldPath);
     final dir = Directory(oldPath);
@@ -260,7 +260,7 @@ class FileService extends FluttronService {
   /// Returns:
   /// - exists: Whether the path exists.
   Map<String, dynamic> _exists(Map<String, dynamic> params) {
-    final path = _requireString(params, 'path');
+    final path = _requirePath(params, 'path');
 
     final file = File(path);
     final dir = Directory(path);
@@ -270,9 +270,30 @@ class FileService extends FluttronService {
   }
 
   /// Helper to require a string parameter.
-  String _requireString(Map<String, dynamic> params, String key) {
+  String _requirePath(Map<String, dynamic> params, String key) {
+    return _requireString(params, key, allowEmpty: false);
+  }
+
+  String _requireString(
+    Map<String, dynamic> params,
+    String key, {
+    required bool allowEmpty,
+  }) {
     final v = params[key];
-    if (v is String && v.isNotEmpty) return v;
+    if (v is String && (allowEmpty || v.isNotEmpty)) {
+      return v;
+    }
+    throw FluttronError('BAD_PARAMS', 'Missing or invalid "$key"');
+  }
+
+  String? _optionalString(Map<String, dynamic> params, String key) {
+    final value = params[key];
+    if (value == null) {
+      return null;
+    }
+    if (value is String) {
+      return value;
+    }
     throw FluttronError('BAD_PARAMS', 'Missing or invalid "$key"');
   }
 }

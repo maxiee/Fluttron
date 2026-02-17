@@ -22,11 +22,17 @@ class DialogServiceClient {
     List<String>? allowedExtensions,
     String? initialDirectory,
   }) async {
-    final result = await _client.invoke('dialog.openFile', {
-      if (title != null) 'title': title,
-      if (allowedExtensions != null) 'allowedExtensions': allowedExtensions,
-      if (initialDirectory != null) 'initialDirectory': initialDirectory,
-    });
+    final Map<String, dynamic> params = <String, dynamic>{};
+    if (title != null) {
+      params['title'] = title;
+    }
+    if (allowedExtensions != null) {
+      params['allowedExtensions'] = allowedExtensions;
+    }
+    if (initialDirectory != null) {
+      params['initialDirectory'] = initialDirectory;
+    }
+    final result = await _client.invoke('dialog.openFile', params);
     return result['path'] as String?;
   }
 
@@ -43,11 +49,17 @@ class DialogServiceClient {
     List<String>? allowedExtensions,
     String? initialDirectory,
   }) async {
-    final result = await _client.invoke('dialog.openFiles', {
-      if (title != null) 'title': title,
-      if (allowedExtensions != null) 'allowedExtensions': allowedExtensions,
-      if (initialDirectory != null) 'initialDirectory': initialDirectory,
-    });
+    final Map<String, dynamic> params = <String, dynamic>{};
+    if (title != null) {
+      params['title'] = title;
+    }
+    if (allowedExtensions != null) {
+      params['allowedExtensions'] = allowedExtensions;
+    }
+    if (initialDirectory != null) {
+      params['initialDirectory'] = initialDirectory;
+    }
+    final result = await _client.invoke('dialog.openFiles', params);
     final paths = result['paths'] as List<dynamic>;
     return paths.map((p) => p as String).toList();
   }
@@ -63,10 +75,14 @@ class DialogServiceClient {
     String? title,
     String? initialDirectory,
   }) async {
-    final result = await _client.invoke('dialog.openDirectory', {
-      if (title != null) 'title': title,
-      if (initialDirectory != null) 'initialDirectory': initialDirectory,
-    });
+    final Map<String, dynamic> params = <String, dynamic>{};
+    if (title != null) {
+      params['title'] = title;
+    }
+    if (initialDirectory != null) {
+      params['initialDirectory'] = initialDirectory;
+    }
+    final result = await _client.invoke('dialog.openDirectory', params);
     return result['path'] as String?;
   }
 
@@ -85,12 +101,20 @@ class DialogServiceClient {
     List<String>? allowedExtensions,
     String? initialDirectory,
   }) async {
-    final result = await _client.invoke('dialog.saveFile', {
-      if (title != null) 'title': title,
-      if (defaultFileName != null) 'defaultFileName': defaultFileName,
-      if (allowedExtensions != null) 'allowedExtensions': allowedExtensions,
-      if (initialDirectory != null) 'initialDirectory': initialDirectory,
-    });
+    final Map<String, dynamic> params = <String, dynamic>{};
+    if (title != null) {
+      params['title'] = title;
+    }
+    if (defaultFileName != null) {
+      params['defaultFileName'] = defaultFileName;
+    }
+    if (allowedExtensions != null) {
+      params['allowedExtensions'] = allowedExtensions;
+    }
+    if (initialDirectory != null) {
+      params['initialDirectory'] = initialDirectory;
+    }
+    final result = await _client.invoke('dialog.saveFile', params);
     return result['path'] as String?;
   }
 }

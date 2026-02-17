@@ -5,6 +5,7 @@ import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:fluttron_ui/fluttron_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as p;
 
 import 'models/editor_state.dart';
 import 'services/dialog_service_client.dart';
@@ -14,6 +15,7 @@ import 'widgets/status_bar.dart';
 
 const MilkdownTheme _defaultTheme = MilkdownTheme.nord;
 const String _themeStorageKey = 'markdown_editor.theme';
+const int _maxDirectoryScanDepth = 8;
 const String _welcomeMarkdown = '''
 # Markdown Editor
 
@@ -82,6 +84,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   }
 
   Future<void> _openFolder() async {
+    final bool allowNavigation = await _confirmDiscardUnsavedChanges(
+      actionLabel: 'open another folder',
+    );
+    if (!allowNavigation) {
+      return;
+    }
+
     try {
       final path = await _dialogClient.openDirectory(title: 'Open Folder');
 
@@ -99,22 +108,29 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         _statusMessage = 'Loading files...';
       });
 
-      // List directory contents
-      final entries = await _fileClient.listDirectory(path);
-
-      // Filter to only .md files
-      final mdFiles = entries
-          .where((e) => e.isFile && e.name.toLowerCase().endsWith('.md'))
-          .toList();
+      final mdFiles = await _loadMarkdownFiles(path);
 
       if (!mounted) {
         return;
       }
 
+      if (_isEditorReady) {
+        try {
+          await _controller.setContent(_welcomeMarkdown);
+        } catch (error) {
+          // Keep folder open even if editor content update fails.
+        }
+      }
+
       setState(() {
         _state = _state.copyWith(
           currentDirectoryPath: path,
+          currentFilePath: null,
           fileTree: mdFiles,
+          currentContent: _welcomeMarkdown,
+          savedContent: _welcomeMarkdown,
+          characterCount: _welcomeMarkdown.length,
+          lineCount: _computeLineCount(_welcomeMarkdown),
           isLoading: false,
         );
         _statusMessage = 'Opened ${mdFiles.length} markdown files';
@@ -132,9 +148,102 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     }
   }
 
+  Future<bool> _confirmDiscardUnsavedChanges({
+    required String actionLabel,
+  }) async {
+    if (!_state.isDirty) {
+      return true;
+    }
+
+    final bool? shouldDiscard = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Unsaved changes'),
+          content: Text(
+            'You have unsaved changes. Discard them and $actionLabel?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Discard'),
+            ),
+          ],
+        );
+      },
+    );
+
+    return shouldDiscard ?? false;
+  }
+
+  Future<List<FileEntry>> _loadMarkdownFiles(String rootDirectoryPath) async {
+    final List<FileEntry> markdownFiles = <FileEntry>[];
+    final List<_DirectoryCursor> pendingDirectories = <_DirectoryCursor>[
+      _DirectoryCursor(path: rootDirectoryPath, depth: 0),
+    ];
+    final Set<String> visitedDirectories = <String>{};
+
+    while (pendingDirectories.isNotEmpty) {
+      final _DirectoryCursor cursor = pendingDirectories.removeLast();
+      if (cursor.depth > _maxDirectoryScanDepth) {
+        continue;
+      }
+
+      final String normalizedPath = p.normalize(cursor.path);
+      if (!visitedDirectories.add(normalizedPath)) {
+        continue;
+      }
+
+      late final List<FileEntry> entries;
+      try {
+        entries = await _fileClient.listDirectory(cursor.path);
+      } catch (error) {
+        if (cursor.depth == 0) {
+          rethrow;
+        }
+        continue;
+      }
+
+      for (final FileEntry entry in entries) {
+        if (entry.isFile && entry.name.toLowerCase().endsWith('.md')) {
+          markdownFiles.add(entry);
+          continue;
+        }
+        if (entry.isDirectory && cursor.depth < _maxDirectoryScanDepth) {
+          pendingDirectories.add(
+            _DirectoryCursor(path: entry.path, depth: cursor.depth + 1),
+          );
+        }
+      }
+    }
+
+    markdownFiles.sort((FileEntry a, FileEntry b) {
+      final String aPath = p.relative(a.path, from: rootDirectoryPath);
+      final String bPath = p.relative(b.path, from: rootDirectoryPath);
+      return aPath.toLowerCase().compareTo(bPath.toLowerCase());
+    });
+
+    return markdownFiles;
+  }
+
   Future<void> _createNewFile() async {
     final String? directoryPath = _state.currentDirectoryPath;
     if (directoryPath == null) {
+      return;
+    }
+
+    final bool allowNavigation = await _confirmDiscardUnsavedChanges(
+      actionLabel: 'create a new file',
+    );
+    if (!allowNavigation) {
       return;
     }
 
@@ -150,7 +259,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       finalFileName = '$finalFileName.md';
     }
 
-    final String newFilePath = '$directoryPath/$finalFileName';
+    final String newFilePath = p.join(directoryPath, finalFileName);
 
     setState(() {
       _state = _state.copyWith(isLoading: true, clearErrorMessage: true);
@@ -178,27 +287,11 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       await _fileClient.createFile(newFilePath, content: defaultContent);
 
       // Refresh file list
-      final entries = await _fileClient.listDirectory(directoryPath);
-      final mdFiles = entries
-          .where((e) => e.isFile && e.name.toLowerCase().endsWith('.md'))
-          .toList();
+      final mdFiles = await _loadMarkdownFiles(directoryPath);
 
       if (!mounted) {
         return;
       }
-
-      // Find the newly created file entry
-      final newFileEntry = mdFiles.firstWhere(
-        (e) => e.path == newFilePath,
-        orElse: () => FileEntry(
-          name: finalFileName,
-          path: newFilePath,
-          isFile: true,
-          isDirectory: false,
-          size: defaultContent.length,
-          modified: DateTime.now().toIso8601String(),
-        ),
-      );
 
       // Set content in editor if ready
       if (_isEditorReady) {
@@ -233,45 +326,56 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   Future<String?> _showNewFileDialog() async {
     final TextEditingController controller = TextEditingController();
 
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('New File'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Enter file name',
-              labelText: 'File name',
-              suffixText: '.md',
-            ),
-            onSubmitted: (String value) {
-              Navigator.of(context).pop(value.trim());
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(null);
+    try {
+      return showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('New File'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Enter file name',
+                labelText: 'File name',
+                suffixText: '.md',
+              ),
+              onSubmitted: (String value) {
+                Navigator.of(context).pop(value.trim());
               },
-              child: const Text('Cancel'),
             ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(context).pop(controller.text.trim());
-              },
-              child: const Text('Create'),
-            ),
-          ],
-        );
-      },
-    );
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(null);
+                },
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text.trim());
+                },
+                child: const Text('Create'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   Future<void> _openFile(FileEntry file) async {
     // Skip if already open and editor is ready
     if (_state.currentFilePath == file.path && _isEditorReady) {
+      return;
+    }
+
+    final bool allowNavigation = await _confirmDiscardUnsavedChanges(
+      actionLabel: 'open "${file.name}"',
+    );
+    if (!allowNavigation) {
       return;
     }
 
@@ -326,12 +430,50 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       return;
     }
 
+    setState(() {
+      _state = _state.copyWith(isLoading: true, clearErrorMessage: true);
+      _statusMessage = 'Saving...';
+    });
+
     try {
       final String content = await _controller.getContent();
-      final String? currentFilePath = _state.currentFilePath;
+      String? targetPath = _state.currentFilePath;
 
-      if (currentFilePath != null && currentFilePath.isNotEmpty) {
-        await _fileClient.writeFile(currentFilePath, content);
+      if (targetPath == null || targetPath.isEmpty) {
+        targetPath = await _dialogClient.saveFile(
+          title: 'Save Markdown File',
+          defaultFileName: 'Untitled.md',
+          allowedExtensions: const <String>['md'],
+          initialDirectory: _state.currentDirectoryPath,
+        );
+      }
+
+      if (targetPath == null || targetPath.isEmpty) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _state = _state.copyWith(isLoading: false);
+          _statusMessage = 'Save canceled';
+        });
+        return;
+      }
+
+      final String resolvedTargetPath = targetPath;
+
+      await _fileClient.writeFile(resolvedTargetPath, content);
+
+      String? directoryPath = _state.currentDirectoryPath;
+      if (directoryPath == null ||
+          !_isPathWithinDirectory(resolvedTargetPath, directoryPath)) {
+        directoryPath = p.dirname(resolvedTargetPath);
+      }
+
+      List<FileEntry> mdFiles = _state.fileTree;
+      try {
+        mdFiles = await _loadMarkdownFiles(directoryPath);
+      } catch (error) {
+        // Saving should still succeed even if folder refresh fails.
       }
 
       if (!mounted) {
@@ -339,24 +481,36 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       }
       setState(() {
         _state = _state.copyWith(
+          currentDirectoryPath: directoryPath,
+          currentFilePath: resolvedTargetPath,
+          fileTree: mdFiles,
           currentContent: content,
           savedContent: content,
           characterCount: content.length,
           lineCount: _computeLineCount(content),
+          isLoading: false,
           clearErrorMessage: true,
         );
-        _statusMessage = (currentFilePath != null && currentFilePath.isNotEmpty)
-            ? 'Saved to disk'
-            : 'Saved in memory (no file selected)';
+        _statusMessage = 'Saved ${p.basename(resolvedTargetPath)}';
       });
     } catch (error) {
       if (!mounted) {
         return;
       }
       setState(() {
-        _state = _state.copyWith(errorMessage: 'Save failed: $error');
+        _state = _state.copyWith(
+          isLoading: false,
+          errorMessage: 'Save failed: $error',
+        );
       });
     }
+  }
+
+  bool _isPathWithinDirectory(String path, String directoryPath) {
+    final String normalizedPath = p.normalize(path);
+    final String normalizedDirectoryPath = p.normalize(directoryPath);
+    return p.equals(normalizedPath, normalizedDirectoryPath) ||
+        p.isWithin(normalizedDirectoryPath, normalizedPath);
   }
 
   Future<void> _selectTheme(MilkdownTheme theme) async {
@@ -425,7 +579,11 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     }
 
     if (_state.currentTheme != _defaultTheme) {
-      await _selectTheme(_state.currentTheme);
+      try {
+        await _controller.setTheme(_state.currentTheme);
+      } catch (error) {
+        // Ignore theme apply errors during ready callback
+      }
     }
   }
 
@@ -434,7 +592,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     if (path == null || path.isEmpty) {
       return 'Untitled.md';
     }
-    return path.split('/').last;
+    return p.basename(path);
   }
 
   void _onSaveShortcut() {
@@ -465,7 +623,12 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
                       files: _state.fileTree,
                       currentFilePath: _state.currentFilePath,
                       isDirty: _state.isDirty,
-                      onFileSelected: _openFile,
+                      onFileSelected: (FileEntry file) {
+                        if (_state.isLoading) {
+                          return;
+                        }
+                        unawaited(_openFile(file));
+                      },
                     ),
                     Expanded(
                       child: Padding(
@@ -539,7 +702,7 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
           ),
           const SizedBox(width: 8),
           FilledButton.icon(
-            onPressed: _isEditorReady && _state.isDirty
+            onPressed: _isEditorReady && _state.isDirty && !_state.isLoading
                 ? () => unawaited(_saveCurrentDocument())
                 : null,
             icon: const Icon(Icons.save_outlined, size: 18),
@@ -608,6 +771,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
       ),
     );
   }
+}
+
+class _DirectoryCursor {
+  const _DirectoryCursor({required this.path, required this.depth});
+
+  final String path;
+  final int depth;
 }
 
 class _ThemeOption {

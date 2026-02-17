@@ -30,6 +30,55 @@ void main() {
     });
   });
 
+  group('BAD_PARAMS', () {
+    test('openFile rejects non-string title', () async {
+      expect(
+        () => service.handle('openFile', {'title': 123}),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
+        ),
+      );
+    });
+
+    test('openFile rejects non-list allowedExtensions', () async {
+      expect(
+        () => service.handle('openFile', {'allowedExtensions': 'md'}),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
+        ),
+      );
+    });
+
+    test('openFile rejects non-string extension values', () async {
+      expect(
+        () => service.handle('openFile', {
+          'allowedExtensions': ['md', 1],
+        }),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
+        ),
+      );
+    });
+
+    test('openDirectory rejects non-string initialDirectory', () async {
+      expect(
+        () => service.handle('openDirectory', {'initialDirectory': 1}),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
+        ),
+      );
+    });
+
+    test('saveFile rejects non-string defaultFileName', () async {
+      expect(
+        () => service.handle('saveFile', {'defaultFileName': 123}),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
+        ),
+      );
+    });
+  });
+
   // Note: Dialog display methods (openFile, openFiles, openDirectory, saveFile)
   // require native platform interaction via platform channels and cannot be
   // tested in unit tests. They are verified through manual testing on macOS.

@@ -87,6 +87,15 @@ void main() {
       expect(await File(path).readAsString(), equals('New content'));
     });
 
+    test('accepts empty content and clears the file', () async {
+      final path = '${tempDir.path}/empty.md';
+      await File(path).writeAsString('seed');
+
+      await service.handle('writeFile', {'path': path, 'content': ''});
+
+      expect(await File(path).readAsString(), isEmpty);
+    });
+
     test('throws BAD_PARAMS for missing content', () async {
       expect(
         () => service.handle('writeFile', {'path': '${tempDir.path}/test.md'}),
@@ -112,6 +121,7 @@ void main() {
       // Directories come first
       expect(entries[0]['isDirectory'], isTrue);
       expect(entries[0]['name'], equals('subdir'));
+      expect(entries[0]['size'], equals(0));
       // Then files sorted by name
       expect(entries[1]['isFile'], isTrue);
       expect(entries[1]['name'], equals('a.md'));
@@ -165,6 +175,7 @@ void main() {
       expect(result['exists'], isTrue);
       expect(result['isFile'], isFalse);
       expect(result['isDirectory'], isTrue);
+      expect(result['size'], equals(0));
     });
 
     test('returns exists=false for non-existent path', () async {
@@ -217,6 +228,16 @@ void main() {
         () => service.handle('createFile', {'path': path}),
         throwsA(
           isA<FluttronError>().having((e) => e.code, 'code', 'FILE_EXISTS'),
+        ),
+      );
+    });
+
+    test('throws BAD_PARAMS if content is not a string', () async {
+      final path = '${tempDir.path}/new-with-invalid-content.md';
+      expect(
+        () => service.handle('createFile', {'path': path, 'content': 123}),
+        throwsA(
+          isA<FluttronError>().having((e) => e.code, 'code', 'BAD_PARAMS'),
         ),
       );
     });

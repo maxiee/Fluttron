@@ -1,16 +1,58 @@
 # fluttron_host
 
-A new Flutter project.
+Host runtime package for Fluttron desktop/mobile containers.
 
-## Getting Started
+It provides:
 
-This project is a starting point for a Flutter application.
+- WebView container bootstrap (`runFluttronHost`)
+- Host ↔ UI bridge (`ServiceRegistry`, `FluttronService`)
+- Built-in native services
 
-A few resources to get you started if this is your first Flutter project:
+## Built-in Services
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+| Namespace | Methods | Purpose |
+|---|---|---|
+| `system.*` | `getPlatform` | Platform info |
+| `storage.*` | `kvSet`, `kvGet` | Persistent key-value storage |
+| `file.*` | `readFile`, `writeFile`, `listDirectory`, `stat`, `createFile`, `delete`, `rename`, `exists` | File system operations |
+| `dialog.*` | `openFile`, `openFiles`, `openDirectory`, `saveFile` | Native file/directory dialogs |
+| `clipboard.*` | `getText`, `setText`, `hasText` | System clipboard access |
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Service Extension Pattern
+
+Add custom host capabilities by implementing `FluttronService` and registering
+the service in `ServiceRegistry`.
+
+```dart
+class GreetingService extends FluttronService {
+  @override
+  String get namespace => 'greeting';
+
+  @override
+  Future<dynamic> handle(String method, Map<String, dynamic> params) async {
+    switch (method) {
+      case 'hello':
+        return <String, dynamic>{'message': 'hello'};
+      default:
+        throw FluttronError('METHOD_NOT_FOUND', 'greeting.$method not implemented');
+    }
+  }
+}
+```
+
+```dart
+void main() {
+  final registry = ServiceRegistry()
+    ..register(SystemService())
+    ..register(StorageService())
+    ..register(GreetingService());
+
+  runFluttronHost(registry: registry);
+}
+```
+
+From UI:
+
+```dart
+final result = await FluttronClient().invoke('greeting.hello', {});
+```

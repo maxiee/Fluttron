@@ -12,16 +12,18 @@ import 'package:fluttron_host/src/services/system_service.dart';
 void runFluttronHost({ServiceRegistry? registry}) {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final serviceRegistry =
-      registry ??
-      (ServiceRegistry()
-        ..register(SystemService())
-        ..register(StorageService())
-        ..register(FileService())
-        ..register(DialogService())
-        ..register(ClipboardService()));
+  final serviceRegistry = registry ?? createDefaultServiceRegistry();
 
   runApp(FluttronHostApp(registry: serviceRegistry));
+}
+
+ServiceRegistry createDefaultServiceRegistry() {
+  return ServiceRegistry()
+    ..register(SystemService())
+    ..register(StorageService())
+    ..register(FileService())
+    ..register(DialogService())
+    ..register(ClipboardService());
 }
 
 class FluttronHostApp extends StatelessWidget {

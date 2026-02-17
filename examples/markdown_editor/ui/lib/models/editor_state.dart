@@ -3,6 +3,8 @@ import 'package:fluttron_shared/fluttron_shared.dart';
 
 /// Represents the state of the Markdown editor.
 class EditorState {
+  static const Object _unset = Object();
+
   /// Creates an EditorState with the given values.
   const EditorState({
     this.currentFilePath,
@@ -67,30 +69,41 @@ class EditorState {
 
   /// Creates a copy of this state with the given fields replaced.
   EditorState copyWith({
-    String? currentFilePath,
-    String? currentDirectoryPath,
+    Object? currentFilePath = _unset,
+    Object? currentDirectoryPath = _unset,
     String? currentContent,
     String? savedContent,
     int? characterCount,
     int? lineCount,
     MilkdownTheme? currentTheme,
     bool? isLoading,
-    String? errorMessage,
+    Object? errorMessage = _unset,
     bool clearErrorMessage = false,
     List<FileEntry>? fileTree,
   }) {
+    final String? resolvedErrorMessage;
+    if (clearErrorMessage) {
+      resolvedErrorMessage = null;
+    } else if (identical(errorMessage, _unset)) {
+      resolvedErrorMessage = this.errorMessage;
+    } else {
+      resolvedErrorMessage = errorMessage as String?;
+    }
+
     return EditorState(
-      currentFilePath: currentFilePath ?? this.currentFilePath,
-      currentDirectoryPath: currentDirectoryPath ?? this.currentDirectoryPath,
+      currentFilePath: identical(currentFilePath, _unset)
+          ? this.currentFilePath
+          : currentFilePath as String?,
+      currentDirectoryPath: identical(currentDirectoryPath, _unset)
+          ? this.currentDirectoryPath
+          : currentDirectoryPath as String?,
       currentContent: currentContent ?? this.currentContent,
       savedContent: savedContent ?? this.savedContent,
       characterCount: characterCount ?? this.characterCount,
       lineCount: lineCount ?? this.lineCount,
       currentTheme: currentTheme ?? this.currentTheme,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearErrorMessage
-          ? null
-          : (errorMessage ?? this.errorMessage),
+      errorMessage: resolvedErrorMessage,
       fileTree: fileTree ?? this.fileTree,
     );
   }

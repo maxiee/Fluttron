@@ -40,16 +40,15 @@ class DialogService extends FluttronService {
   /// Returns:
   /// - path: Selected file path, or null if cancelled.
   Future<Map<String, dynamic>> _openFile(Map<String, dynamic> params) async {
-    final title = params['title'] as String?;
-    final allowedExtensions = (params['allowedExtensions'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        .toList();
-    final initialDirectory = params['initialDirectory'] as String?;
-
-    final xTypeGroup = XTypeGroup(label: title, extensions: allowedExtensions);
+    final title = _optionalString(params, 'title');
+    final allowedExtensions = _optionalStringList(params, 'allowedExtensions');
+    final initialDirectory = _optionalString(params, 'initialDirectory');
 
     final path = await openFile(
-      acceptedTypeGroups: allowedExtensions != null ? [xTypeGroup] : [],
+      acceptedTypeGroups: _buildTypeGroups(
+        title: title,
+        allowedExtensions: allowedExtensions,
+      ),
       initialDirectory: initialDirectory,
     );
 
@@ -66,16 +65,15 @@ class DialogService extends FluttronService {
   /// Returns:
   /// - paths: List of selected file paths (empty if cancelled).
   Future<Map<String, dynamic>> _openFiles(Map<String, dynamic> params) async {
-    final title = params['title'] as String?;
-    final allowedExtensions = (params['allowedExtensions'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        .toList();
-    final initialDirectory = params['initialDirectory'] as String?;
-
-    final xTypeGroup = XTypeGroup(label: title, extensions: allowedExtensions);
+    final title = _optionalString(params, 'title');
+    final allowedExtensions = _optionalStringList(params, 'allowedExtensions');
+    final initialDirectory = _optionalString(params, 'initialDirectory');
 
     final files = await openFiles(
-      acceptedTypeGroups: allowedExtensions != null ? [xTypeGroup] : [],
+      acceptedTypeGroups: _buildTypeGroups(
+        title: title,
+        allowedExtensions: allowedExtensions,
+      ),
       initialDirectory: initialDirectory,
     );
 
@@ -93,7 +91,8 @@ class DialogService extends FluttronService {
   Future<Map<String, dynamic>> _openDirectory(
     Map<String, dynamic> params,
   ) async {
-    final initialDirectory = params['initialDirectory'] as String?;
+    _optionalString(params, 'title');
+    final initialDirectory = _optionalString(params, 'initialDirectory');
 
     final path = await getDirectoryPath(initialDirectory: initialDirectory);
 
@@ -111,21 +110,78 @@ class DialogService extends FluttronService {
   /// Returns:
   /// - path: Selected save path, or null if cancelled.
   Future<Map<String, dynamic>> _saveFile(Map<String, dynamic> params) async {
-    final title = params['title'] as String?;
-    final defaultFileName = params['defaultFileName'] as String?;
-    final allowedExtensions = (params['allowedExtensions'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        .toList();
-    final initialDirectory = params['initialDirectory'] as String?;
-
-    final xTypeGroup = XTypeGroup(label: title, extensions: allowedExtensions);
+    final title = _optionalString(params, 'title');
+    final defaultFileName = _optionalString(params, 'defaultFileName');
+    final allowedExtensions = _optionalStringList(params, 'allowedExtensions');
+    final initialDirectory = _optionalString(params, 'initialDirectory');
 
     final path = await getSaveLocation(
-      acceptedTypeGroups: allowedExtensions != null ? [xTypeGroup] : [],
+      acceptedTypeGroups: _buildTypeGroups(
+        title: title,
+        allowedExtensions: allowedExtensions,
+      ),
       initialDirectory: initialDirectory,
       suggestedName: defaultFileName,
     );
 
     return {'path': path?.path};
+  }
+
+  List<XTypeGroup> _buildTypeGroups({
+    required String? title,
+    required List<String>? allowedExtensions,
+  }) {
+    if (allowedExtensions == null || allowedExtensions.isEmpty) {
+      return const <XTypeGroup>[];
+    }
+
+    return <XTypeGroup>[
+      XTypeGroup(
+        label: title ?? 'Allowed files',
+        extensions: allowedExtensions,
+      ),
+    ];
+  }
+
+  String? _optionalString(Map<String, dynamic> params, String key) {
+    final value = params[key];
+    if (value == null) {
+      return null;
+    }
+    if (value is String) {
+      return value;
+    }
+    throw FluttronError('BAD_PARAMS', '"$key" must be a string');
+  }
+
+  List<String>? _optionalStringList(Map<String, dynamic> params, String key) {
+    final value = params[key];
+    if (value == null) {
+      return null;
+    }
+    if (value is! List) {
+      throw FluttronError('BAD_PARAMS', '"$key" must be a list of strings');
+    }
+
+    final normalized = <String>[];
+    for (final item in value) {
+      if (item is! String) {
+        throw FluttronError(
+          'BAD_PARAMS',
+          '"$key" must contain only string values',
+        );
+      }
+
+      final extension = item.trim().replaceFirst(RegExp(r'^\.'), '');
+      if (extension.isEmpty) {
+        throw FluttronError(
+          'BAD_PARAMS',
+          '"$key" must not contain empty extensions',
+        );
+      }
+      normalized.add(extension);
+    }
+
+    return normalized;
   }
 }

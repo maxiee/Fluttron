@@ -41,4 +41,20 @@ void main() {
     final EditorState cleared = withError.copyWith(clearErrorMessage: true);
     expect(cleared.errorMessage, isNull);
   });
+
+  test('copyWith can explicitly clear nullable path fields', () {
+    final EditorState seeded = EditorState.initial(initialContent: '# Doc')
+        .copyWith(
+          currentDirectoryPath: '/tmp/docs',
+          currentFilePath: '/tmp/docs/readme.md',
+        );
+
+    final EditorState cleared = seeded.copyWith(
+      currentDirectoryPath: null,
+      currentFilePath: null,
+    );
+
+    expect(cleared.currentDirectoryPath, isNull);
+    expect(cleared.currentFilePath, isNull);
+  });
 }

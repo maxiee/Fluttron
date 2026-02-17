@@ -1,5 +1,6 @@
 import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 
 /// A sidebar widget that displays a file tree of markdown files.
 ///
@@ -56,8 +57,8 @@ class Sidebar extends StatelessWidget {
     if (directoryPath == null) {
       displayName = 'No folder open';
     } else {
-      // Extract the folder name from the path
-      displayName = directoryPath!.split('/').where((s) => s.isNotEmpty).last;
+      final String basename = p.basename(directoryPath!);
+      displayName = basename.isEmpty ? directoryPath! : basename;
     }
 
     return Padding(
@@ -112,6 +113,7 @@ class Sidebar extends StatelessWidget {
         final showDirtyIndicator = isSelected && isDirty;
         return _FileTreeItem(
           file: file,
+          fileLabel: _buildFileLabel(file),
           isSelected: isSelected,
           showDirtyIndicator: showDirtyIndicator,
           onTap: () => onFileSelected(file),
@@ -136,18 +138,33 @@ class Sidebar extends StatelessWidget {
       ),
     );
   }
+
+  String _buildFileLabel(FileEntry file) {
+    final String? rootPath = directoryPath;
+    if (rootPath == null || rootPath.isEmpty) {
+      return file.name;
+    }
+
+    final String relativePath = p.relative(file.path, from: rootPath);
+    if (relativePath == '.' || relativePath.startsWith('..')) {
+      return file.name;
+    }
+    return relativePath;
+  }
 }
 
 /// A single item in the file tree.
 class _FileTreeItem extends StatelessWidget {
   const _FileTreeItem({
     required this.file,
+    required this.fileLabel,
     required this.isSelected,
     required this.showDirtyIndicator,
     required this.onTap,
   });
 
   final FileEntry file;
+  final String fileLabel;
   final bool isSelected;
   final bool showDirtyIndicator;
   final VoidCallback onTap;
@@ -170,7 +187,7 @@ class _FileTreeItem extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  file.name,
+                  fileLabel,
                   style: TextStyle(
                     fontSize: 13,
                     color: isSelected ? Colors.blue.shade900 : Colors.black87,

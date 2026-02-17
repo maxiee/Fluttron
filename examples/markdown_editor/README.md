@@ -2,18 +2,20 @@
 
 A production-grade Markdown editor built with [Fluttron](../../README.md).
 
-![Markdown Editor Screenshot](./docs/screenshot.png)
+Screenshot guide: [docs/screenshot.md](./docs/screenshot.md)
 
 ## Features
 
-- **File Tree Sidebar** — Browse and open `.md` files from any directory
+- **Recursive Markdown Discovery** — Scan subdirectories and list all `.md` files
 - **WYSIWYG Editing** — Milkdown-powered editor with GFM (GitHub Flavored Markdown) support
 - **Syntax Highlighting** — Code blocks with automatic language detection
 - **Theme Switching** — 4 built-in themes (Frame, Frame Dark, Nord, Nord Dark)
 - **Theme Persistence** — Your theme preference is saved across sessions
 - **Keyboard Shortcuts** — `Cmd/Ctrl + S` to save
+- **Save As Flow** — Save a new unsaved document with native save dialog
 - **Status Bar** — Real-time file name, save status, character count, and line count
 - **New File Creation** — Create new markdown files directly in the app
+- **Unsaved-Change Protection** — Confirm before replacing unsaved content
 - **Error Handling** — Graceful feedback for file operation failures
 
 ## Quick Start
@@ -62,6 +64,7 @@ flutter run -d macos
 
 - Edit your markdown content in the WYSIWYG editor
 - Press `Cmd+S` (macOS) or `Ctrl+S` (Windows/Linux) to save
+- If no file is open yet, Save triggers a native **Save As** dialog
 - The status bar shows "Unsaved" when there are pending changes
 - Click **Save** button in the toolbar as an alternative
 
@@ -77,6 +80,7 @@ flutter run -d macos
 examples/markdown_editor/
 ├── fluttron.json          # App manifest
 ├── README.md              # This file
+├── docs/                  # Screenshot and demo capture notes
 ├── host/                  # Flutter desktop host
 │   ├── lib/main.dart      # Host entry point
 │   ├── pubspec.yaml       # Host dependencies
@@ -104,8 +108,8 @@ This app demonstrates the Fluttron architecture:
 | Service | Methods | Purpose |
 |---------|---------|---------|
 | `file.*` | readFile, writeFile, listDirectory, createFile, exists | File system operations |
-| `dialog.*` | openDirectory | Native folder picker |
-| `kv.*` | get, set | Theme preference persistence |
+| `dialog.*` | openDirectory, saveFile | Native folder picker and Save As |
+| `storage.*` | kvGet, kvSet | Theme preference persistence |
 
 ### Web Packages Used
 
