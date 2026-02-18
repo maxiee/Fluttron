@@ -33,7 +33,7 @@
 
 ---
 
-## 当前阶段目标（更新于 2026-02-17）
+## 当前阶段目标（更新于 2026-02-18）
 
 ### 北极星目标
 
@@ -43,7 +43,7 @@
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
 - 保持"单版本可独立验收"的交付节奏。
-- **当前起始版本：v0073（v0061-v0072 已完成，Phase 2 / L3 已完成，Phase 3 / L2 进行中）**。
+- **当前起始版本：v0074（v0061-v0073 已完成，Phase 1-3 基本完成，仅剩最终收口）**。
 
 ### 当前能力基线（已具备）
 
@@ -281,7 +281,7 @@
 | v0070 | Phase 3 / L2 | 实现 Host 侧生成器（`*_generated.dart`，`switch/case` 路由 + Base 类） | §6.5(Host)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成代码可编译；路由与参数校验行为正确 | ✅ 已完成 |
 | v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | ✅ 已完成 |
 | v0072 | Phase 3 / L2 | 实现 Model 生成器（`fromMap/toMap`） | §6.5(Models)、§6.8、§6.10、§6.11 | v0069 | 生成模型序列化/反序列化测试通过 | ✅ 已完成 |
-| v0073 | Phase 3 / L2 | 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run` | §6.6、§6.10、§6.11 | v0070,v0071,v0072 | CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘 | 待开始 |
+| v0073 | Phase 3 / L2 | 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run` | §6.6、§6.10、§6.11 | v0070,v0071,v0072 | CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘 | ✅ 已完成 |
 | v0074 | Phase 3 / L2 | 完成边缘场景、错误文案、文档收口与最终验收 | §6.9、§6.11、§8、§9、§10 | v0073 | 真实契约样例生成可用；兼容性说明与使用文档完整 | 待开始 |
 
 ### 并行与节奏约束
@@ -308,6 +308,7 @@
 | v0070 | Host 侧生成器 | `HostServiceGenerator` 实现；生成 `switch/case` 路由、参数提取与校验、抽象 Base 类、helper 方法；32 个测试通过 |
 | v0071 | Client 侧生成器 | `ClientServiceGenerator` 实现；生成 typed method wrapper、参数构建、结果反序列化；27 个单元测试 + 4 个集成测试全部通过 |
 | v0072 | Model 生成器 | `ModelGenerator` 实现；生成 `fromMap()` factory 和 `toMap()` 方法；支持所有类型映射（String/int/double/bool/DateTime/List/Map/nullable/custom model）；50 个单元测试全部通过 |
+| v0073 | CLI `generate services` 命令 | `GenerateCommand` / `GenerateServicesCommand` 实现；支持 `--contract`、`--host-output`、`--client-output`、`--shared-output`、`--dry-run`；8 个单元测试全部通过 |
 
 ---
 
@@ -325,12 +326,12 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0073`
+- 当前起始版本：`v0074`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0072 已完成，进入 v0073（Phase 3 / L2）。
-- v0073 最小任务：
-  - 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run`。
-- v0073 实现前必读：`docs/feature/host_service_evolution_design.md` §6.6、§6.10、§6.11。
-- v0073 最小验收：
-  - CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘。
+- 当前状态：v0061-v0073 已完成，进入 v0074（Phase 3 / L2 最终收口）。
+- v0074 最小任务：
+  - 完成边缘场景、错误文案、文档收口与最终验收。
+- v0074 实现前必读：`docs/feature/host_service_evolution_design.md` §6.9、§6.11、§8、§9、§10。
+- v0074 最小验收：
+  - 真实契约样例生成可用；兼容性说明与使用文档完整。
 

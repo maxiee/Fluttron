@@ -280,7 +280,7 @@ Map<String, dynamic> _myMethod(Map<String, dynamic> params) {
 
 ## Example: Complete E2E Demo
 
-See [examples/host_service_demo](../../examples/host_service_demo/) for a complete working example that demonstrates:
+See [examples/host_service_demo](https://github.com/maxiee/Fluttron/tree/main/examples/host_service_demo) for a complete working example that demonstrates:
 
 - A `GreetingService` with `greet` and `echo` methods
 - Service registration in the Host
