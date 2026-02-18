@@ -43,7 +43,7 @@
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
 - 保持"单版本可独立验收"的交付节奏。
-- **当前起始版本：v0067（v0061-v0066 已完成，Phase 2 / L3 进行中）**。
+- **当前起始版本：v0069（v0061-v0068 已完成，Phase 2 / L3 已完成，Phase 3 / L2 进行中）**。
 
 ### 当前能力基线（已具备）
 
@@ -277,7 +277,7 @@
 | v0066 | Phase 2 / L3 | 将 `CreateCommand` 接入 `--type host_service`；补 `ProjectType`、成功提示、pubspec path 重写 | §5.4.1、§5.6、§5.7 | v0065 | `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构 | ✅ 已完成 |
 | v0067 | Phase 2 / L3 | 增加 `fluttron_host_service.json` 解析与诊断（可选）；补教程与 E2E（创建→注册→调用） | §5.3.1、§5.7、§7(Phase 2)、§10(L3) | v0066 | playground 内完成 custom service 端到端调用；文档可复现 | ✅ 已完成 |
 | v0068 | Phase 3 / L2 | 在 `fluttron_shared` 新增 `@FluttronServiceContract` / `@FluttronModel` 注解 | §6.3、§6.4、§7(Phase 3) | v0067 | 注解可导入可使用；示例 contract 可通过编译 | ✅ 已完成 |
-| v0069 | Phase 3 / L2 | 实现 Dart AST 解析器，提取 service contract / methods / model 字段 | §6.7、§6.8、§6.11 | v0068 | parser fixture 测试通过（含可选参数、nullable、List/Map） | 待开始 |
+| v0069 | Phase 3 / L2 | 实现 Dart AST 解析器，提取 service contract / methods / model 字段 | §6.7、§6.8、§6.11 | v0068 | parser fixture 测试通过（含可选参数、nullable、List/Map） | ✅ 已完成 |
 | v0070 | Phase 3 / L2 | 实现 Host 侧生成器（`*_generated.dart`，`switch/case` 路由 + Base 类） | §6.5(Host)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成代码可编译；路由与参数校验行为正确 | 待开始 |
 | v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | 待开始 |
 | v0072 | Phase 3 / L2 | 实现 Model 生成器（`fromMap/toMap`） | §6.5(Models)、§6.8、§6.10、§6.11 | v0069 | 生成模型序列化/反序列化测试通过 | 待开始 |
@@ -304,6 +304,7 @@
 | v0066 | CLI `--type host_service` | `CreateCommand` 接入 `host_service` 类型；`ProjectType.hostService` 枚举、成功提示、pubspec path 重写、验收通过 |
 | v0067 | E2E 验证与教程 | `examples/host_service_demo` 示例应用创建；`website/docs/getting-started/custom-services.md` 教程文档；services.md 更新；E2E custom service 调用验证完成 |
 | v0068 | 服务契约注解 | `FluttronServiceContract` / `FluttronModel` 注解已落地；示例 contract (`WeatherService`) 已创建并通过编译验证 |
+| v0069 | AST 解析器 | `ServiceContractParser` 实现；支持解析 contract/methods/params/models；28 个单元测试全部通过（含可选参数、nullable、List/Map） |
 
 ---
 
@@ -321,12 +322,12 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0069`
+- 当前起始版本：`v0070`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0068 已完成，进入 v0069（Phase 3 / L2）。
-- v0069 最小任务：
-  - 实现 Dart AST 解析器，提取 service contract / methods / model 字段。
-- v0069 实现前必读：`docs/feature/host_service_evolution_design.md` §6.7、§6.8、§6.11。
-- v0069 最小验收：
-  - parser fixture 测试通过（含可选参数、nullable、List/Map）。
+- 当前状态：v0061-v0069 已完成，进入 v0070（Phase 3 / L2）。
+- v0070 最小任务：
+  - 实现 Host 侧生成器（`*_generated.dart`，`switch/case` 路由 + Base 类）。
+- v0070 实现前必读：`docs/feature/host_service_evolution_design.md` §6.5(Host)、§6.8、§6.9、§6.10、§6.11。
+- v0070 最小验收：
+  - 生成代码可编译；路由与参数校验行为正确。
 

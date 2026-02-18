@@ -9,6 +9,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  analyzer: ^10.0.2
   args: ^2.7.0
   fluttron_shared:
     path: ../fluttron_shared
