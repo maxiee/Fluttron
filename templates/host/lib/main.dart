@@ -10,6 +10,7 @@
 //   - DialogService  (dialog.*)   — native open/save dialogs
 //   - ClipboardService (clipboard.*) — clipboard read/write
 //   - WindowService  (window.*)   — window control (title/size/fullscreen…)
+//   - LoggingService (logging.*)  — structured logging with ring buffer
 //
 // To add custom services:
 // 1. Create a service class extending FluttronService (see greeting_service.dart)
@@ -24,7 +25,7 @@ import 'package:fluttron_host/fluttron_host.dart';
 // import 'greeting_service.dart';
 
 void main() async {
-  // Default: run with all built-in services (including WindowService)
+  // Default: run with all built-in services (including WindowService + LoggingService)
   await runFluttronHost();
 
   // -----------------------------------------------------------------------
@@ -48,6 +49,7 @@ void main() async {
   //     ..register(DialogService())
   //     ..register(ClipboardService())
   //     ..register(WindowService())
+  //     ..register(LoggingService())
   //     ..register(GreetingService()); // Your custom service
   //
   //   await runFluttronHost(registry: registry);
@@ -69,7 +71,9 @@ void main() async {
   //   ..register(DialogService())
   //   ..register(ClipboardService())
   //   ..register(WindowService())
+  //   ..register(LoggingService())
   //   ..register(GreetingService()); // Add your custom services here
   //
   // await runFluttronHost(registry: registry);
+}
 }
