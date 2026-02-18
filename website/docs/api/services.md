@@ -109,11 +109,59 @@ final name = await storageService.get('user.name');
 
 ## Custom Services
 
+You can create custom Host services for app-specific needs. See the [Custom Services Tutorial](../getting-started/custom-services.md) for a complete guide.
+
+Quick example:
+
 ```dart
 final client = FluttronClient();
 final result = await client.invoke('greeting.greet', {'name': 'Alice'});
 print(result['message']); // "Hello, Alice!"
 ```
+
+### Creating a Custom Service
+
+1. **Define the service** (Host side):
+   ```dart
+   class GreetingService extends FluttronService {
+     @override
+     String get namespace => 'greeting';
+     
+     @override
+     Future<dynamic> handle(String method, Map<String, dynamic> params) async {
+       // Handle methods...
+     }
+   }
+   ```
+
+2. **Register the service**:
+   ```dart
+   void main() {
+     final registry = ServiceRegistry()
+       ..register(SystemService())
+       ..register(StorageService())
+       ..register(GreetingService()); // Your custom service
+     
+     runFluttronHost(registry: registry);
+   }
+   ```
+
+3. **Call from UI**:
+   ```dart
+   final result = await client.invoke('greeting.greet', {'name': 'Alice'});
+   ```
+
+### Using Service Packages
+
+For reusable services, use the CLI to create a service package:
+
+```bash
+fluttron create ./my_service --type host_service --name my_service
+```
+
+This generates both Host implementation and UI client stub packages.
+
+See the [Custom Services Tutorial](../getting-started/custom-services.md) for details.
 
 ## Generic invoke()
 
@@ -129,6 +177,7 @@ final result = await client.invoke('namespace.method', {
 
 ## Next Steps
 
-- [Host Layer](../architecture/host-layer.md)
-- [Renderer Layer](../architecture/renderer-layer.md)
-- [Web Views API](./web-views.md)
+- [Custom Services Tutorial](../getting-started/custom-services.md) — Create your own Host services
+- [Host Layer](../architecture/host-layer.md) — Deep dive into the Host layer
+- [Renderer Layer](../architecture/renderer-layer.md) — UI architecture
+- [Web Views API](./web-views.md) — Embed Web content

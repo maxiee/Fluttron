@@ -1,0 +1,15 @@
+{
+  "name": "host_service_demo",
+  "version": "1.0.0",
+  "entry": {
+    "uiProjectPath": "ui",
+    "hostAssetPath": "host/assets/www",
+    "index": "index.html"
+  },
+  "window": {
+    "title": "Host Service Demo",
+    "width": 600,
+    "height": 400,
+    "resizable": true
+  }
+}

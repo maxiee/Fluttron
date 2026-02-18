@@ -45,6 +45,21 @@ This generates:
 - `frontend/` (JavaScript source)
 - `web/ext/` (Built assets)
 
+### Create a Host Service Package
+
+Host service packages are reusable services that can be shared across Fluttron apps:
+
+```bash
+fluttron create ./my_service --name my_service --type host_service
+```
+
+This generates:
+- `fluttron_host_service.json`
+- `my_service_host/` (Host-side implementation)
+- `my_service_client/` (UI-side client stub)
+
+See [Custom Services](./custom-services.md) for details.
+
 ## 2. Build the UI
 
 For an app:
@@ -86,6 +101,7 @@ The default demo includes:
 |---------|-------------|
 | `fluttron create <path>` | Create a new app project |
 | `fluttron create <path> --type web_package` | Create a web package |
+| `fluttron create <path> --type host_service` | Create a host service package |
 | `fluttron build -p <path>` | Build the UI and copy to host |
 | `fluttron run -p <path>` | Run the host application |
 | `fluttron packages list -p <path>` | List discovered web packages in app dependencies |
