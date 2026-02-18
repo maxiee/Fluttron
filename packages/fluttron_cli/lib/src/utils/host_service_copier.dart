@@ -76,6 +76,13 @@ class HostServiceCopier {
       }
     }
 
+    if (entity is File) {
+      final fileName = p.basename(entity.path);
+      if (_shouldSkipFile(fileName)) {
+        return;
+      }
+    }
+
     // Transform file/directory names
     var destinationRelativePath = relativePath;
     substitutions.forEach((original, replacement) {
@@ -163,6 +170,17 @@ class HostServiceCopier {
   bool _shouldSkipDirectory(String dirName) {
     const skipDirs = {'node_modules', '.dart_tool', 'build', '.idea'};
     return skipDirs.contains(dirName);
+  }
+
+  /// Returns true if the file should be skipped during copy.
+  bool _shouldSkipFile(String fileName) {
+    const skipFiles = {
+      '.flutter-plugins',
+      '.flutter-plugins-dependencies',
+      '.DS_Store',
+      'pubspec.lock',
+    };
+    return skipFiles.contains(fileName);
   }
 
   /// Returns true if the file should be copied as binary (no text transformation).

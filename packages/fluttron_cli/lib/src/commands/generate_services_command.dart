@@ -129,27 +129,37 @@ class GenerateServicesCommand extends Command<int> {
     final className = contract.className;
     final snakeCaseName = _toSnakeCase(className);
 
-    // Generate host code
-    final hostGenerator = HostServiceGenerator(sourceFile: contractFileName);
-    final hostCode = hostGenerator.generate(contract);
-    final hostFileName = '${snakeCaseName}_generated.dart';
-
-    // Generate client code
-    final clientGenerator = ClientServiceGenerator(
-      sourceFile: contractFileName,
-    );
-    final clientCode = clientGenerator.generate(contract);
-    final clientFileName = '${snakeCaseName}_client_generated.dart';
-
-    // Generate model code
+    // Generate model code first so Host/Client can import the outputs.
     final modelGenerator = ModelGenerator(sourceFile: contractFileName);
     final modelCodes = <String, String>{};
     for (final model in models) {
       final modelSnakeCase = _toSnakeCase(model.className);
-      modelCodes['${modelSnakeCase}_generated.dart'] = modelGenerator.generate(
-        model,
-      );
+      final modelFileName = '${modelSnakeCase}_generated.dart';
+      modelCodes[modelFileName] = modelGenerator.generate(model);
     }
+    final modelFileNames = modelCodes.keys.toList(growable: false);
+
+    final hostGenerator = HostServiceGenerator(
+      sourceFile: contractFileName,
+      additionalImports: _resolveModelImports(
+        targetOutput: hostOutput,
+        sharedOutput: sharedOutput,
+        modelFileNames: modelFileNames,
+      ),
+    );
+    final hostCode = hostGenerator.generate(contract);
+    final hostFileName = '${snakeCaseName}_generated.dart';
+
+    final clientGenerator = ClientServiceGenerator(
+      sourceFile: contractFileName,
+      additionalImports: _resolveModelImports(
+        targetOutput: clientOutput,
+        sharedOutput: sharedOutput,
+        modelFileNames: modelFileNames,
+      ),
+    );
+    final clientCode = clientGenerator.generate(contract);
+    final clientFileName = '${snakeCaseName}_client_generated.dart';
 
     if (dryRun) {
       _printDryRun(
@@ -294,4 +304,125 @@ class GenerateServicesCommand extends Command<int> {
     }
     return buffer.toString();
   }
+
+  /// Resolves model import URIs for generated Host/Client files.
+  ///
+  /// Priority:
+  /// 1) `package:` imports when [sharedOutput] is under a Dart package `lib/`
+  /// 2) relative imports between output directories
+  List<String> _resolveModelImports({
+    required String? targetOutput,
+    required String? sharedOutput,
+    required List<String> modelFileNames,
+  }) {
+    if (modelFileNames.isEmpty) {
+      return const [];
+    }
+
+    final sortedFileNames = [...modelFileNames]..sort();
+
+    if (sharedOutput == null) {
+      if (targetOutput == null) {
+        return sortedFileNames;
+      }
+      final targetDir = p.normalize(p.absolute(targetOutput));
+      final cwd = p.normalize(Directory.current.absolute.path);
+      return sortedFileNames
+          .map((fileName) {
+            final modelPath = p.join(cwd, fileName);
+            final relative = p.relative(modelPath, from: targetDir);
+            return _toImportUri(relative);
+          })
+          .toList(growable: false);
+    }
+
+    final sharedDir = p.normalize(p.absolute(sharedOutput));
+    final packageImportBase = _resolvePackageImportBase(sharedDir);
+    if (packageImportBase != null) {
+      return sortedFileNames
+          .map((fileName) => '$packageImportBase/$fileName')
+          .toList(growable: false);
+    }
+
+    final fromDir = p.normalize(
+      p.absolute(targetOutput ?? Directory.current.path),
+    );
+    return sortedFileNames
+        .map((fileName) {
+          final modelPath = p.join(sharedDir, fileName);
+          final relative = p.relative(modelPath, from: fromDir);
+          return _toImportUri(relative);
+        })
+        .toList(growable: false);
+  }
+
+  String? _resolvePackageImportBase(String outputDirPath) {
+    final packageRoot = _findPackageRoot(Directory(outputDirPath));
+    if (packageRoot == null) {
+      return null;
+    }
+
+    final packageName = _readPackageNameFromPubspec(
+      File(p.join(packageRoot.path, 'pubspec.yaml')),
+    );
+    if (packageName == null || packageName.isEmpty) {
+      return null;
+    }
+
+    final libDir = p.normalize(p.join(packageRoot.path, 'lib'));
+    final normalizedOutputDir = p.normalize(outputDirPath);
+    final isUnderLib =
+        p.equals(libDir, normalizedOutputDir) ||
+        p.isWithin(libDir, normalizedOutputDir);
+    if (!isUnderLib) {
+      return null;
+    }
+
+    final relativeFromLib = p.relative(normalizedOutputDir, from: libDir);
+    if (relativeFromLib == '.') {
+      return 'package:$packageName';
+    }
+    return 'package:$packageName/${_toPosixPath(relativeFromLib)}';
+  }
+
+  Directory? _findPackageRoot(Directory startDir) {
+    var current = startDir.absolute;
+    while (true) {
+      final pubspec = File(p.join(current.path, 'pubspec.yaml'));
+      if (pubspec.existsSync()) {
+        return current;
+      }
+
+      final parent = current.parent;
+      if (parent.path == current.path) {
+        return null;
+      }
+      current = parent;
+    }
+  }
+
+  String? _readPackageNameFromPubspec(File pubspecFile) {
+    if (!pubspecFile.existsSync()) {
+      return null;
+    }
+    final content = pubspecFile.readAsStringSync();
+    final match = RegExp(
+      r'''^name:\s*["']?([a-zA-Z0-9_]+)["']?\s*$''',
+      multiLine: true,
+    ).firstMatch(content);
+    return match?.group(1);
+  }
+
+  String _toImportUri(String path) {
+    final normalized = p.posix.normalize(_toPosixPath(path));
+    if (normalized.startsWith('package:') || normalized.startsWith('dart:')) {
+      return normalized;
+    }
+    if (normalized.startsWith('../') || normalized.startsWith('./')) {
+      return normalized;
+    }
+    return './$normalized';
+  }
+
+  String _toPosixPath(String path) => path.replaceAll('\\', '/');
 }

@@ -39,6 +39,35 @@ void main() {
         final code = generator.generate(contract);
         expect(code, contains("import 'package:fluttron_ui/fluttron_ui.dart'"));
       });
+
+      test('includes additional model imports', () {
+        final generatorWithModels = const ClientServiceGenerator(
+          generatedBy: 'test',
+          sourceFile: 'test_contract.dart',
+          additionalImports: [
+            'package:weather_service_shared/src/weather_info_generated.dart',
+            'package:weather_service_shared/src/weather_forecast_generated.dart',
+          ],
+        );
+        final contract = ParsedServiceContract(
+          className: 'TestService',
+          namespace: 'test',
+          methods: [],
+        );
+        final code = generatorWithModels.generate(contract);
+        expect(
+          code,
+          contains(
+            "import 'package:weather_service_shared/src/weather_info_generated.dart';",
+          ),
+        );
+        expect(
+          code,
+          contains(
+            "import 'package:weather_service_shared/src/weather_forecast_generated.dart';",
+          ),
+        );
+      });
     });
 
     group('class declaration', () {

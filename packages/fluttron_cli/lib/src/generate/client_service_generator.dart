@@ -11,6 +11,7 @@ class ClientServiceGenerator {
   const ClientServiceGenerator({
     this.generatedBy = 'fluttron generate services',
     this.sourceFile,
+    this.additionalImports = const [],
   });
 
   /// The tool name to include in the generated header.
@@ -18,6 +19,9 @@ class ClientServiceGenerator {
 
   /// The source file path to include in the generated header.
   final String? sourceFile;
+
+  /// Additional import URIs required by generated code (for example models).
+  final List<String> additionalImports;
 
   /// Generates the Client-side Dart code for the given [contract].
   ///
@@ -59,7 +63,15 @@ class ClientServiceGenerator {
   }
 
   void _writeImports(StringBuffer buffer) {
-    buffer.writeln("import 'package:fluttron_ui/fluttron_ui.dart';");
+    const baseImports = <String>['package:fluttron_ui/fluttron_ui.dart'];
+
+    final seen = <String>{};
+    for (final importUri in <String>[...baseImports, ...additionalImports]) {
+      if (!seen.add(importUri)) {
+        continue;
+      }
+      buffer.writeln("import '$importUri';");
+    }
     buffer.writeln();
   }
 

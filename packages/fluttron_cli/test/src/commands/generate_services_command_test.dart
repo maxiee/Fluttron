@@ -258,6 +258,76 @@ void main() {
       expect(content, contains('_client.invoke'));
     });
 
+    test(
+      'uses package imports when shared output is under a Dart package lib directory',
+      () async {
+        final hostOutput = p.join(tempDir.path, 'host_pkg', 'lib', 'src');
+        final clientOutput = p.join(tempDir.path, 'client_pkg', 'lib', 'src');
+        final sharedPackageRoot = Directory(
+          p.join(tempDir.path, 'weather_service_shared'),
+        );
+        final sharedOutput = p.join(sharedPackageRoot.path, 'lib', 'src');
+
+        await sharedPackageRoot.create(recursive: true);
+        await File(
+          p.join(sharedPackageRoot.path, 'pubspec.yaml'),
+        ).writeAsString('''
+name: weather_service_shared
+description: test shared package
+version: 0.1.0
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+''');
+
+        final exitCode = await runCli([
+          'generate',
+          'services',
+          '--contract',
+          contractFixturePath,
+          '--host-output',
+          hostOutput,
+          '--client-output',
+          clientOutput,
+          '--shared-output',
+          sharedOutput,
+        ]);
+
+        expect(exitCode, equals(0));
+
+        final hostContent = await File(
+          p.join(hostOutput, 'weather_service_generated.dart'),
+        ).readAsString();
+        final clientContent = await File(
+          p.join(clientOutput, 'weather_service_client_generated.dart'),
+        ).readAsString();
+
+        expect(
+          hostContent,
+          contains(
+            "import 'package:weather_service_shared/src/weather_info_generated.dart';",
+          ),
+        );
+        expect(
+          hostContent,
+          contains(
+            "import 'package:weather_service_shared/src/weather_forecast_generated.dart';",
+          ),
+        );
+        expect(
+          clientContent,
+          contains(
+            "import 'package:weather_service_shared/src/weather_info_generated.dart';",
+          ),
+        );
+        expect(
+          clientContent,
+          contains(
+            "import 'package:weather_service_shared/src/weather_forecast_generated.dart';",
+          ),
+        );
+      },
+    );
+
     test('generated model code has serialization', () async {
       final sharedOutput = p.join(tempDir.path, 'shared');
       final hostOutput = p.join(tempDir.path, 'host');

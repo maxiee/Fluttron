@@ -157,13 +157,13 @@ class ParsedType {
     this.typeArguments = const [],
   });
 
-  /// The type name as it appears in source (e.g., 'String', 'List<int>').
+  /// The type name as it appears in source (e.g., `String`, `List<int>`).
   final String displayName;
 
   /// Whether this type is nullable (has '?' suffix).
   final bool isNullable;
 
-  /// Type arguments for generic types (e.g., [int] for List<int>).
+  /// Type arguments for generic types (e.g., [int] for `List<int>`).
   final List<ParsedType> typeArguments;
 
   /// The base type name without nullability or type arguments.
@@ -199,7 +199,7 @@ class ParsedType {
   /// Whether this is dynamic.
   bool get isDynamic => baseName == 'dynamic';
 
-  /// The inner type for Future<T> or List<T>.
+  /// The inner type for `Future<T>` or `List<T>`.
   ParsedType? get innerType =>
       typeArguments.isNotEmpty ? typeArguments.first : null;
 

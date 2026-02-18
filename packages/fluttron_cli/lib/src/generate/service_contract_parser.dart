@@ -108,7 +108,7 @@ class ServiceContractParser {
 
     // Extract methods
     final methods = <ParsedMethod>[];
-    for (final member in classDecl.members) {
+    for (final member in _classMembers(classDecl)) {
       if (member is MethodDeclaration) {
         final method = _parseMethod(member);
         if (method != null) {
@@ -134,7 +134,7 @@ class ServiceContractParser {
 
     // Extract fields
     final fields = <ParsedField>[];
-    for (final member in classDecl.members) {
+    for (final member in _classMembers(classDecl)) {
       if (member is FieldDeclaration) {
         if (member.isStatic) {
           // Static fields are not part of instance serialization.
@@ -340,7 +340,7 @@ class ServiceContractParser {
       errors.add('Service contract "$className" must be declared as abstract.');
     }
 
-    if (classDecl.typeParameters != null) {
+    if (_hasClassTypeParameters(classDecl)) {
       errors.add(
         'Service contract "$className" must not declare type parameters.',
       );
@@ -350,7 +350,7 @@ class ServiceContractParser {
       errors.add('Service contract "$className" has an empty namespace.');
     }
 
-    for (final member in classDecl.members) {
+    for (final member in _classMembers(classDecl)) {
       if (member is! MethodDeclaration) {
         continue;
       }
@@ -405,11 +405,11 @@ class ServiceContractParser {
   ) {
     final className = model.className;
 
-    if (classDecl.typeParameters != null) {
+    if (_hasClassTypeParameters(classDecl)) {
       errors.add('Model "$className" must not declare type parameters.');
     }
 
-    for (final member in classDecl.members) {
+    for (final member in _classMembers(classDecl)) {
       if (member is! FieldDeclaration || member.isStatic) {
         continue;
       }
@@ -480,6 +480,18 @@ class ServiceContractParser {
       '',
       ParsedType(displayName: 'dynamic', isNullable: false),
     );
+  }
+
+  Iterable<ClassMember> _classMembers(ClassDeclaration classDecl) {
+    final body = classDecl.body;
+    if (body is BlockClassBody) {
+      return body.members;
+    }
+    return const <ClassMember>[];
+  }
+
+  bool _hasClassTypeParameters(ClassDeclaration classDecl) {
+    return classDecl.namePart.typeParameters != null;
   }
 }
 

@@ -13,6 +13,7 @@ class HostServiceGenerator {
   const HostServiceGenerator({
     this.generatedBy = 'fluttron generate services',
     this.sourceFile,
+    this.additionalImports = const [],
   });
 
   /// The tool name to include in the generated header.
@@ -20,6 +21,9 @@ class HostServiceGenerator {
 
   /// The source file path to include in the generated header.
   final String? sourceFile;
+
+  /// Additional import URIs required by generated code (for example models).
+  final List<String> additionalImports;
 
   /// Generates the Host-side Dart code for the given [contract].
   ///
@@ -70,8 +74,18 @@ class HostServiceGenerator {
   }
 
   void _writeImports(StringBuffer buffer) {
-    buffer.writeln("import 'package:fluttron_host/fluttron_host.dart';");
-    buffer.writeln("import 'package:fluttron_shared/fluttron_shared.dart';");
+    const baseImports = <String>[
+      'package:fluttron_host/fluttron_host.dart',
+      'package:fluttron_shared/fluttron_shared.dart',
+    ];
+
+    final seen = <String>{};
+    for (final importUri in <String>[...baseImports, ...additionalImports]) {
+      if (!seen.add(importUri)) {
+        continue;
+      }
+      buffer.writeln("import '$importUri';");
+    }
     buffer.writeln();
   }
 

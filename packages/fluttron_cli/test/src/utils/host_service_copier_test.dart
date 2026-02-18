@@ -326,6 +326,44 @@ void main() {
       final content = await readme.readAsString();
       expect(content, contains('# test_service'));
     });
+
+    test('skips transient Flutter and lock files', () async {
+      final copier = HostServiceCopier();
+
+      await File(
+        p.join(templateDir.path, '.flutter-plugins-dependencies'),
+      ).writeAsString('{}');
+      await File(
+        p.join(templateDir.path, 'pubspec.lock'),
+      ).writeAsString('lock');
+      await File(p.join(templateDir.path, '.DS_Store')).writeAsString('x');
+      await File(
+        p.join(templateDir.path, 'README.md'),
+      ).writeAsString('# template_service');
+
+      await copier.copyAndTransform(
+        serviceName: 'safe_service',
+        sourceDir: templateDir,
+        destinationDir: targetDir,
+      );
+
+      expect(
+        await File(
+          p.join(targetDir.path, '.flutter-plugins-dependencies'),
+        ).exists(),
+        isFalse,
+      );
+      expect(
+        await File(p.join(targetDir.path, 'pubspec.lock')).exists(),
+        isFalse,
+      );
+      expect(await File(p.join(targetDir.path, '.DS_Store')).exists(), isFalse);
+
+      final readme = File(p.join(targetDir.path, 'README.md'));
+      expect(await readme.exists(), isTrue);
+      final content = await readme.readAsString();
+      expect(content, contains('# safe_service'));
+    });
   });
 
   group('Naming conventions', () {
