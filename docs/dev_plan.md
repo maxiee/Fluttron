@@ -43,7 +43,7 @@
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
 - 保持"单版本可独立验收"的交付节奏。
-- **当前起始版本：v0071（v0061-v0070 已完成，Phase 2 / L3 已完成，Phase 3 / L2 进行中）**。
+- **当前起始版本：v0072（v0061-v0071 已完成，Phase 2 / L3 已完成，Phase 3 / L2 进行中）**。
 
 ### 当前能力基线（已具备）
 
@@ -279,7 +279,7 @@
 | v0068 | Phase 3 / L2 | 在 `fluttron_shared` 新增 `@FluttronServiceContract` / `@FluttronModel` 注解 | §6.3、§6.4、§7(Phase 3) | v0067 | 注解可导入可使用；示例 contract 可通过编译 | ✅ 已完成 |
 | v0069 | Phase 3 / L2 | 实现 Dart AST 解析器，提取 service contract / methods / model 字段 | §6.7、§6.8、§6.11 | v0068 | parser fixture 测试通过（含可选参数、nullable、List/Map） | ✅ 已完成 |
 | v0070 | Phase 3 / L2 | 实现 Host 侧生成器（`*_generated.dart`，`switch/case` 路由 + Base 类） | §6.5(Host)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成代码可编译；路由与参数校验行为正确 | ✅ 已完成 |
-| v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | 待开始 |
+| v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | ✅ 已完成 |
 | v0072 | Phase 3 / L2 | 实现 Model 生成器（`fromMap/toMap`） | §6.5(Models)、§6.8、§6.10、§6.11 | v0069 | 生成模型序列化/反序列化测试通过 | 待开始 |
 | v0073 | Phase 3 / L2 | 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run` | §6.6、§6.10、§6.11 | v0070,v0071,v0072 | CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘 | 待开始 |
 | v0074 | Phase 3 / L2 | 完成边缘场景、错误文案、文档收口与最终验收 | §6.9、§6.11、§8、§9、§10 | v0073 | 真实契约样例生成可用；兼容性说明与使用文档完整 | 待开始 |
@@ -306,6 +306,7 @@
 | v0068 | 服务契约注解 | `FluttronServiceContract` / `FluttronModel` 注解已落地；示例 contract (`WeatherService`) 已创建并通过编译验证 |
 | v0069 | AST 解析器 | `ServiceContractParser` 实现；支持解析 contract/methods/params/models；28 个单元测试全部通过（含可选参数、nullable、List/Map） |
 | v0070 | Host 侧生成器 | `HostServiceGenerator` 实现；生成 `switch/case` 路由、参数提取与校验、抽象 Base 类、helper 方法；32 个测试通过 |
+| v0071 | Client 侧生成器 | `ClientServiceGenerator` 实现；生成 typed method wrapper、参数构建、结果反序列化；27 个单元测试 + 4 个集成测试全部通过 |
 
 ---
 
@@ -323,12 +324,12 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0071`
+- 当前起始版本：`v0072`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0070 已完成，进入 v0071（Phase 3 / L2）。
-- v0071 最小任务：
-  - 实现 Client 侧生成器（typed method wrapper）。
-- v0071 实现前必读：`docs/feature/host_service_evolution_design.md` §6.5(Client)、§6.8、§6.9、§6.10、§6.11。
-- v0071 最小验收：
-  - 生成 client 可编译并正确调用 `namespace.method`。
+- 当前状态：v0061-v0071 已完成，进入 v0072（Phase 3 / L2）。
+- v0072 最小任务：
+  - 实现 Model 生成器（`fromMap/toMap`）。
+- v0072 实现前必读：`docs/feature/host_service_evolution_design.md` §6.5(Models)、§6.8、§6.10、§6.11。
+- v0072 最小验收：
+  - 生成模型序列化/反序列化测试通过。
 
