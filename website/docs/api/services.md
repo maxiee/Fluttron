@@ -178,6 +178,8 @@ final result = await client.invoke('namespace.method', {
 ## Next Steps
 
 - [Custom Services Tutorial](../getting-started/custom-services.md) — Create your own Host services
+- [Code Generation](./codegen.md) — Generate type-safe Host/Client code from contracts
+- [Annotations Reference](./annotations.md) — Service contract and model annotations
 - [Host Layer](../architecture/host-layer.md) — Deep dive into the Host layer
 - [Renderer Layer](../architecture/renderer-layer.md) — UI architecture
 - [Web Views API](./web-views.md) — Embed Web content

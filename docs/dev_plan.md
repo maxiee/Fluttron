@@ -37,13 +37,13 @@
 
 ### 北极星目标
 
-`markdown_editor`（v0051-v0060）已完成并收口，当前切换到下一重大需求 `host_service_evolution`（v0061-v0074）：
+`markdown_editor`（v0051-v0060）已完成并收口，`host_service_evolution`（v0061-v0074）已完成并收口：
 
-- 以 `docs/feature/host_service_evolution_design.md` 为设计基准推进 L1 → L3 → L2。
-- 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
-- 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
-- 保持"单版本可独立验收"的交付节奏。
-- **当前起始版本：v0074（v0061-v0073 已完成，Phase 1-3 基本完成，仅剩最终收口）**。
+- 以 `docs/feature/host_service_evolution_design.md` 为设计基准完成 L1 → L3 → L2 全部阶段
+- v0061-v0063（L1）：框架内建服务客户端上收 + `markdown_editor` 迁移 ✅
+- v0064-v0067（L3）：`host_service` 模板 + `fluttron create --type host_service` ✅
+- v0068-v0074（L2）：`fluttron generate services` 代码生成完整闭环 ✅
+- **当前状态：host_service_evolution 需求已完成，进入下一需求规划阶段**
 
 ### 当前能力基线（已具备）
 
@@ -65,12 +65,14 @@
 
 ### 当前剩余差距
 
-| # | 差距 | 说明 |
+所有已知差距已在 host_service_evolution 需求中解决：
+
+| # | 差距 | 状态 |
 |---|---|---|
-| 1 | ~~内建服务 Client 仍分散在应用层~~ | ✅ 已解决（v0061-v0063）：所有内建 Client 已上收到框架层，`markdown_editor` 已完成迁移 |
-| 2 | 缺少 `host_service` 一键脚手架 | CLI 仍不支持 `fluttron create --type host_service` 生成 Host/UI 双包 |
-| 3 | 缺少服务契约代码生成 | `FluttronService.handle` 仍需手写 `switch/case`，契约演进成本高 |
-| 4 | 服务文档与迁移路径未闭环 | built-in client API、迁移指南、custom service 教程尚未统一收口 |
+| 1 | 内建服务 Client 上收到框架层 | ✅ 已解决（v0061-v0063） |
+| 2 | 缺少 `host_service` 一键脚手架 | ✅ 已解决（v0064-v0066） |
+| 3 | 缺少服务契约代码生成 | ✅ 已解决（v0068-v0073） |
+| 4 | 服务文档与迁移路径未闭环 | ✅ 已解决（v0074） |
 
 ---
 
@@ -282,7 +284,7 @@
 | v0071 | Phase 3 / L2 | 实现 Client 侧生成器（typed method wrapper） | §6.5(Client)、§6.8、§6.9、§6.10、§6.11 | v0069 | 生成 client 可编译并正确调用 `namespace.method` | ✅ 已完成 |
 | v0072 | Phase 3 / L2 | 实现 Model 生成器（`fromMap/toMap`） | §6.5(Models)、§6.8、§6.10、§6.11 | v0069 | 生成模型序列化/反序列化测试通过 | ✅ 已完成 |
 | v0073 | Phase 3 / L2 | 接入 `fluttron generate services` 命令，支持 `--contract`、输出目录、`--dry-run` | §6.6、§6.10、§6.11 | v0070,v0071,v0072 | CLI 一次生成 Host/Client/Model 文件；`--dry-run` 仅预览不写盘 | ✅ 已完成 |
-| v0074 | Phase 3 / L2 | 完成边缘场景、错误文案、文档收口与最终验收 | §6.9、§6.11、§8、§9、§10 | v0073 | 真实契约样例生成可用；兼容性说明与使用文档完整 | 待开始 |
+| v0074 | Phase 3 / L2 | 完成边缘场景、错误文案、文档收口与最终验收 | §6.9、§6.11、§8、§9、§10 | v0073 | 真实契约样例生成可用；兼容性说明与使用文档完整 | ✅ 已完成 |
 
 ### 并行与节奏约束
 
@@ -309,6 +311,7 @@
 | v0071 | Client 侧生成器 | `ClientServiceGenerator` 实现；生成 typed method wrapper、参数构建、结果反序列化；27 个单元测试 + 4 个集成测试全部通过 |
 | v0072 | Model 生成器 | `ModelGenerator` 实现；生成 `fromMap()` factory 和 `toMap()` 方法；支持所有类型映射（String/int/double/bool/DateTime/List/Map/nullable/custom model）；50 个单元测试全部通过 |
 | v0073 | CLI `generate services` 命令 | `GenerateCommand` / `GenerateServicesCommand` 实现；支持 `--contract`、`--host-output`、`--client-output`、`--shared-output`、`--dry-run`；8 个单元测试全部通过 |
+| v0074 | 文档收口与最终验收 | `website/docs/api/codegen.md` + `website/docs/api/annotations.md` 文档完成；真实契约样例（TodoService）E2E 测试通过；155 个生成器测试全部通过 |
 
 ---
 
@@ -326,12 +329,16 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0074`
-- 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0073 已完成，进入 v0074（Phase 3 / L2 最终收口）。
-- v0074 最小任务：
-  - 完成边缘场景、错误文案、文档收口与最终验收。
-- v0074 实现前必读：`docs/feature/host_service_evolution_design.md` §6.9、§6.11、§8、§9、§10。
-- v0074 最小验收：
-  - 真实契约样例生成可用；兼容性说明与使用文档完整。
+- 当前状态：`host_service_evolution` 需求（v0061-v0074）已全部完成并收口
+- 下一需求规划：待定
+- 已完成的重大能力：
+  - ✅ CLI create/build/run 主链路
+  - ✅ Host ↔ UI Bridge 协议
+  - ✅ Flutter Web 嵌入 JS 视图 + 事件桥
+  - ✅ Web Package 机制（发现、收集、注入、注册）
+  - ✅ `fluttron_milkdown` 复杂包样板
+  - ✅ `markdown_editor` 示例应用
+  - ✅ 内建服务框架层 Client（File/Dialog/Clipboard/System/Storage）
+  - ✅ `host_service` 模板与 `fluttron create --type host_service`
+  - ✅ `fluttron generate services` 代码生成 CLI
 
