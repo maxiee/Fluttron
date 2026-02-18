@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），当前入口版本为 v0080**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080 已完成，当前入口版本为 v0081**
 
 ### 当前能力基线（已具备）
 
@@ -348,7 +348,7 @@
 
 | 版本 | 最小可执行任务 | 技术方案必读章节 | 依赖 | 最小验收 | 状态 |
 |---|---|---|---|---|---|
-| v0080 | 在 `fluttron_host` 新增 `WindowService`（9 个方法：setTitle/setSize/getSize/minimize/maximize/setFullScreen/isFullScreen/center/setMinSize）；引入 `window_manager` 依赖；注册至默认服务列表 | `docs/feature/v1_release_roadmap.md §v0080` | v0079 | `WindowService` 类存在并已注册；`flutter analyze packages/fluttron_host` 通过 | ⬜ 待开始 |
+| v0080 | 在 `fluttron_host` 新增 `WindowService`（9 个方法：setTitle/setSize/getSize/minimize/maximize/setFullScreen/isFullScreen/center/setMinSize）；引入 `window_manager` 依赖；注册至默认服务列表 | `docs/feature/v1_release_roadmap.md §v0080` | v0079 | `WindowService` 类存在并已注册；`flutter analyze packages/fluttron_host` 通过 | ✅ 已完成 |
 | v0081 | 为 `WindowService` 编写完整单元测试（覆盖 9 个方法 + 错误处理 + METHOD_NOT_FOUND） | `docs/feature/v1_release_roadmap.md §v0081` | v0080 | `window_service_test.dart` 存在；`flutter test packages/fluttron_host` 全通过；错误场景已覆盖 | ⬜ 待开始 |
 | v0082 | 在 `fluttron_ui` 新增 `WindowServiceClient`（9 个 typed 方法）；从 `fluttron_ui.dart` 导出；补测试 | `docs/feature/v1_release_roadmap.md §v0082` | v0080 | `WindowServiceClient` 可从 `fluttron_ui.dart` 导入；测试全通过；`flutter analyze packages/fluttron_ui` 通过 | ⬜ 待开始 |
 | v0083 | 更新 host 模板 `main.dart` 与 playground 注册 `WindowService`；更新 `website/docs/api/services.md` 补 `window.*` 文档 | `docs/feature/v1_release_roadmap.md §v0083` | v0082 | 新建 app 模板默认包含 WindowService；services.md 有 window 章节；playground 演示窗口控制可用 | ⬜ 待开始 |
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0080`（在 `fluttron_host` 新增 `WindowService`；引入 `window_manager` 依赖；注册至默认服务列表）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0080`
-- **最小验收**：`WindowService` 类存在并已注册；`flutter analyze packages/fluttron_host` 通过
+- **当前入口**：`v0081`（为 `WindowService` 编写完整单元测试）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0081`
+- **最小验收**：`window_service_test.dart` 存在；`flutter test packages/fluttron_host` 全通过；错误场景已覆盖
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议
