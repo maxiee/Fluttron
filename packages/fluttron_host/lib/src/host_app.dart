@@ -8,9 +8,12 @@ import 'package:fluttron_host/src/services/file_service.dart';
 import 'package:fluttron_host/src/services/service_registry.dart';
 import 'package:fluttron_host/src/services/storage_service.dart';
 import 'package:fluttron_host/src/services/system_service.dart';
+import 'package:fluttron_host/src/services/window_service.dart';
+import 'package:window_manager/window_manager.dart';
 
-void runFluttronHost({ServiceRegistry? registry}) {
+Future<void> runFluttronHost({ServiceRegistry? registry}) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
 
   final serviceRegistry = registry ?? createDefaultServiceRegistry();
 
@@ -23,7 +26,8 @@ ServiceRegistry createDefaultServiceRegistry() {
     ..register(StorageService())
     ..register(FileService())
     ..register(DialogService())
-    ..register(ClipboardService());
+    ..register(ClipboardService())
+    ..register(WindowService());
 }
 
 class FluttronHostApp extends StatelessWidget {

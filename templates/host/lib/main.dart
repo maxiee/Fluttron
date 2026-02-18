@@ -17,9 +17,9 @@ import 'package:fluttron_host/fluttron_host.dart';
 // Uncomment to import your custom service:
 // import 'greeting_service.dart';
 
-void main() {
+void main() async {
   // Default: run with built-in services only
-  runFluttronHost();
+  await runFluttronHost();
 
   // -----------------------------------------------------------------------
   // ALTERNATIVE: Run with custom services
