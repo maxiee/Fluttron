@@ -126,29 +126,46 @@ class ClientServiceGenerator {
     // Parameters
     buffer.write('(');
 
-    final positionalParams = method.parameters
-        .where((p) => !p.isNamed)
+    final requiredPositionalParams = method.parameters
+        .where((p) => !p.isNamed && p.isRequired)
+        .toList();
+    final optionalPositionalParams = method.parameters
+        .where((p) => !p.isNamed && !p.isRequired)
         .toList();
     final namedParams = method.parameters.where((p) => p.isNamed).toList();
 
-    // Positional parameters
-    for (var i = 0; i < positionalParams.length; i++) {
-      final param = positionalParams[i];
-      buffer.write('${param.type.displayName} ${param.name}');
-      if (i < positionalParams.length - 1 || namedParams.isNotEmpty) {
+    var needsSeparator = false;
+
+    for (final param in requiredPositionalParams) {
+      if (needsSeparator) {
         buffer.write(', ');
       }
+      _writeParameterDeclaration(buffer, param);
+      needsSeparator = true;
     }
 
-    // Named parameters
+    if (optionalPositionalParams.isNotEmpty) {
+      if (needsSeparator) {
+        buffer.write(', ');
+      }
+      buffer.write('[');
+      for (var i = 0; i < optionalPositionalParams.length; i++) {
+        _writeParameterDeclaration(buffer, optionalPositionalParams[i]);
+        if (i < optionalPositionalParams.length - 1) {
+          buffer.write(', ');
+        }
+      }
+      buffer.write(']');
+      needsSeparator = true;
+    }
+
     if (namedParams.isNotEmpty) {
+      if (needsSeparator) {
+        buffer.write(', ');
+      }
       buffer.write('{');
       for (var i = 0; i < namedParams.length; i++) {
-        final param = namedParams[i];
-        buffer.write('${param.type.displayName} ${param.name}');
-        if (param.hasDefaultValue) {
-          buffer.write(' = ${param.defaultValue}');
-        }
+        _writeParameterDeclaration(buffer, namedParams[i]);
         if (i < namedParams.length - 1) {
           buffer.write(', ');
         }
@@ -159,6 +176,22 @@ class ClientServiceGenerator {
     buffer.write(')');
 
     return buffer.toString();
+  }
+
+  void _writeParameterDeclaration(
+    StringBuffer buffer,
+    ParsedParameter parameter,
+  ) {
+    if (parameter.isNamed &&
+        parameter.isRequired &&
+        !parameter.hasDefaultValue) {
+      buffer.write('required ');
+    }
+
+    buffer.write('${parameter.type.displayName} ${parameter.name}');
+    if (parameter.hasDefaultValue) {
+      buffer.write(' = ${parameter.defaultValue}');
+    }
   }
 
   void _writeInvokeCall(
@@ -184,13 +217,20 @@ class ClientServiceGenerator {
     buffer.writeln('      {');
 
     for (final param in method.parameters) {
+      final omitNullOptional =
+          param.isNamed && param.type.isNullable && !param.hasDefaultValue;
+      final serializedExpr = _serializeForTransportExpression(
+        param.name,
+        omitNullOptional ? param.type.asNonNullable : param.type,
+      );
+
       // Only include non-null optional parameters in the params map
-      if (param.isNamed && param.type.isNullable && !param.hasDefaultValue) {
+      if (omitNullOptional) {
         buffer.writeln(
-          "        if (${param.name} != null) '${param.name}': ${param.name},",
+          "        if (${param.name} != null) '${param.name}': $serializedExpr,",
         );
       } else {
-        buffer.writeln("        '${param.name}': ${param.name},");
+        buffer.writeln("        '${param.name}': $serializedExpr,");
       }
     }
 
@@ -200,112 +240,93 @@ class ClientServiceGenerator {
   void _writeReturnStatement(StringBuffer buffer, ParsedMethod method) {
     final returnType = method.returnType.innerType;
 
-    // Handle void return
     if (returnType == null || returnType.isVoid) {
-      // No return needed for void
       return;
     }
 
-    // Handle nullable return type
-    if (returnType.isNullable && returnType.isBasicType) {
-      _writeNullableBasicTypeReturn(buffer, returnType);
-      return;
-    }
-
-    // Handle basic return types
-    if (returnType.isBasicType && !returnType.isList && !returnType.isMap) {
-      _writeBasicTypeReturn(buffer, returnType);
-      return;
-    }
-
-    // Handle List types
-    if (returnType.isList) {
-      _writeListReturn(buffer, returnType);
-      return;
-    }
-
-    // Handle Map types
-    if (returnType.isMap) {
-      buffer.writeln('    return Map<String, dynamic>.from(result as Map);');
-      return;
-    }
-
-    // Handle custom model types
-    _writeModelReturn(buffer, returnType);
+    final sourceExpr =
+        returnType.isBasicType && !returnType.isList && !returnType.isMap
+        ? "result['result']"
+        : 'result';
+    final deserializeExpr = _deserializeFromTransportExpression(
+      sourceExpr,
+      returnType,
+    );
+    buffer.writeln('    return $deserializeExpr;');
   }
 
-  void _writeBasicTypeReturn(StringBuffer buffer, ParsedType returnType) {
-    final baseName = returnType.baseName;
-
-    if (baseName == 'DateTime') {
-      buffer.writeln("    return DateTime.parse(result['result'] as String);");
-    } else {
-      buffer.writeln(
-        "    return result['result'] as ${returnType.displayName};",
-      );
-    }
-  }
-
-  void _writeNullableBasicTypeReturn(
-    StringBuffer buffer,
-    ParsedType returnType,
-  ) {
-    final baseName = returnType.baseName;
-
-    if (baseName == 'DateTime') {
-      buffer.writeln("    final value = result['result'];");
-      buffer.writeln("    if (value == null) return null;");
-      buffer.writeln("    return DateTime.parse(value as String);");
-    } else {
-      buffer.writeln(
-        "    return result['result'] as ${returnType.displayName};",
-      );
-    }
-  }
-
-  void _writeListReturn(StringBuffer buffer, ParsedType returnType) {
-    final innerType = returnType.innerType;
-
-    if (innerType == null) {
-      buffer.writeln('    return result as ${returnType.displayName};');
-      return;
+  String _serializeForTransportExpression(String valueExpr, ParsedType type) {
+    if (type.isNullable) {
+      return '$valueExpr == null ? null : '
+          '${_serializeForTransportExpression(valueExpr, type.asNonNullable)}';
     }
 
-    // List of basic types
-    if (innerType.isBasicType && !innerType.isList && !innerType.isMap) {
-      if (innerType.baseName == 'DateTime') {
-        buffer.writeln('    final list = result as List<dynamic>;');
-        buffer.writeln(
-          '    return list.map((e) => DateTime.parse(e as String)).toList();',
-        );
-      } else {
-        buffer.writeln('    final list = result as List<dynamic>;');
-        buffer.writeln('    return list.cast<${innerType.displayName}>();');
+    if (type.isBasicType) {
+      if (type.baseName == 'DateTime') {
+        return '$valueExpr.toIso8601String()';
       }
-      return;
+      return valueExpr;
     }
 
-    // List of Map
-    if (innerType.isMap) {
-      buffer.writeln('    final list = result as List<dynamic>;');
-      buffer.writeln(
-        "    return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();",
-      );
-      return;
+    if (type.isList) {
+      final innerType = type.innerType;
+      if (innerType == null) {
+        return valueExpr;
+      }
+      final innerExpr = _serializeForTransportExpression('e', innerType);
+      return '$valueExpr.map((e) => $innerExpr).toList()';
     }
 
-    // List of custom models
-    buffer.writeln('    final list = result as List<dynamic>;');
-    buffer.writeln('    return list');
-    buffer.writeln(
-      "        .map((e) => ${innerType.displayName}.fromMap(Map<String, dynamic>.from(e as Map)))",
-    );
-    buffer.writeln('        .toList();');
+    if (type.isMap || type.isDynamic) {
+      return valueExpr;
+    }
+
+    return '$valueExpr.toMap()';
   }
 
-  void _writeModelReturn(StringBuffer buffer, ParsedType returnType) {
-    buffer.writeln(
-      '    return ${returnType.displayName}.fromMap(Map<String, dynamic>.from(result as Map));',
-    );
+  String _deserializeFromTransportExpression(
+    String valueExpr,
+    ParsedType type,
+  ) {
+    if (type.isNullable) {
+      return '$valueExpr == null ? null : '
+          '${_deserializeFromTransportExpression(valueExpr, type.asNonNullable)}';
+    }
+
+    if (type.isBasicType) {
+      final baseType = type.baseName;
+      if (baseType == 'String') {
+        return '$valueExpr as String';
+      } else if (baseType == 'int') {
+        return '$valueExpr as int';
+      } else if (baseType == 'double') {
+        return '($valueExpr as num).toDouble()';
+      } else if (baseType == 'bool') {
+        return '$valueExpr as bool';
+      } else if (baseType == 'num') {
+        return '$valueExpr as num';
+      } else if (baseType == 'DateTime') {
+        return 'DateTime.parse($valueExpr as String)';
+      }
+    }
+
+    if (type.isList) {
+      final innerType = type.innerType;
+      if (innerType == null) {
+        return '$valueExpr as List<dynamic>';
+      }
+      final innerExpr = _deserializeFromTransportExpression('e', innerType);
+      return '($valueExpr as List).map((e) => $innerExpr).toList()';
+    }
+
+    if (type.isMap) {
+      return 'Map<String, dynamic>.from($valueExpr as Map)';
+    }
+
+    if (type.isDynamic) {
+      return valueExpr;
+    }
+
+    return '${type.baseName}.fromMap(Map<String, dynamic>.from($valueExpr as Map))';
   }
 }

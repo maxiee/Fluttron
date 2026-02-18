@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart' as analyzer;
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:path/path.dart' as p;
 
 import 'parsed_contract.dart';
 
@@ -44,32 +43,15 @@ class ServiceContractParser {
   /// Returns a [ParsedContractFile] containing all found contracts, models,
   /// and any errors encountered during parsing.
   ParsedContractFile parseString(String source, {String? filePath}) {
-    // Write to a temporary file and use parseFile to avoid API version issues
-    final tempDir = Directory.systemTemp.createTempSync('fluttron_parser_');
     try {
-      final tempFile = File(
-        p.join(
-          tempDir.path,
-          'temp_${DateTime.now().millisecondsSinceEpoch}.dart',
-        ),
-      );
-      tempFile.writeAsStringSync(source);
-
-      final parseResult = analyzer.parseFile(
-        path: tempFile.path,
+      final parseResult = analyzer.parseString(
+        content: source,
+        path: filePath ?? 'fluttron_contract.dart',
         featureSet: FeatureSet.latestLanguageVersion(),
       );
-
       return _processParseResult(parseResult.unit, parseResult.errors);
     } catch (e) {
       return ParsedContractFile(errors: ['Failed to parse source: $e']);
-    } finally {
-      // Clean up temp directory
-      try {
-        tempDir.deleteSync(recursive: true);
-      } catch (_) {
-        // Ignore cleanup errors
-      }
     }
   }
 
@@ -134,7 +116,7 @@ class ServiceContractParser {
     }
 
     return ParsedServiceContract(
-      className: classDecl.name.lexeme,
+      className: classDecl.namePart.typeName.lexeme,
       namespace: namespace,
       methods: methods,
       documentation: _extractDocumentation(classDecl.documentationComment),
@@ -162,7 +144,7 @@ class ServiceContractParser {
     }
 
     return ParsedModel(
-      className: classDecl.name.lexeme,
+      className: classDecl.namePart.typeName.lexeme,
       fields: fields,
       documentation: _extractDocumentation(classDecl.documentationComment),
     );
@@ -178,7 +160,7 @@ class ServiceContractParser {
     // Parse formal parameters
     final paramList = method.parameters;
     if (paramList != null) {
-      for (final param in paramList.childEntities) {
+      for (final param in paramList.parameters) {
         if (param is SimpleFormalParameter) {
           parameters.add(_parseSimpleParameter(param));
         } else if (param is DefaultFormalParameter) {
@@ -246,26 +228,7 @@ class ServiceContractParser {
 
   /// Extracts the default value as a string literal.
   String? _extractDefaultValue(Expression expr) {
-    if (expr is IntegerLiteral) {
-      return expr.literal.toString();
-    } else if (expr is DoubleLiteral) {
-      return expr.literal.toString();
-    } else if (expr is BooleanLiteral) {
-      return expr.value ? 'true' : 'false';
-    } else if (expr is StringLiteral) {
-      return "'${expr.stringValue ?? ''}'";
-    } else if (expr is ListLiteral) {
-      // Return the source for list literals
-      return '[]';
-    } else if (expr is SetOrMapLiteral) {
-      // Return the source for map/set literals
-      return '{}';
-    } else if (expr is SimpleIdentifier) {
-      return expr.name;
-    } else if (expr is NullLiteral) {
-      return 'null';
-    }
-    return null;
+    return expr.toSource();
   }
 
   /// Parses a field from a variable declaration.
@@ -281,9 +244,6 @@ class ServiceContractParser {
 
     final source = type.toSource();
     final isNullable = source.endsWith('?');
-    final displayName = isNullable
-        ? source.substring(0, source.length - 1)
-        : source;
 
     // Parse type arguments for generics
     final typeArguments = <ParsedType>[];
@@ -295,7 +255,7 @@ class ServiceContractParser {
     }
 
     return ParsedType(
-      displayName: displayName,
+      displayName: source,
       isNullable: isNullable,
       typeArguments: typeArguments,
     );

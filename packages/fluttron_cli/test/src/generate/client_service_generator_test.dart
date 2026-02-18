@@ -321,7 +321,7 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("return result['result'] as double;"));
+        expect(code, contains("return (result['result'] as num).toDouble();"));
       });
 
       test('deserializes DateTime return type', () {
@@ -401,8 +401,10 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains('final list = result as List<dynamic>;'));
-        expect(code, contains('return list.cast<String>();'));
+        expect(
+          code,
+          contains('return (result as List).map((e) => e as String).toList();'),
+        );
       });
 
       test('deserializes List of custom models', () {
@@ -430,14 +432,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains('final list = result as List<dynamic>;'));
         expect(
           code,
           contains(
-            '.map((e) => User.fromMap(Map<String, dynamic>.from(e as Map)))',
+            'return (result as List).map((e) => User.fromMap(Map<String, dynamic>.from(e as Map))).toList();',
           ),
         );
-        expect(code, contains('.toList();'));
       });
 
       test('deserializes Map return type', () {
@@ -714,7 +714,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("return result['result'] as String?;"));
+        expect(
+          code,
+          contains(
+            "return result['result'] == null ? null : result['result'] as String;",
+          ),
+        );
       });
 
       test('handles nullable DateTime return type', () {
@@ -736,9 +741,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("final value = result['result'];"));
-        expect(code, contains('if (value == null) return null;'));
-        expect(code, contains('return DateTime.parse(value as String);'));
+        expect(
+          code,
+          contains(
+            "return result['result'] == null ? null : DateTime.parse(result['result'] as String);",
+          ),
+        );
       });
 
       test('handles List<int> return type', () {
@@ -766,7 +774,10 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains('return list.cast<int>();'));
+        expect(
+          code,
+          contains('return (result as List).map((e) => e as int).toList();'),
+        );
       });
 
       test('handles List<DateTime> return type', () {
@@ -797,7 +808,7 @@ void main() {
         expect(
           code,
           contains(
-            'return list.map((e) => DateTime.parse(e as String)).toList();',
+            'return (result as List).map((e) => DateTime.parse(e as String)).toList();',
           ),
         );
       });
@@ -837,7 +848,7 @@ void main() {
         expect(
           code,
           contains(
-            "return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();",
+            "return (result as List).map((e) => Map<String, dynamic>.from(e as Map)).toList();",
           ),
         );
       });

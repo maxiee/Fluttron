@@ -86,6 +86,22 @@ void main() {
             contains('/// Override to implement: ${method.name}.'),
           );
         }
+
+        // Regression checks: nullable signature preservation + typed list extraction + DateTime serialization
+        expect(
+          generatedCode,
+          contains('Future<void> nullableParam(String? optionalName);'),
+        );
+        expect(
+          generatedCode,
+          contains(
+            "final ids = (_requireList(params, 'ids') as List).map((e) => e as int).toList();",
+          ),
+        );
+        expect(
+          generatedCode,
+          contains("return {'result': result.toIso8601String()};"),
+        );
       } finally {
         // Cleanup
         try {
@@ -261,7 +277,12 @@ void main() {
 
       // Check parameter handling
       expect(code, contains("final city = _requireString(params, 'city');"));
-      expect(code, contains("final days = params['days'] as int? ?? 5;"));
+      expect(
+        code,
+        contains(
+          "final days = params['days'] == null ? 5 : params['days'] as int;",
+        ),
+      );
 
       // Check return handling
       expect(code, contains('return result.toMap();')); // WeatherInfo model

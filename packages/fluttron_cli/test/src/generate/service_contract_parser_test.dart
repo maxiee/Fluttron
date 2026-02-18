@@ -283,6 +283,7 @@ abstract class TestService {
         final method = result.contracts.first.methods.first;
 
         expect(method.returnType.innerType?.isNullable, isTrue);
+        expect(method.returnType.innerType?.displayName, equals('String?'));
         expect(method.returnType.innerType?.baseName, equals('String'));
       });
 

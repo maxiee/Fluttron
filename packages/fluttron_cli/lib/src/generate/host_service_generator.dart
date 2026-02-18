@@ -160,71 +160,22 @@ class HostServiceGenerator {
   }
 
   String? _generateParamExtraction(ParsedParameter param) {
-    final type = param.type;
-
-    // For optional named parameters with default values
-    if (param.isNamed && param.hasDefaultValue) {
+    if (param.hasDefaultValue) {
       return _generateOptionalParamWithDefault(param);
     }
 
-    // For nullable optional named parameters
-    if (param.isNamed && type.isNullable) {
-      return _generateNullableOptionalParam(param);
-    }
-
-    // For nullable positional parameters (type is nullable but param is required)
-    // Treat them as allowing null
-    if (!param.isNamed && type.isNullable && param.isRequired) {
-      return _generateNullablePositionalParam(param);
-    }
-
-    // For required parameters
     if (param.isRequired) {
       return _generateRequiredParamExtraction(param);
     }
 
-    // For optional parameters without default (nullable)
-    if (!param.isRequired) {
-      return _generateOptionalParamWithoutDefault(param);
-    }
-
-    return null;
-  }
-
-  String _generateNullablePositionalParam(ParsedParameter param) {
-    final type = param.type;
-    final name = param.name;
-
-    if (type.isBasicType) {
-      final baseType = type.baseName;
-      if (baseType == 'String') {
-        return "final $name = params['$name'] as String?;";
-      } else if (baseType == 'int') {
-        return "final $name = params['$name'] as int?;";
-      } else if (baseType == 'double') {
-        return "final $name = (params['$name'] as num?)?.toDouble();";
-      } else if (baseType == 'bool') {
-        return "final $name = params['$name'] as bool?;";
-      } else if (baseType == 'DateTime') {
-        return "final $name = params['$name'] != null ? DateTime.parse(params['$name'] as String) : null;";
-      }
-    }
-
-    if (type.isList) {
-      return "final $name = params['$name'] as List<dynamic>?;";
-    }
-    if (type.isMap) {
-      return "final $name = params['$name'] as Map<String, dynamic>?;";
-    }
-
-    return "final $name = params['$name'];";
+    return _generateOptionalParamWithoutDefault(param);
   }
 
   String _generateRequiredParamExtraction(ParsedParameter param) {
     final type = param.type;
     final name = param.name;
 
-    // Handle basic types
+    // Handle basic types with explicit validation helpers.
     if (type.isBasicType) {
       final baseType = type.baseName;
       if (baseType == 'String') {
@@ -242,95 +193,63 @@ class HostServiceGenerator {
       }
     }
 
-    // Handle List types
     if (type.isList) {
-      final innerType = type.innerType;
-      if (innerType != null && innerType.isBasicType) {
-        return "final $name = _requireList(params, '$name');";
-      } else {
-        // List of custom models - just get the list
-        return "final $name = _requireList(params, '$name');";
-      }
+      final deserializeExpr = _deserializeFromTransportExpression(
+        "_requireList(params, '$name')",
+        type,
+      );
+      return "final $name = $deserializeExpr;";
     }
 
-    // Handle Map types
-    if (type.isMap) {
-      return "final $name = _requireMap(params, '$name');";
+    if (type.isMap || _isCustomModelType(type)) {
+      final deserializeExpr = _deserializeFromTransportExpression(
+        "_requireMap(params, '$name')",
+        type,
+      );
+      return "final $name = $deserializeExpr;";
     }
 
-    // For custom model types, use fromMap to convert
-    return "final $name = ${type.displayName}.fromMap(Map<String, dynamic>.from(params['$name'] as Map));";
+    return "final $name = params['$name'];";
   }
 
   String _generateOptionalParamWithDefault(ParsedParameter param) {
     final type = param.type;
     final name = param.name;
     final defaultValue = param.defaultValue;
-
-    // Handle basic types with defaults
-    if (type.isBasicType) {
-      final baseType = type.baseName;
-      if (baseType == 'String') {
-        return "final $name = params['$name'] as String? ?? $defaultValue;";
-      } else if (baseType == 'int') {
-        return "final $name = params['$name'] as int? ?? $defaultValue;";
-      } else if (baseType == 'double') {
-        return "final $name = (params['$name'] as num?)?.toDouble() ?? $defaultValue;";
-      } else if (baseType == 'bool') {
-        return "final $name = params['$name'] as bool? ?? $defaultValue;";
-      }
-    }
-
-    // Handle List/Map with defaults
-    if (type.isList) {
-      return "final $name = (params['$name'] as List<dynamic>?) ?? $defaultValue;";
-    }
-    if (type.isMap) {
-      return "final $name = (params['$name'] as Map<String, dynamic>?) ?? $defaultValue;";
-    }
-
-    // Default fallback
-    return "final $name = params['$name'] ?? $defaultValue;";
-  }
-
-  String _generateNullableOptionalParam(ParsedParameter param) {
-    final type = param.type;
-    final name = param.name;
-
-    if (type.isBasicType) {
-      final baseType = type.baseName;
-      if (baseType == 'String') {
-        return "final $name = params['$name'] as String?;";
-      } else if (baseType == 'int') {
-        return "final $name = params['$name'] as int?;";
-      } else if (baseType == 'double') {
-        return "final $name = (params['$name'] as num?)?.toDouble();";
-      } else if (baseType == 'bool') {
-        return "final $name = params['$name'] as bool?;";
-      } else if (baseType == 'DateTime') {
-        return "final $name = params['$name'] != null ? DateTime.parse(params['$name'] as String) : null;";
-      }
-    }
-
-    if (type.isList) {
-      return "final $name = params['$name'] as List<dynamic>?;";
-    }
-    if (type.isMap) {
-      return "final $name = params['$name'] as Map<String, dynamic>?;";
-    }
-
-    return "final $name = params['$name'];";
+    final sourceExpr = "params['$name']";
+    final targetType = type.isNullable ? type.asNonNullable : type;
+    final deserializeExpr = _deserializeFromTransportExpression(
+      sourceExpr,
+      targetType,
+    );
+    return "final $name = $sourceExpr == null ? $defaultValue : $deserializeExpr;";
   }
 
   String _generateOptionalParamWithoutDefault(ParsedParameter param) {
     final type = param.type;
     final name = param.name;
+    final sourceExpr = "params['$name']";
 
-    if (type.isBasicType) {
-      return "final $name = params['$name'] as ${type.displayName}?;";
+    if (type.isNullable) {
+      final deserializeExpr = _deserializeFromTransportExpression(
+        sourceExpr,
+        type.asNonNullable,
+      );
+      return "final $name = $sourceExpr == null ? null : $deserializeExpr;";
     }
 
-    return "final $name = params['$name'];";
+    if (type.isBasicType) {
+      final nullableTypeName = type.displayName.endsWith('?')
+          ? type.displayName
+          : '${type.displayName}?';
+      return "final $name = $sourceExpr as $nullableTypeName;";
+    }
+
+    final deserializeExpr = _deserializeFromTransportExpression(
+      sourceExpr,
+      type,
+    );
+    return "final $name = $sourceExpr == null ? null : $deserializeExpr;";
   }
 
   String _getParamPassName(ParsedParameter param) {
@@ -348,33 +267,122 @@ class HostServiceGenerator {
       return;
     }
 
-    // Handle basic return types wrapped in a map
     if (returnType.isBasicType && !returnType.isList && !returnType.isMap) {
-      buffer.writeln("        return {'result': result};");
+      final serializedResult = _serializeForTransportExpression(
+        'result',
+        returnType,
+      );
+      buffer.writeln("        return {'result': $serializedResult};");
       return;
     }
 
-    // Handle List types
+    // Preserve direct passthrough for non-nullable collections of JSON-primitive values.
     if (returnType.isList) {
       final innerType = returnType.innerType;
-      if (innerType != null && innerType.isBasicType) {
-        // List of basic types - return as-is
+      final isPrimitiveList =
+          innerType != null &&
+          innerType.isBasicType &&
+          innerType.baseName != 'DateTime' &&
+          !innerType.isNullable;
+      if (isPrimitiveList && !returnType.isNullable) {
         buffer.writeln('        return result;');
-      } else {
-        // List of models - map toMap
-        buffer.writeln('        return result.map((e) => e.toMap()).toList();');
+        return;
       }
-      return;
     }
 
-    // Handle Map types
-    if (returnType.isMap) {
+    if (returnType.isMap && !returnType.isNullable) {
       buffer.writeln('        return result;');
       return;
     }
 
-    // Handle custom model types
-    buffer.writeln('        return result.toMap();');
+    final serializedResult = _serializeForTransportExpression(
+      'result',
+      returnType,
+    );
+    buffer.writeln('        return $serializedResult;');
+  }
+
+  String _serializeForTransportExpression(String valueExpr, ParsedType type) {
+    if (type.isNullable) {
+      return '$valueExpr == null ? null : '
+          '${_serializeForTransportExpression(valueExpr, type.asNonNullable)}';
+    }
+
+    if (type.isBasicType) {
+      if (type.baseName == 'DateTime') {
+        return '$valueExpr.toIso8601String()';
+      }
+      return valueExpr;
+    }
+
+    if (type.isList) {
+      final innerType = type.innerType;
+      if (innerType == null) {
+        return valueExpr;
+      }
+      final innerExpr = _serializeForTransportExpression('e', innerType);
+      return '$valueExpr.map((e) => $innerExpr).toList()';
+    }
+
+    if (type.isMap || type.isDynamic) {
+      return valueExpr;
+    }
+
+    return '$valueExpr.toMap()';
+  }
+
+  String _deserializeFromTransportExpression(
+    String valueExpr,
+    ParsedType type,
+  ) {
+    if (type.isNullable) {
+      return '$valueExpr == null ? null : '
+          '${_deserializeFromTransportExpression(valueExpr, type.asNonNullable)}';
+    }
+
+    if (type.isBasicType) {
+      final baseType = type.baseName;
+      if (baseType == 'String') {
+        return '$valueExpr as String';
+      } else if (baseType == 'int') {
+        return '$valueExpr as int';
+      } else if (baseType == 'double') {
+        return '($valueExpr as num).toDouble()';
+      } else if (baseType == 'bool') {
+        return '$valueExpr as bool';
+      } else if (baseType == 'num') {
+        return '$valueExpr as num';
+      } else if (baseType == 'DateTime') {
+        return 'DateTime.parse($valueExpr as String)';
+      }
+    }
+
+    if (type.isList) {
+      final innerType = type.innerType;
+      if (innerType == null) {
+        return '$valueExpr as List<dynamic>';
+      }
+      final innerExpr = _deserializeFromTransportExpression('e', innerType);
+      return '($valueExpr as List).map((e) => $innerExpr).toList()';
+    }
+
+    if (type.isMap) {
+      return 'Map<String, dynamic>.from($valueExpr as Map)';
+    }
+
+    if (type.isDynamic) {
+      return valueExpr;
+    }
+
+    return '${type.baseName}.fromMap(Map<String, dynamic>.from($valueExpr as Map))';
+  }
+
+  bool _isCustomModelType(ParsedType type) {
+    return !type.isBasicType &&
+        !type.isList &&
+        !type.isMap &&
+        !type.isDynamic &&
+        !type.isVoid;
   }
 
   void _writeAbstractMethods(
@@ -406,29 +414,46 @@ class HostServiceGenerator {
     // Parameters
     buffer.write('(');
 
-    final positionalParams = method.parameters
-        .where((p) => !p.isNamed)
+    final requiredPositionalParams = method.parameters
+        .where((p) => !p.isNamed && p.isRequired)
+        .toList();
+    final optionalPositionalParams = method.parameters
+        .where((p) => !p.isNamed && !p.isRequired)
         .toList();
     final namedParams = method.parameters.where((p) => p.isNamed).toList();
 
-    // Positional parameters
-    for (var i = 0; i < positionalParams.length; i++) {
-      final param = positionalParams[i];
-      buffer.write('${param.type.displayName} ${param.name}');
-      if (i < positionalParams.length - 1 || namedParams.isNotEmpty) {
+    var needsSeparator = false;
+
+    for (final param in requiredPositionalParams) {
+      if (needsSeparator) {
         buffer.write(', ');
       }
+      _writeParameterDeclaration(buffer, param);
+      needsSeparator = true;
     }
 
-    // Named parameters
+    if (optionalPositionalParams.isNotEmpty) {
+      if (needsSeparator) {
+        buffer.write(', ');
+      }
+      buffer.write('[');
+      for (var i = 0; i < optionalPositionalParams.length; i++) {
+        _writeParameterDeclaration(buffer, optionalPositionalParams[i]);
+        if (i < optionalPositionalParams.length - 1) {
+          buffer.write(', ');
+        }
+      }
+      buffer.write(']');
+      needsSeparator = true;
+    }
+
     if (namedParams.isNotEmpty) {
+      if (needsSeparator) {
+        buffer.write(', ');
+      }
       buffer.write('{');
       for (var i = 0; i < namedParams.length; i++) {
-        final param = namedParams[i];
-        buffer.write('${param.type.displayName} ${param.name}');
-        if (param.hasDefaultValue) {
-          buffer.write(' = ${param.defaultValue}');
-        }
+        _writeParameterDeclaration(buffer, namedParams[i]);
         if (i < namedParams.length - 1) {
           buffer.write(', ');
         }
@@ -439,6 +464,22 @@ class HostServiceGenerator {
     buffer.write(')');
 
     return buffer.toString();
+  }
+
+  void _writeParameterDeclaration(
+    StringBuffer buffer,
+    ParsedParameter parameter,
+  ) {
+    if (parameter.isNamed &&
+        parameter.isRequired &&
+        !parameter.hasDefaultValue) {
+      buffer.write('required ');
+    }
+
+    buffer.write('${parameter.type.displayName} ${parameter.name}');
+    if (parameter.hasDefaultValue) {
+      buffer.write(' = ${parameter.defaultValue}');
+    }
   }
 
   void _writeHelperMethods(
@@ -473,6 +514,9 @@ class HostServiceGenerator {
           if (param.type.isMap) {
             neededHelpers.add('_requireMap');
           }
+        }
+        if (param.isRequired && _isCustomModelType(param.type)) {
+          neededHelpers.add('_requireMap');
         }
       }
     }

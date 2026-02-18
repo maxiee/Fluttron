@@ -328,7 +328,9 @@ void main() {
         final code = generator.generate(contract);
         expect(
           code,
-          contains("final name = params['name'] as String? ?? 'World';"),
+          contains(
+            "final name = params['name'] == null ? 'World' : params['name'] as String;",
+          ),
         );
       });
 
@@ -361,7 +363,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("final query = params['query'] as String?;"));
+        expect(
+          code,
+          contains(
+            "final query = params['query'] == null ? null : params['query'] as String;",
+          ),
+        );
       });
 
       test('generates _requireList for required List param', () {
@@ -396,7 +403,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("final ids = _requireList(params, 'ids');"));
+        expect(
+          code,
+          contains(
+            "final ids = (_requireList(params, 'ids') as List).map((e) => e as int).toList();",
+          ),
+        );
         expect(
           code,
           contains(
@@ -438,7 +450,12 @@ void main() {
           ],
         );
         final code = generator.generate(contract);
-        expect(code, contains("final data = _requireMap(params, 'data');"));
+        expect(
+          code,
+          contains(
+            "final data = Map<String, dynamic>.from(_requireMap(params, 'data') as Map);",
+          ),
+        );
         expect(
           code,
           contains(
@@ -935,7 +952,12 @@ void main() {
 
         // Verify parameter extraction
         expect(code, contains("final city = _requireString(params, 'city');"));
-        expect(code, contains("final days = params['days'] as int? ?? 5;"));
+        expect(
+          code,
+          contains(
+            "final days = params['days'] == null ? 5 : params['days'] as int;",
+          ),
+        );
 
         // Verify abstract method declarations
         expect(

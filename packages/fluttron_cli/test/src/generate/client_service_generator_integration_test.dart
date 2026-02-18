@@ -82,6 +82,23 @@ void main() {
         expect(generatedCode, contains("result['result'] as String"));
         expect(generatedCode, contains("result['result'] as int"));
         expect(generatedCode, contains('.fromMap(Map<String, dynamic>.from'));
+
+        // Regression checks: nullable signatures + DateTime serialization + nested list decoding
+        expect(
+          generatedCode,
+          contains('Future<void> nullableParam(String? optionalName) async {'),
+        );
+        expect(
+          generatedCode,
+          contains("'timestamp': timestamp.toIso8601String(),"),
+        );
+        expect(
+          generatedCode,
+          contains(
+            'return (result as List).map((e) => (e as List).map((e) => e as String).toList()).toList();',
+          ),
+        );
+        expect(generatedCode, isNot(contains('List<String>.fromMap')));
       } finally {
         // Cleanup
         try {
