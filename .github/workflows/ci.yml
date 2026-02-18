@@ -40,3 +40,37 @@ jobs:
       - name: Run tests
         working-directory: packages/fluttron_shared
         run: dart test
+
+  test-host:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        working-directory: packages/fluttron_host
+        run: flutter pub get
+      - name: Analyze
+        working-directory: packages/fluttron_host
+        run: flutter analyze
+      - name: Run tests
+        working-directory: packages/fluttron_host
+        run: flutter test
+
+  test-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Install dependencies
+        working-directory: packages/fluttron_ui
+        run: flutter pub get
+      - name: Analyze
+        working-directory: packages/fluttron_ui
+        run: flutter analyze
+      - name: Run tests
+        working-directory: packages/fluttron_ui
+        run: flutter test
