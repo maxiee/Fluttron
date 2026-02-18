@@ -31,7 +31,7 @@ void main() {
       foundTemplates = Directory(p.join(projectRoot.path, 'templates'));
     }
 
-    templatesDir = foundTemplates!;
+    templatesDir = foundTemplates;
   });
 
   setUp(() async {
@@ -295,6 +295,119 @@ void main() {
       final pubspec = File(p.join(targetPath, 'pubspec.yaml'));
       final pubspecContent = await pubspec.readAsString();
       expect(pubspecContent, contains('name: my_cool_editor'));
+    });
+  });
+
+  group('CreateCommand host_service naming', () {
+    test('normalizes camelCase name and rewrites host/client paths', () async {
+      final targetPath = p.join(tempDir.path, 'my_service');
+
+      final exitCode = await runCli([
+        'create',
+        targetPath,
+        '--name',
+        'myCoolService',
+        '--type',
+        'host_service',
+        '--template',
+        templatesDir.path,
+      ]);
+
+      expect(exitCode, equals(0));
+
+      final normalizedName = 'my_cool_service';
+      final expectedRoot = p.normalize(
+        p.join(templatesDir.parent.path, 'packages'),
+      );
+
+      final hostPubspec = File(
+        p.join(targetPath, '${normalizedName}_host', 'pubspec.yaml'),
+      );
+      final clientPubspec = File(
+        p.join(targetPath, '${normalizedName}_client', 'pubspec.yaml'),
+      );
+      final hostSource = File(
+        p.join(
+          targetPath,
+          '${normalizedName}_host',
+          'lib',
+          'src',
+          '$normalizedName.dart',
+        ),
+      );
+      final clientSource = File(
+        p.join(
+          targetPath,
+          '${normalizedName}_client',
+          'lib',
+          'src',
+          '${normalizedName}_client.dart',
+        ),
+      );
+
+      expect(await hostPubspec.exists(), isTrue);
+      expect(await clientPubspec.exists(), isTrue);
+      expect(await hostSource.exists(), isTrue);
+      expect(await clientSource.exists(), isTrue);
+
+      final hostPubspecContent = await hostPubspec.readAsString();
+      final clientPubspecContent = await clientPubspec.readAsString();
+      final hostSourceContent = await hostSource.readAsString();
+      final clientSourceContent = await clientSource.readAsString();
+
+      expect(
+        hostPubspecContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_host')}'),
+      );
+      expect(
+        hostPubspecContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_shared')}'),
+      );
+      expect(
+        clientPubspecContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_ui')}'),
+      );
+      expect(
+        clientPubspecContent,
+        contains('path: ${p.join(expectedRoot, 'fluttron_shared')}'),
+      );
+
+      expect(hostSourceContent, contains('class MyCoolService'));
+      expect(clientSourceContent, contains('class MyCoolServiceClient'));
+    });
+
+    test('normalizes kebab-case name to snake_case', () async {
+      final targetPath = p.join(tempDir.path, 'my_service');
+
+      final exitCode = await runCli([
+        'create',
+        targetPath,
+        '--name',
+        'my-cool-service',
+        '--type',
+        'host_service',
+        '--template',
+        templatesDir.path,
+      ]);
+
+      expect(exitCode, equals(0));
+
+      final normalizedName = 'my_cool_service';
+      expect(
+        await Directory(p.join(targetPath, '${normalizedName}_host')).exists(),
+        isTrue,
+      );
+      expect(
+        await Directory(
+          p.join(targetPath, '${normalizedName}_client'),
+        ).exists(),
+        isTrue,
+      );
+
+      final manifest = File(p.join(targetPath, 'fluttron_host_service.json'));
+      final manifestContent = await manifest.readAsString();
+      expect(manifestContent, contains('"name": "$normalizedName"'));
+      expect(manifestContent, contains('"namespace": "$normalizedName"'));
     });
   });
 }

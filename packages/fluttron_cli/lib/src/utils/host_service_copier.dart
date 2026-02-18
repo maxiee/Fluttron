@@ -36,9 +36,9 @@ class HostServiceCopier {
     }
 
     // Generate naming conventions
-    final snakeCase = _toSnakeCase(serviceName);
-    final pascalCase = _toPascalCase(serviceName);
-    final camelCase = _toCamelCase(serviceName);
+    final snakeCase = normalizeServiceName(serviceName);
+    final pascalCase = _toPascalCase(snakeCase);
+    final camelCase = _toCamelCase(snakeCase);
 
     // Build substitution map
     final substitutions = <String, String>{
@@ -53,17 +53,18 @@ class HostServiceCopier {
         sourceRoot: sourceDir,
         destinationRoot: destinationDir,
         substitutions: substitutions,
-        serviceName: snakeCase,
       );
     }
   }
+
+  /// Converts user input to a valid snake_case service name.
+  String normalizeServiceName(String input) => _toSnakeCase(input);
 
   Future<void> _copyAndTransformEntity({
     required FileSystemEntity entity,
     required Directory sourceRoot,
     required Directory destinationRoot,
     required Map<String, String> substitutions,
-    required String serviceName,
   }) async {
     final relativePath = p.relative(entity.path, from: sourceRoot.path);
 
@@ -100,7 +101,6 @@ class HostServiceCopier {
           sourceRoot: sourceRoot,
           destinationRoot: destinationRoot,
           substitutions: substitutions,
-          serviceName: serviceName,
         );
       }
       return;

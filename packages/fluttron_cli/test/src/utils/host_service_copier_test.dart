@@ -448,6 +448,71 @@ void main() {
       final content = await targetPubspec.readAsString();
       expect(content, contains('name: svc_123_service_host'));
     });
+
+    test(
+      'derives PascalCase and camelCase from normalized snake_case',
+      () async {
+        final copier = HostServiceCopier();
+
+        final hostSrcDir = Directory(
+          p.join(templateDir.path, 'template_service_host', 'lib', 'src'),
+        );
+        await hostSrcDir.create(recursive: true);
+        await File(
+          p.join(hostSrcDir.path, 'template_service.dart'),
+        ).writeAsString('''
+class TemplateService {}
+final templateService = TemplateService();
+''');
+
+        final clientSrcDir = Directory(
+          p.join(templateDir.path, 'template_service_client', 'lib', 'src'),
+        );
+        await clientSrcDir.create(recursive: true);
+        await File(
+          p.join(clientSrcDir.path, 'template_service_client.dart'),
+        ).writeAsString('''
+class TemplateServiceClient {}
+final templateServiceClient = TemplateServiceClient();
+''');
+
+        await copier.copyAndTransform(
+          serviceName: 'myCoolService',
+          sourceDir: templateDir,
+          destinationDir: targetDir,
+        );
+
+        final hostFile = File(
+          p.join(
+            targetDir.path,
+            'my_cool_service_host',
+            'lib',
+            'src',
+            'my_cool_service.dart',
+          ),
+        );
+        final clientFile = File(
+          p.join(
+            targetDir.path,
+            'my_cool_service_client',
+            'lib',
+            'src',
+            'my_cool_service_client.dart',
+          ),
+        );
+
+        final hostContent = await hostFile.readAsString();
+        final clientContent = await clientFile.readAsString();
+
+        expect(hostContent, contains('class MyCoolService {}'));
+        expect(hostContent, contains('final myCoolService = MyCoolService();'));
+        expect(clientContent, contains('class MyCoolServiceClient {}'));
+        expect(
+          clientContent,
+          contains('final myCoolServiceClient = MyCoolServiceClient();'),
+        );
+      },
+    );
   });
 
   group('Dual package transformation', () {

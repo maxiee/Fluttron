@@ -6,6 +6,7 @@ import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:path/path.dart' as p;
 
 import '../utils/host_service_copier.dart';
+import '../utils/host_service_manifest.dart';
 import '../utils/template_copy.dart';
 import '../utils/web_package_copier.dart';
 
@@ -37,7 +38,7 @@ class CreateCommand extends Command<int> {
       )
       ..addOption(
         'template',
-        help: 'Path to templates root (optional, only for app type).',
+        help: 'Path to templates root (optional).',
         valueHelp: 'path',
       );
   }
@@ -48,7 +49,8 @@ class CreateCommand extends Command<int> {
     final targetDir = Directory(targetPath);
     final normalizedTarget = p.normalize(targetDir.path);
     final projectType = _resolveProjectType();
-    final name = _resolveProjectName(normalizedTarget);
+    final rawName = _resolveProjectName(normalizedTarget);
+    final name = _normalizeProjectName(rawName, projectType);
 
     if (targetDir.existsSync()) {
       final entries = targetDir.listSync();
@@ -179,6 +181,11 @@ class CreateCommand extends Command<int> {
       ),
       templateDir: templateDir.parent,
     );
+
+    _diagnoseHostServiceManifest(
+      projectDir: targetDir,
+      expectedServiceName: name,
+    );
   }
 
   void _printSuccessMessage({
@@ -209,6 +216,7 @@ class CreateCommand extends Command<int> {
           '  4. Add this package to your app\'s ui/pubspec.yaml dependencies',
         );
       case ProjectType.hostService:
+        final serviceClassName = _toPascalCase(name);
         stdout.writeln('');
         stdout.writeln('Created packages:');
         stdout.writeln('  ${name}_host/   — Host-side service implementation');
@@ -221,16 +229,12 @@ class CreateCommand extends Command<int> {
         stdout.writeln(
           '     import \'package:${name}_host/${name}_host.dart\';',
         );
-        stdout.writeln(
-          '     registry.register(${_toPascalCase(name)}Service());',
-        );
+        stdout.writeln('     registry.register($serviceClassName());');
         stdout.writeln('  4. Add to your UI app:');
         stdout.writeln(
           '     import \'package:${name}_client/${name}_client.dart\';',
         );
-        stdout.writeln(
-          '     final svc = ${_toPascalCase(name)}ServiceClient(client);',
-        );
+        stdout.writeln('     final svc = ${serviceClassName}Client(client);');
     }
   }
 
@@ -297,6 +301,13 @@ class CreateCommand extends Command<int> {
       return name.trim();
     }
     return p.basename(normalizedTarget);
+  }
+
+  String _normalizeProjectName(String name, ProjectType projectType) {
+    if (projectType == ProjectType.hostService) {
+      return HostServiceCopier().normalizeServiceName(name);
+    }
+    return name;
   }
 
   void _updateManifest({
@@ -439,6 +450,40 @@ class CreateCommand extends Command<int> {
 
     if (updated != original) {
       file.writeAsStringSync(updated);
+    }
+  }
+
+  void _diagnoseHostServiceManifest({
+    required Directory projectDir,
+    required String expectedServiceName,
+  }) {
+    final manifestName = HostServiceManifestLoader.fileName;
+
+    try {
+      final manifest = HostServiceManifestLoader.load(projectDir);
+      final mismatches = <String>[];
+
+      if (manifest.name != expectedServiceName) {
+        mismatches.add(
+          'name="${manifest.name}" (expected "$expectedServiceName")',
+        );
+      }
+      if (manifest.namespace != expectedServiceName) {
+        mismatches.add(
+          'namespace="${manifest.namespace}" (expected "$expectedServiceName")',
+        );
+      }
+
+      if (mismatches.isNotEmpty) {
+        stderr.writeln(
+          'Warning: $manifestName has mismatched fields: '
+          '${mismatches.join(', ')}.',
+        );
+      }
+    } on HostServiceManifestException catch (error) {
+      stderr.writeln(
+        'Warning: unable to parse $manifestName: ${error.message}',
+      );
     }
   }
 }
