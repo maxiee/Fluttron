@@ -11,3 +11,4 @@ export 'src/services/dialog_service_client.dart';
 export 'src/services/clipboard_service_client.dart';
 export 'src/services/system_service_client.dart';
 export 'src/services/storage_service_client.dart';
+export 'src/services/window_service_client.dart';
