@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 进行中，v0075、v0076、v0077、v0078 已完成，当前入口版本为 v0079**
+**当前状态：Phase A 已全部完成（v0075-v0079），当前入口版本为 v0080**
 
 ### 当前能力基线（已具备）
 
@@ -342,7 +342,7 @@
 | v0076 | 统一所有包 `pubspec.yaml` 版本为 `0.1.0-dev`；为所有包补全有意义的 `description` 字段（无 "A new Flutter project"）；为 `fluttron_cli`/`fluttron_shared` 设置 `repository` 字段 | `docs/feature/v1_release_roadmap.md §v0076` | v0075 | 5 个 pubspec 描述有意义；版本均为 `0.1.0-dev`；`dart pub get` 全部成功；无新 analyze 问题 | ✅ 已完成 |
 | v0077 | 创建 `.github/workflows/ci.yml`，包含 `test-cli`（`dart test --exclude-tags acceptance`）和 `test-shared`（`dart test`）两个 job | `docs/feature/v1_release_roadmap.md §v0077` | v0076 | `.github/workflows/ci.yml` 存在；本地 `dart test --exclude-tags acceptance`（CLI）通过；本地 `dart test`（shared）通过 | ✅ 已完成 |
 | v0078 | 扩展 CI YAML，增加 `test-host` 和 `test-ui` 两个 Flutter job（使用 `subosito/flutter-action@v2`，含 analyze + flutter test） | `docs/feature/v1_release_roadmap.md §v0078` | v0077 | CI YAML 包含 4 个 job；`flutter test` (host) 和 `flutter test` (ui) 本地全通过 | ✅ 已完成 |
-| v0079 | macOS Release 模式构建 playground 与 markdown_editor；测量 .app bundle 大小；记录至 `docs/performance_baseline.md`（含 Flutter/Dart 版本、与 Electron/Tauri/Flutter Desktop 对比上下文） | `docs/feature/v1_release_roadmap.md §v0079` | v0078 | `docs/performance_baseline.md` 存在并包含至少 2 个 app 的实测值 | ⬜ 待开始 |
+| v0079 | macOS Release 模式构建 playground 与 markdown_editor；测量 .app bundle 大小；记录至 `docs/performance_baseline.md`（含 Flutter/Dart 版本、与 Electron/Tauri/Flutter Desktop 对比上下文） | `docs/feature/v1_release_roadmap.md §v0079` | v0078 | `docs/performance_baseline.md` 存在并包含至少 2 个 app 的实测值 | ✅ 已完成 |
 
 #### Phase B: Table-Stakes Feature Gaps（v0080-v0088）
 
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0079`（macOS Release 模式构建 playground 与 markdown_editor；测量 .app bundle 大小；记录至 `docs/performance_baseline.md`）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0079`
-- **最小验收**：`docs/performance_baseline.md` 存在并包含至少 2 个 app 的实测值
+- **当前入口**：`v0080`（在 `fluttron_host` 新增 `WindowService`；引入 `window_manager` 依赖；注册至默认服务列表）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0080`
+- **最小验收**：`WindowService` 类存在并已注册；`flutter analyze packages/fluttron_host` 通过
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议
