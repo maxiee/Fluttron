@@ -1,8 +1,8 @@
 name: fluttron_host
-description: "A new Flutter project."
+description: "Fluttron Host runtime — WebView container, service registry, and built-in services."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.1.0-dev
 
 environment:
   sdk: ^3.10.4

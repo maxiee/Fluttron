@@ -1,7 +1,7 @@
 name: fluttron_shared
-description: Shared definitions and protocols for Fluttron Host and Renderer.
-version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+description: Shared protocols, models, and annotations for Fluttron Host and Renderer.
+version: 0.1.0-dev
+repository: https://github.com/maxiee/Fluttron
 
 environment:
   sdk: ^3.10.4
