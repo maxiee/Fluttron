@@ -1,5 +1,5 @@
 @Tags(['acceptance'])
-library acceptance_test;
+library;
 
 import 'dart:io';
 import 'package:path/path.dart' as p;

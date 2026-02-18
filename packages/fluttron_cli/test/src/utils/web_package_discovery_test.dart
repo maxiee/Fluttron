@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:fluttron_cli/src/utils/web_package_discovery.dart';
-import 'package:fluttron_cli/src/utils/web_package_manifest.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 

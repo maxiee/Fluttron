@@ -404,9 +404,9 @@ void main() {
         _writeIndex(sourceWebDir, const <String>['ext/main.js']);
         _writeFile(sourceWebDir, 'ext/main.js', 'console.log("source");');
 
-        final hostAssetsDir = Directory(
+        Directory(
           p.join(projectDir.path, 'host', 'assets', 'www'),
-        )..createSync(recursive: true);
+        ).createSync(recursive: true);
         final buildOutputDir = Directory(p.join(uiDir.path, 'build', 'web'))
           ..createSync(recursive: true);
         _writeIndex(buildOutputDir, const <String>['ext/main.js']);
@@ -526,9 +526,9 @@ void main() {
           ]);
           _writeFile(sourceWebDir, 'ext/main.js', 'console.log("source");');
 
-          final hostAssetsDir = Directory(
+          Directory(
             p.join(projectDir.path, 'host', 'assets', 'www'),
-          )..createSync(recursive: true);
+          ).createSync(recursive: true);
           final buildOutputDir = Directory(p.join(uiDir.path, 'build', 'web'))
             ..createSync(recursive: true);
           _writeIndexWithPlaceholders(buildOutputDir, const <String>[
@@ -691,7 +691,7 @@ void main() {
         _writeFile(sourceWebDir, 'ext/main.js', 'console.log("source");');
 
         Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
-          ..createSync(recursive: true);
+          .createSync(recursive: true);
 
         var flutterCalled = false;
         final pipeline = UiBuildPipeline(
@@ -745,7 +745,7 @@ void main() {
         _writeFile(sourceWebDir, 'ext/main.js', 'console.log("source");');
 
         Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
-          ..createSync(recursive: true);
+          .createSync(recursive: true);
 
         var flutterCalled = false;
         final mockPackage = WebPackageManifest(
@@ -826,7 +826,7 @@ void main() {
         _writeFile(buildOutputDir, 'ext/main.js', 'console.log("build");');
 
         Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
-          ..createSync(recursive: true);
+          .createSync(recursive: true);
 
         var clearCalled = false;
         final mockPackage = WebPackageManifest(
@@ -921,7 +921,7 @@ void main() {
         _writeFile(buildOutputDir, 'ext/main.js', 'console.log("build");');
 
         Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
-          ..createSync(recursive: true);
+          .createSync(recursive: true);
 
         var clearCalled = false;
         final mockPackage = WebPackageManifest(
@@ -1043,7 +1043,7 @@ void main() {
           _writeFile(buildOutputDir, 'ext/main.js', 'console.log("build");');
 
           Directory(p.join(projectDir.path, 'host', 'assets', 'www'))
-            ..createSync(recursive: true);
+            .createSync(recursive: true);
 
           var clearCalled = false;
           final mockPackage = WebPackageManifest(

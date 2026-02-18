@@ -1,5 +1,5 @@
-/// Minimal test fixture that doesn't require fluttron_shared.
-/// Used for parser unit tests.
+// Minimal test fixture that doesn't require fluttron_shared.
+// Used for parser unit tests.
 
 /// Mock annotation for testing - simulates @FluttronServiceContract.
 class FluttronServiceContract {

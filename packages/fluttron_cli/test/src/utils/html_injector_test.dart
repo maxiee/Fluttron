@@ -79,7 +79,7 @@ void main() {
     }
 
     /// Extracts package name from path like 'ext/packages/my_editor/main.js'
-    String _extractPackageName(String path) {
+    String extractPackageName(String path) {
       final parts = path.split('/');
       final packagesIndex = parts.indexOf('packages');
       if (packagesIndex >= 0 && packagesIndex + 1 < parts.length) {
@@ -89,7 +89,7 @@ void main() {
     }
 
     /// Extracts filename from path
-    String _extractFilename(String path) {
+    String extractFilename(String path) {
       return p.basename(path);
     }
 
@@ -100,8 +100,8 @@ void main() {
       final assets = <CollectedAsset>[];
 
       for (final jsPath in jsPaths) {
-        final packageName = _extractPackageName(jsPath);
-        final filename = _extractFilename(jsPath);
+        final packageName = extractPackageName(jsPath);
+        final filename = extractFilename(jsPath);
         assets.add(
           CollectedAsset(
             packageName: packageName,
@@ -114,8 +114,8 @@ void main() {
       }
 
       for (final cssPath in cssPaths) {
-        final packageName = _extractPackageName(cssPath);
-        final filename = _extractFilename(cssPath);
+        final packageName = extractPackageName(cssPath);
+        final filename = extractFilename(cssPath);
         assets.add(
           CollectedAsset(
             packageName: packageName,
