@@ -6,3 +6,4 @@ export 'src/response.dart';
 export 'src/error.dart';
 export 'src/file_entry.dart';
 export 'src/file_stat.dart';
+export 'src/annotations.dart';
