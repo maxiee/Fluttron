@@ -5,11 +5,12 @@ import 'package:args/command_runner.dart';
 import 'package:fluttron_shared/fluttron_shared.dart';
 import 'package:path/path.dart' as p;
 
+import '../utils/host_service_copier.dart';
 import '../utils/template_copy.dart';
 import '../utils/web_package_copier.dart';
 
 /// Supported project types for creation.
-enum ProjectType { app, webPackage }
+enum ProjectType { app, webPackage, hostService }
 
 class CreateCommand extends Command<int> {
   @override
@@ -29,9 +30,9 @@ class CreateCommand extends Command<int> {
       ..addOption(
         'type',
         help:
-            'Project type: "app" for full Fluttron app, "web_package" for reusable web package.',
+            'Project type: "app" for full Fluttron app, "web_package" for reusable web package, "host_service" for custom host service.',
         valueHelp: 'type',
-        allowed: ['app', 'web_package'],
+        allowed: ['app', 'web_package', 'host_service'],
         defaultsTo: 'app',
       )
       ..addOption(
@@ -67,6 +68,12 @@ class CreateCommand extends Command<int> {
           );
         case ProjectType.webPackage:
           await _createWebPackageProject(
+            targetDir: targetDir,
+            normalizedTarget: normalizedTarget,
+            name: name,
+          );
+        case ProjectType.hostService:
+          await _createHostServiceProject(
             targetDir: targetDir,
             normalizedTarget: normalizedTarget,
             name: name,
@@ -150,36 +157,101 @@ class CreateCommand extends Command<int> {
     );
   }
 
+  Future<void> _createHostServiceProject({
+    required Directory targetDir,
+    required String normalizedTarget,
+    required String name,
+  }) async {
+    final templateDir = _resolveTemplateDir(subdir: 'host_service');
+
+    final copier = HostServiceCopier();
+    await copier.copyAndTransform(
+      serviceName: name,
+      sourceDir: templateDir,
+      destinationDir: targetDir,
+    );
+
+    // Rewrite pubspec paths for both host and client packages
+    _rewriteHostServicePubspecPaths(
+      hostPubspec: File(p.join(targetDir.path, '${name}_host', 'pubspec.yaml')),
+      clientPubspec: File(
+        p.join(targetDir.path, '${name}_client', 'pubspec.yaml'),
+      ),
+      templateDir: templateDir.parent,
+    );
+  }
+
   void _printSuccessMessage({
     required String normalizedTarget,
     required ProjectType projectType,
     required String name,
   }) {
     stdout.writeln('Project created: $normalizedTarget');
-    stdout.writeln(
-      'Type: ${projectType == ProjectType.app ? 'app' : 'web_package'}',
-    );
+    final typeStr = switch (projectType) {
+      ProjectType.app => 'app',
+      ProjectType.webPackage => 'web_package',
+      ProjectType.hostService => 'host_service',
+    };
+    stdout.writeln('Type: $typeStr');
     stdout.writeln('Name: $name');
 
-    if (projectType == ProjectType.app) {
-      stdout.writeln(
-        'Next step: run `fluttron build` in the project directory.',
-      );
-    } else {
-      stdout.writeln('Next steps:');
-      stdout.writeln('  1. cd $normalizedTarget');
-      stdout.writeln('  2. dart pub get');
-      stdout.writeln('  3. cd frontend && pnpm install && pnpm run js:build');
-      stdout.writeln(
-        '  4. Add this package to your app\'s ui/pubspec.yaml dependencies',
-      );
+    switch (projectType) {
+      case ProjectType.app:
+        stdout.writeln(
+          'Next step: run `fluttron build` in the project directory.',
+        );
+      case ProjectType.webPackage:
+        stdout.writeln('Next steps:');
+        stdout.writeln('  1. cd $normalizedTarget');
+        stdout.writeln('  2. dart pub get');
+        stdout.writeln('  3. cd frontend && pnpm install && pnpm run js:build');
+        stdout.writeln(
+          '  4. Add this package to your app\'s ui/pubspec.yaml dependencies',
+        );
+      case ProjectType.hostService:
+        stdout.writeln('');
+        stdout.writeln('Created packages:');
+        stdout.writeln('  ${name}_host/   — Host-side service implementation');
+        stdout.writeln('  ${name}_client/ — UI-side client stub');
+        stdout.writeln('');
+        stdout.writeln('Next steps:');
+        stdout.writeln('  1. cd ${name}_host && dart pub get && flutter test');
+        stdout.writeln('  2. cd ../${name}_client && dart pub get');
+        stdout.writeln('  3. Add to your host app:');
+        stdout.writeln(
+          '     import \'package:${name}_host/${name}_host.dart\';',
+        );
+        stdout.writeln(
+          '     registry.register(${_toPascalCase(name)}Service());',
+        );
+        stdout.writeln('  4. Add to your UI app:');
+        stdout.writeln(
+          '     import \'package:${name}_client/${name}_client.dart\';',
+        );
+        stdout.writeln(
+          '     final svc = ${_toPascalCase(name)}ServiceClient(client);',
+        );
     }
+  }
+
+  /// Converts a string to PascalCase.
+  String _toPascalCase(String input) {
+    final parts = input.split('_');
+    return parts
+        .map((part) {
+          if (part.isEmpty) return '';
+          return part[0].toUpperCase() + part.substring(1).toLowerCase();
+        })
+        .join('');
   }
 
   ProjectType _resolveProjectType() {
     final typeArg = argResults?['type'] as String?;
     if (typeArg == 'web_package') {
       return ProjectType.webPackage;
+    }
+    if (typeArg == 'host_service') {
+      return ProjectType.hostService;
     }
     return ProjectType.app;
   }
@@ -300,6 +372,21 @@ class CreateCommand extends Command<int> {
     _rewritePubspecFile(pubspecFile, normalizedPackages);
   }
 
+  void _rewriteHostServicePubspecPaths({
+    required File hostPubspec,
+    required File clientPubspec,
+    required Directory templateDir,
+  }) {
+    final packagesDir = _resolvePackagesDir(templateDir);
+    if (packagesDir == null) {
+      return;
+    }
+
+    final normalizedPackages = p.normalize(packagesDir.path);
+    _rewritePubspecFile(hostPubspec, normalizedPackages);
+    _rewritePubspecFile(clientPubspec, normalizedPackages);
+  }
+
   Directory? _resolvePackagesDir(Directory templateDir) {
     Directory current = templateDir;
     for (var i = 0; i < 8; i++) {
@@ -323,6 +410,7 @@ class CreateCommand extends Command<int> {
 
     final original = file.readAsStringSync();
     var updated = original
+        // Handle ../../packages/ (used by app and web_package templates)
         .replaceAll(
           'path: ../../packages/fluttron_host',
           'path: ${p.join(packagesPath, 'fluttron_host')}',
@@ -333,6 +421,19 @@ class CreateCommand extends Command<int> {
         )
         .replaceAll(
           'path: ../../packages/fluttron_shared',
+          'path: ${p.join(packagesPath, 'fluttron_shared')}',
+        )
+        // Handle ../../../packages/ (used by host_service templates)
+        .replaceAll(
+          'path: ../../../packages/fluttron_host',
+          'path: ${p.join(packagesPath, 'fluttron_host')}',
+        )
+        .replaceAll(
+          'path: ../../../packages/fluttron_ui',
+          'path: ${p.join(packagesPath, 'fluttron_ui')}',
+        )
+        .replaceAll(
+          'path: ../../../packages/fluttron_shared',
           'path: ${p.join(packagesPath, 'fluttron_shared')}',
         );
 

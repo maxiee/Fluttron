@@ -42,8 +42,8 @@
 - 以 `docs/feature/host_service_evolution_design.md` 为设计基准推进 L1 → L3 → L2。
 - 优先完成 v0061-v0067（框架内建服务客户端上收 + `host_service` 模板落地）。
 - 在 v0068-v0074 完成 `fluttron generate services`，形成 Host/UI 契约生成闭环。
-- 保持“单版本可独立验收”的交付节奏。
-- **当前起始版本：v0066（v0061-v0065 已完成，Phase 2 / L3 进行中）**。
+- 保持"单版本可独立验收"的交付节奏。
+- **当前起始版本：v0067（v0061-v0066 已完成，Phase 2 / L3 进行中）**。
 
 ### 当前能力基线（已具备）
 
@@ -274,7 +274,7 @@
 | v0063 | Phase 1 / L1 | 迁移 `examples/markdown_editor` 到框架内建 client；删除 app 层重复 client 文件；补回归测试与文档 | §4.6、§4.8、§7(Phase 1)、§10(L1) | v0062 | `fluttron build -p examples/markdown_editor` 成功；`markdown_editor` 运行正常；app 层 client 重复实现已移除 | ✅ 已完成 |
 | v0064 | Phase 2 / L3 | 新建 `templates/host_service/`，落地 manifest、host/client 双包模板与 README | §5.2、§5.3.1-§5.3.10、§5.5 | v0063 | 模板目录完整；模板内 Dart 代码可通过分析；文件命名符合 snake/Pascal/camel 规则 | ✅ 已完成 |
 | v0065 | Phase 2 / L3 | 实现 `HostServiceCopier`（变量替换、路径改名、双包处理、manifest 特殊处理） | §5.4.2、§5.5、§5.7 | v0064 | `host_service_copier_test` 通过；替换/重命名行为可覆盖主路径 | ✅ 已完成 |
-| v0066 | Phase 2 / L3 | 将 `CreateCommand` 接入 `--type host_service`；补 `ProjectType`、成功提示、pubspec path 重写 | §5.4.1、§5.6、§5.7 | v0065 | `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构 | 待开始 |
+| v0066 | Phase 2 / L3 | 将 `CreateCommand` 接入 `--type host_service`；补 `ProjectType`、成功提示、pubspec path 重写 | §5.4.1、§5.6、§5.7 | v0065 | `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构 | ✅ 已完成 |
 | v0067 | Phase 2 / L3 | 增加 `fluttron_host_service.json` 解析与诊断（可选）；补教程与 E2E（创建→注册→调用） | §5.3.1、§5.7、§7(Phase 2)、§10(L3) | v0066 | playground 内完成 custom service 端到端调用；文档可复现 | 待开始 |
 | v0068 | Phase 3 / L2 | 在 `fluttron_shared` 新增 `@FluttronServiceContract` / `@FluttronModel` 注解 | §6.3、§6.4、§7(Phase 3) | v0067 | 注解可导入可使用；示例 contract 可通过编译 | 待开始 |
 | v0069 | Phase 3 / L2 | 实现 Dart AST 解析器，提取 service contract / methods / model 字段 | §6.7、§6.8、§6.11 | v0068 | parser fixture 测试通过（含可选参数、nullable、List/Map） | 待开始 |
@@ -301,6 +301,7 @@
 | v0063 | markdown_editor 迁移 | 已迁移到框架内建 client；删除 app 层重复实现（`FileServiceClient`、`DialogServiceClient`、`FileStat`）；`kvGet/kvSet` 替换为 `StorageServiceClient`；构建与测试通过 |
 | v0064 | host_service 模板骨架 | `templates/host_service/` 创建完成；manifest (`fluttron_host_service.json`)、host/client 双包模板、README 全部落地 |
 | v0065 | HostServiceCopier 实现 | 变量替换（snake/Pascal/camel case）、双包目录重命名、manifest 特殊处理、14 个测试全部通过 |
+| v0066 | CLI `--type host_service` | `CreateCommand` 接入 `host_service` 类型；`ProjectType.hostService` 枚举、成功提示、pubspec path 重写、验收通过 |
 
 ---
 
@@ -318,14 +319,13 @@
 
 ## 立即下一步（执行入口）
 
-- 当前起始版本：`v0066`
+- 当前起始版本：`v0067`
 - 当前主需求：`host_service_evolution`（执行范围：`v0061-v0074`）。
-- 当前状态：v0061-v0065 已完成，进入 v0066（Phase 2 / L3）。
-- v0066 最小任务：
-  - 将 `CreateCommand` 接入 `--type host_service`。
-  - 补充 `ProjectType.hostService` 枚举值。
-  - 实现成功提示信息与 pubspec path 重写。
-- v0066 实现前必读：`docs/feature/host_service_evolution_design.md` §5.4.1、§5.6、§5.7。
-- v0066 最小验收：
-  - `fluttron create /tmp/test_svc --type host_service --name test_svc` 可生成可构建结构。
+- 当前状态：v0061-v0066 已完成，进入 v0067（Phase 2 / L3）。
+- v0067 最小任务：
+  - 增加 `fluttron_host_service.json` 解析与诊断（可选）。
+  - 补教程与 E2E（创建→注册→调用）。
+- v0067 实现前必读：`docs/feature/host_service_evolution_design.md` §5.3.1、§5.7、§7(Phase 2)、§10(L3)。
+- v0067 最小验收：
+  - playground 内完成 custom service 端到端调用；文档可复现。
 
