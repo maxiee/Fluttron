@@ -3,7 +3,13 @@
 // ===========================================================================
 //
 // This is the main entry point for your Fluttron Host application.
-// By default, it runs with the built-in services (system, storage).
+// By default, it runs with the built-in services:
+//   - SystemService  (system.*)   — platform info
+//   - StorageService (storage.*)  — persistent key-value store
+//   - FileService    (file.*)     — file read/write/list
+//   - DialogService  (dialog.*)   — native open/save dialogs
+//   - ClipboardService (clipboard.*) — clipboard read/write
+//   - WindowService  (window.*)   — window control (title/size/fullscreen…)
 //
 // To add custom services:
 // 1. Create a service class extending FluttronService (see greeting_service.dart)
@@ -18,29 +24,33 @@ import 'package:fluttron_host/fluttron_host.dart';
 // import 'greeting_service.dart';
 
 void main() async {
-  // Default: run with built-in services only
+  // Default: run with all built-in services (including WindowService)
   await runFluttronHost();
 
   // -----------------------------------------------------------------------
   // ALTERNATIVE: Run with custom services
   // -----------------------------------------------------------------------
   // Uncomment the code below to register custom services alongside
-  // the default system and storage services.
+  // the default built-in services.
   //
   // Step 1: Create a ServiceRegistry
-  // Step 2: Register built-in services (SystemService, StorageService)
+  // Step 2: Register built-in services
   // Step 3: Register your custom services (e.g., GreetingService)
   // Step 4: Pass the registry to runFluttronHost()
   //
   // Example:
   // ```dart
-  // void main() {
+  // void main() async {
   //   final registry = ServiceRegistry()
   //     ..register(SystemService())
   //     ..register(StorageService())
+  //     ..register(FileService())
+  //     ..register(DialogService())
+  //     ..register(ClipboardService())
+  //     ..register(WindowService())
   //     ..register(GreetingService()); // Your custom service
   //
-  //   runFluttronHost(registry: registry);
+  //   await runFluttronHost(registry: registry);
   // }
   // ```
   //
@@ -55,7 +65,11 @@ void main() async {
   // final registry = ServiceRegistry()
   //   ..register(SystemService())
   //   ..register(StorageService())
+  //   ..register(FileService())
+  //   ..register(DialogService())
+  //   ..register(ClipboardService())
+  //   ..register(WindowService())
   //   ..register(GreetingService()); // Add your custom services here
   //
-  // runFluttronHost(registry: registry);
+  // await runFluttronHost(registry: registry);
 }

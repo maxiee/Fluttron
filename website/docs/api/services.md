@@ -1,6 +1,6 @@
 # Services API Reference
 
-Fluttron provides five built-in Host services with typed Dart clients in `fluttron_ui`.
+Fluttron provides six built-in Host services with typed Dart clients in `fluttron_ui`.
 
 ## Quick Start
 
@@ -13,6 +13,7 @@ final dialogService = DialogServiceClient(client);
 final clipboardService = ClipboardServiceClient(client);
 final systemService = SystemServiceClient(client);
 final storageService = StorageServiceClient(client);
+final windowService = WindowServiceClient(client);
 ```
 
 ## Built-in Services
@@ -24,6 +25,7 @@ final storageService = StorageServiceClient(client);
 | ClipboardService | `clipboard` | `ClipboardServiceClient` | ✅ Stable |
 | SystemService | `system` | `SystemServiceClient` | ✅ Stable |
 | StorageService | `storage` | `StorageServiceClient` | ✅ Stable |
+| WindowService | `window` | `WindowServiceClient` | ✅ Stable |
 
 ## FileService (`file.*`)
 
@@ -100,6 +102,47 @@ final name = await storageService.get('user.name');
 ```
 
 `get` returns `null` when key does not exist.
+
+## WindowService (`window.*`)
+
+Control the native application window from UI code.
+
+Methods:
+- `setTitle(title)` — Set the window title bar text
+- `setSize(width, height)` — Resize the window (logical pixels)
+- `getSize()` — Get the current window dimensions
+- `minimize()` — Minimize the window to the dock/taskbar
+- `maximize()` — Toggle maximize / restore the window
+- `setFullScreen(enabled)` — Enter or exit fullscreen mode
+- `isFullScreen()` — Check whether the window is currently fullscreen
+- `center()` — Center the window on the screen
+- `setMinSize(width, height)` — Set the minimum allowed window size
+
+```dart
+final windowService = WindowServiceClient(client);
+
+// Set the window title dynamically
+await windowService.setTitle('My App — Untitled.md');
+
+// Resize the window
+await windowService.setSize(1280, 800);
+
+// Read current size
+final size = await windowService.getSize();
+print('${size['width']}x${size['height']}');
+
+// Center on screen
+await windowService.center();
+
+// Toggle fullscreen
+final isFullScreen = await windowService.isFullScreen();
+await windowService.setFullScreen(!isFullScreen);
+
+// Set minimum window size
+await windowService.setMinSize(800, 600);
+```
+
+`WindowService` is registered by default — no extra setup needed.
 
 ## Backward Compatibility
 

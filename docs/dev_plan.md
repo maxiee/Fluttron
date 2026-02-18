@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0082 已完成，当前入口版本为 v0083**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0083 已完成，当前入口版本为 v0084**
 
 ### 当前能力基线（已具备）
 
@@ -351,7 +351,7 @@
 | v0080 | 在 `fluttron_host` 新增 `WindowService`（9 个方法：setTitle/setSize/getSize/minimize/maximize/setFullScreen/isFullScreen/center/setMinSize）；引入 `window_manager` 依赖；注册至默认服务列表 | `docs/feature/v1_release_roadmap.md §v0080` | v0079 | `WindowService` 类存在并已注册；`flutter analyze packages/fluttron_host` 通过 | ✅ 已完成 |
 | v0081 | 为 `WindowService` 编写完整单元测试（覆盖 9 个方法 + 错误处理 + METHOD_NOT_FOUND） | `docs/feature/v1_release_roadmap.md §v0081` | v0080 | `window_service_test.dart` 存在；`flutter test packages/fluttron_host` 全通过；错误场景已覆盖 | ✅ 已完成 |
 | v0082 | 在 `fluttron_ui` 新增 `WindowServiceClient`（9 个 typed 方法）；从 `fluttron_ui.dart` 导出；补测试 | `docs/feature/v1_release_roadmap.md §v0082` | v0080 | `WindowServiceClient` 可从 `fluttron_ui.dart` 导入；测试全通过；`flutter analyze packages/fluttron_ui` 通过 | ✅ 已完成 |
-| v0083 | 更新 host 模板 `main.dart` 与 playground 注册 `WindowService`；更新 `website/docs/api/services.md` 补 `window.*` 文档 | `docs/feature/v1_release_roadmap.md §v0083` | v0082 | 新建 app 模板默认包含 WindowService；services.md 有 window 章节；playground 演示窗口控制可用 | ⬜ 待开始 |
+| v0083 | 更新 host 模板 `main.dart` 与 playground 注册 `WindowService`；更新 `website/docs/api/services.md` 补 `window.*` 文档 | `docs/feature/v1_release_roadmap.md §v0083` | v0082 | 新建 app 模板默认包含 WindowService；services.md 有 window 章节；playground 演示窗口控制可用 | ✅ 已完成 |
 | v0084 | 在 `fluttron_host` 新增 `LoggingService`（ring buffer，默认 1000 条，3 个方法：log/getLogs/clear）；在 `fluttron_ui` 新增 `LoggingServiceClient`（debug/info/warn/error）；双侧均导出并注册；补测试 | `docs/feature/v1_release_roadmap.md §v0084` | v0083 | `LoggingService` 与 `LoggingServiceClient` 存在并已测试；UI 侧日志调用在 host stdout 可见 | ⬜ 待开始 |
 | v0085 | 在 host 入口增加 `runZonedGuarded` + `FlutterError.onError` 全局错误边界；在 UI 入口增加同等边界；更新 host 与 UI 模板同步 | `docs/feature/v1_release_roadmap.md §v0085` | v0084 | 未捕获错误有 stack trace 日志输出；Bridge 错误有有意义提示；模板包含错误边界 | ⬜ 待开始 |
 | v0086 | 实现 `fluttron package -p <path>` CLI 命令（链式：build → `flutter build macos --release` → 拷贝 .app 至 `<path>/dist/`，打印路径与大小）；注册至 CLI | `docs/feature/v1_release_roadmap.md §v0086` | v0085 | `fluttron package -p playground` 在 `dist/` 生成 .app；.app 可正常启动；bundle 大小打印至 stdout | ⬜ 待开始 |
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0083`（更新 host 模板与 playground 注册 WindowService；补 services.md 文档）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0083`
-- **最小验收**：新建 app 模板默认包含 WindowService；services.md 有 window 章节；playground 演示窗口控制可用
+- **当前入口**：`v0084`（LoggingService：Host 侧实现 + UI Client）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0084`
+- **最小验收**：`LoggingService` 与 `LoggingServiceClient` 存在并已测试；UI 侧日志调用在 host stdout 可见
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议
