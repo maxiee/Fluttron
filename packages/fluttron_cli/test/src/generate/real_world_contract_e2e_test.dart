@@ -291,13 +291,12 @@ void main() {
       expect(byPriorityField.type.isMap, isTrue);
 
       final code = modelGenerator.generate(todoStats);
-      // Note: The generator currently treats all Maps as Map<String, dynamic>
-      // for JSON compatibility. The field type is preserved, but fromMap
-      // uses Map<String, dynamic>.from for deserialization.
       expect(code, contains('final Map<String, int> byPriority;'));
       expect(
         code,
-        contains("Map<String, dynamic>.from(map['byPriority'] as Map)"),
+        contains(
+          "Map<String, dynamic>.from(map['byPriority'] as Map).map((k, v) => MapEntry(k, v as int))",
+        ),
       );
     });
   });

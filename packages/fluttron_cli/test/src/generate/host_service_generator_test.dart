@@ -464,6 +464,47 @@ void main() {
         );
       });
 
+      test('deserializes required Map<String, int> param', () {
+        final contract = ParsedServiceContract(
+          className: 'TestService',
+          namespace: 'test',
+          methods: [
+            ParsedMethod(
+              name: 'processCounts',
+              parameters: [
+                ParsedParameter(
+                  name: 'counts',
+                  type: const ParsedType(
+                    displayName: 'Map<String, int>',
+                    isNullable: false,
+                    typeArguments: [
+                      ParsedType(displayName: 'String', isNullable: false),
+                      ParsedType(displayName: 'int', isNullable: false),
+                    ],
+                  ),
+                  isRequired: true,
+                  isNamed: false,
+                ),
+              ],
+              returnType: const ParsedType(
+                displayName: 'Future<void>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(displayName: 'void', isNullable: false),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(contract);
+        expect(
+          code,
+          contains(
+            "final counts = Map<String, dynamic>.from(_requireMap(params, 'counts') as Map).map((k, v) => MapEntry(k, v as int));",
+          ),
+        );
+      });
+
       test('generates _requireDateTime for required DateTime param', () {
         final contract = ParsedServiceContract(
           className: 'TestService',
@@ -656,6 +697,40 @@ void main() {
         );
         final code = generator.generate(contract);
         expect(code, contains('return result;'));
+      });
+
+      test('serializes Map<String, DateTime> return type values', () {
+        final contract = ParsedServiceContract(
+          className: 'TestService',
+          namespace: 'test',
+          methods: [
+            ParsedMethod(
+              name: 'getSchedule',
+              parameters: [],
+              returnType: const ParsedType(
+                displayName: 'Future<Map<String, DateTime>>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(
+                    displayName: 'Map<String, DateTime>',
+                    isNullable: false,
+                    typeArguments: [
+                      ParsedType(displayName: 'String', isNullable: false),
+                      ParsedType(displayName: 'DateTime', isNullable: false),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(contract);
+        expect(
+          code,
+          contains(
+            'return result.map((k, v) => MapEntry(k, v.toIso8601String()));',
+          ),
+        );
       });
     });
 

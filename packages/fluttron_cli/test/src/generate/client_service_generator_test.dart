@@ -233,6 +233,47 @@ void main() {
         expect(code, contains("'a': a,"));
         expect(code, contains("'b': b,"));
       });
+
+      test('serializes map parameter values for transport', () {
+        final contract = ParsedServiceContract(
+          className: 'TestService',
+          namespace: 'test',
+          methods: [
+            ParsedMethod(
+              name: 'saveSchedule',
+              parameters: [
+                ParsedParameter(
+                  name: 'schedule',
+                  type: const ParsedType(
+                    displayName: 'Map<String, DateTime>',
+                    isNullable: false,
+                    typeArguments: [
+                      ParsedType(displayName: 'String', isNullable: false),
+                      ParsedType(displayName: 'DateTime', isNullable: false),
+                    ],
+                  ),
+                  isRequired: true,
+                  isNamed: false,
+                ),
+              ],
+              returnType: const ParsedType(
+                displayName: 'Future<void>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(displayName: 'void', isNullable: false),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(contract);
+        expect(
+          code,
+          contains(
+            "'schedule': schedule.map((k, v) => MapEntry(k, v.toIso8601String())),",
+          ),
+        );
+      });
     });
 
     group('return deserialization', () {
@@ -469,6 +510,40 @@ void main() {
         expect(
           code,
           contains('return Map<String, dynamic>.from(result as Map);'),
+        );
+      });
+
+      test('deserializes Map<String, int> return type', () {
+        final contract = ParsedServiceContract(
+          className: 'TestService',
+          namespace: 'test',
+          methods: [
+            ParsedMethod(
+              name: 'getCounts',
+              parameters: [],
+              returnType: const ParsedType(
+                displayName: 'Future<Map<String, int>>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(
+                    displayName: 'Map<String, int>',
+                    isNullable: false,
+                    typeArguments: [
+                      ParsedType(displayName: 'String', isNullable: false),
+                      ParsedType(displayName: 'int', isNullable: false),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(contract);
+        expect(
+          code,
+          contains(
+            'return Map<String, dynamic>.from(result as Map).map((k, v) => MapEntry(k, v as int));',
+          ),
         );
       });
 

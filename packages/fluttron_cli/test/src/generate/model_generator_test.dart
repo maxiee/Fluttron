@@ -466,6 +466,32 @@ void main() {
         );
       });
 
+      test('deserializes Map<String, int> field', () {
+        final model = ParsedModel(
+          className: 'TestModel',
+          fields: [
+            ParsedField(
+              name: 'counts',
+              type: const ParsedType(
+                displayName: 'Map<String, int>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(displayName: 'String', isNullable: false),
+                  ParsedType(displayName: 'int', isNullable: false),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(model);
+        expect(
+          code,
+          contains(
+            "counts: Map<String, dynamic>.from(map['counts'] as Map).map((k, v) => MapEntry(k, v as int)),",
+          ),
+        );
+      });
+
       test('deserializes custom model field', () {
         final model = ParsedModel(
           className: 'TestModel',
@@ -695,6 +721,32 @@ void main() {
         );
         final code = generator.generate(model);
         expect(code, contains("'data': data,"));
+      });
+
+      test('serializes Map<String, DateTime> field', () {
+        final model = ParsedModel(
+          className: 'TestModel',
+          fields: [
+            ParsedField(
+              name: 'timestamps',
+              type: const ParsedType(
+                displayName: 'Map<String, DateTime>',
+                isNullable: false,
+                typeArguments: [
+                  ParsedType(displayName: 'String', isNullable: false),
+                  ParsedType(displayName: 'DateTime', isNullable: false),
+                ],
+              ),
+            ),
+          ],
+        );
+        final code = generator.generate(model);
+        expect(
+          code,
+          contains(
+            "'timestamps': timestamps.map((k, v) => MapEntry(k, v.toIso8601String())),",
+          ),
+        );
       });
 
       test('serializes custom model field with toMap', () {

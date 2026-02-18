@@ -75,11 +75,13 @@ class ServiceContractParser {
         final contract = _parseServiceContract(declaration);
         if (contract != null) {
           contracts.add(contract);
+          _validateServiceContract(declaration, contract, errors);
         }
 
         final model = _parseModel(declaration);
         if (model != null) {
           models.add(model);
+          _validateModel(declaration, model, errors);
         }
       }
     }
@@ -134,8 +136,19 @@ class ServiceContractParser {
     final fields = <ParsedField>[];
     for (final member in classDecl.members) {
       if (member is FieldDeclaration) {
+        if (member.isStatic) {
+          // Static fields are not part of instance serialization.
+          continue;
+        }
+        final fieldDocumentation = _extractDocumentation(
+          member.documentationComment,
+        );
         for (final variable in member.fields.variables) {
-          final field = _parseField(variable, member.fields.type);
+          final field = _parseField(
+            variable,
+            member.fields.type,
+            documentation: fieldDocumentation,
+          );
           if (field != null) {
             fields.add(field);
           }
@@ -232,8 +245,16 @@ class ServiceContractParser {
   }
 
   /// Parses a field from a variable declaration.
-  ParsedField? _parseField(VariableDeclaration variable, TypeAnnotation? type) {
-    return ParsedField(name: variable.name.lexeme, type: _parseType(type));
+  ParsedField? _parseField(
+    VariableDeclaration variable,
+    TypeAnnotation? type, {
+    String? documentation,
+  }) {
+    return ParsedField(
+      name: variable.name.lexeme,
+      type: _parseType(type),
+      documentation: documentation,
+    );
   }
 
   /// Parses a type annotation into a ParsedType.
@@ -307,4 +328,164 @@ class ServiceContractParser {
         .join('\n')
         .trim();
   }
+
+  void _validateServiceContract(
+    ClassDeclaration classDecl,
+    ParsedServiceContract contract,
+    List<String> errors,
+  ) {
+    final className = contract.className;
+
+    if (classDecl.abstractKeyword == null) {
+      errors.add('Service contract "$className" must be declared as abstract.');
+    }
+
+    if (classDecl.typeParameters != null) {
+      errors.add(
+        'Service contract "$className" must not declare type parameters.',
+      );
+    }
+
+    if (contract.namespace.trim().isEmpty) {
+      errors.add('Service contract "$className" has an empty namespace.');
+    }
+
+    for (final member in classDecl.members) {
+      if (member is! MethodDeclaration) {
+        continue;
+      }
+
+      final methodName = member.name.lexeme;
+
+      if (methodName.startsWith('_')) {
+        errors.add(
+          'Method "$className.$methodName" is private. Service methods must be public.',
+        );
+      }
+
+      if (!member.isAbstract) {
+        errors.add('Method "$className.$methodName" must be abstract.');
+      }
+
+      if (member.typeParameters != null) {
+        errors.add(
+          'Method "$className.$methodName" must not declare type parameters.',
+        );
+      }
+
+      final returnType = _parseType(member.returnType);
+      if (!returnType.isFuture || returnType.innerType == null) {
+        errors.add('Method "$className.$methodName" must return Future<T>.');
+      }
+      _validateType(
+        returnType,
+        'return type of "$className.$methodName"',
+        errors,
+      );
+
+      final parameters = member.parameters;
+      if (parameters == null) {
+        continue;
+      }
+      for (final parameter in parameters.parameters) {
+        final parsed = _parseFormalParameterType(parameter);
+        _validateType(
+          parsed.type,
+          'parameter "${parsed.name}" of "$className.$methodName"',
+          errors,
+        );
+      }
+    }
+  }
+
+  void _validateModel(
+    ClassDeclaration classDecl,
+    ParsedModel model,
+    List<String> errors,
+  ) {
+    final className = model.className;
+
+    if (classDecl.typeParameters != null) {
+      errors.add('Model "$className" must not declare type parameters.');
+    }
+
+    for (final member in classDecl.members) {
+      if (member is! FieldDeclaration || member.isStatic) {
+        continue;
+      }
+
+      for (final variable in member.fields.variables) {
+        if (!member.fields.isFinal) {
+          errors.add(
+            'Model field "$className.${variable.name.lexeme}" must be final.',
+          );
+        }
+      }
+
+      final fieldType = _parseType(member.fields.type);
+      for (final variable in member.fields.variables) {
+        _validateType(
+          fieldType,
+          'field "$className.${variable.name.lexeme}"',
+          errors,
+        );
+      }
+    }
+  }
+
+  void _validateType(ParsedType type, String context, List<String> errors) {
+    if (type.isMap) {
+      final keyType = type.typeArguments.isNotEmpty
+          ? type.typeArguments[0]
+          : null;
+      if (keyType != null && keyType.baseName != 'String') {
+        errors.add(
+          'Unsupported $context: map keys must be String, got "${keyType.displayName}".',
+        );
+      }
+    }
+
+    for (final typeArgument in type.typeArguments) {
+      _validateType(typeArgument, context, errors);
+    }
+  }
+
+  _ParameterTypeInfo _parseFormalParameterType(FormalParameter parameter) {
+    if (parameter is SimpleFormalParameter) {
+      return _ParameterTypeInfo(
+        parameter.name?.lexeme ?? '',
+        _parseType(parameter.type),
+      );
+    }
+    if (parameter is DefaultFormalParameter) {
+      final inner = parameter.parameter;
+      if (inner is SimpleFormalParameter) {
+        return _ParameterTypeInfo(
+          inner.name?.lexeme ?? '',
+          _parseType(inner.type),
+        );
+      }
+      return const _ParameterTypeInfo(
+        '',
+        ParsedType(displayName: 'dynamic', isNullable: false),
+      );
+    }
+    if (parameter is FieldFormalParameter) {
+      return _ParameterTypeInfo(
+        parameter.name.lexeme,
+        _parseType(parameter.type),
+      );
+    }
+    return const _ParameterTypeInfo(
+      '',
+      ParsedType(displayName: 'dynamic', isNullable: false),
+    );
+  }
+}
+
+class _ParameterTypeInfo {
+  const _ParameterTypeInfo(this.name, this.type);
+
+  final String name;
+  final ParsedType type;
 }

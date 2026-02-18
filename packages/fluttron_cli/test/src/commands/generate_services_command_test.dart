@@ -31,8 +31,10 @@ void main() {
       foundProjectRoot = projectRoot;
     }
 
+    final projectRootPath = foundProjectRoot.path;
+
     contractFixturePath = p.join(
-      foundProjectRoot!.path,
+      projectRootPath,
       'packages',
       'fluttron_shared',
       'test',
@@ -73,7 +75,11 @@ void main() {
         '--contract',
         contractFixturePath,
         '--host-output',
-        outputDir,
+        p.join(outputDir, 'host'),
+        '--client-output',
+        p.join(outputDir, 'client'),
+        '--shared-output',
+        p.join(outputDir, 'shared'),
         '--dry-run',
       ]);
 
@@ -151,6 +157,8 @@ void main() {
 
     test('generated host code has proper structure', () async {
       final hostOutput = p.join(tempDir.path, 'host');
+      final clientOutput = p.join(tempDir.path, 'client');
+      final sharedOutput = p.join(tempDir.path, 'shared');
 
       final exitCode = await runCli([
         'generate',
@@ -159,6 +167,10 @@ void main() {
         contractFixturePath,
         '--host-output',
         hostOutput,
+        '--client-output',
+        clientOutput,
+        '--shared-output',
+        sharedOutput,
       ]);
 
       expect(exitCode, equals(0));
@@ -202,14 +214,20 @@ void main() {
 
     test('generated client code has proper structure', () async {
       final clientOutput = p.join(tempDir.path, 'client');
+      final hostOutput = p.join(tempDir.path, 'host');
+      final sharedOutput = p.join(tempDir.path, 'shared');
 
       final exitCode = await runCli([
         'generate',
         'services',
         '--contract',
         contractFixturePath,
+        '--host-output',
+        hostOutput,
         '--client-output',
         clientOutput,
+        '--shared-output',
+        sharedOutput,
       ]);
 
       expect(exitCode, equals(0));
@@ -242,12 +260,18 @@ void main() {
 
     test('generated model code has serialization', () async {
       final sharedOutput = p.join(tempDir.path, 'shared');
+      final hostOutput = p.join(tempDir.path, 'host');
+      final clientOutput = p.join(tempDir.path, 'client');
 
       final exitCode = await runCli([
         'generate',
         'services',
         '--contract',
         contractFixturePath,
+        '--host-output',
+        hostOutput,
+        '--client-output',
+        clientOutput,
         '--shared-output',
         sharedOutput,
       ]);
@@ -278,6 +302,8 @@ void main() {
 
     test('creates output directories if they do not exist', () async {
       final hostOutput = p.join(tempDir.path, 'deeply', 'nested', 'host');
+      final clientOutput = p.join(tempDir.path, 'deeply', 'nested', 'client');
+      final sharedOutput = p.join(tempDir.path, 'deeply', 'nested', 'shared');
 
       final exitCode = await runCli([
         'generate',
@@ -286,6 +312,10 @@ void main() {
         contractFixturePath,
         '--host-output',
         hostOutput,
+        '--client-output',
+        clientOutput,
+        '--shared-output',
+        sharedOutput,
       ]);
 
       expect(exitCode, equals(0));
@@ -334,6 +364,38 @@ abstract class SimpleService {
           p.join(outputDir, 'simple_service_client_generated.dart'),
         ).exists(),
         isTrue,
+      );
+    });
+
+    test('returns error for invalid contract method signature', () async {
+      final invalidContract = File(
+        p.join(tempDir.path, 'invalid_contract.dart'),
+      );
+      final outputDir = p.join(tempDir.path, 'output');
+      await invalidContract.writeAsString('''
+import 'package:fluttron_shared/fluttron_shared.dart';
+
+@FluttronServiceContract(namespace: 'invalid')
+abstract class InvalidService {
+  String ping();
+}
+''');
+
+      final exitCode = await runCli([
+        'generate',
+        'services',
+        '--contract',
+        invalidContract.path,
+        '--host-output',
+        outputDir,
+      ]);
+
+      expect(exitCode, equals(1));
+      expect(
+        await File(
+          p.join(outputDir, 'invalid_service_generated.dart'),
+        ).exists(),
+        isFalse,
       );
     });
   });

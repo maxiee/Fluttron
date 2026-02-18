@@ -173,7 +173,18 @@ class ModelGenerator {
     }
 
     if (type.isMap) {
-      return 'Map<String, dynamic>.from($valueExpr as Map)';
+      final valueType = type.typeArguments.length > 1
+          ? type.typeArguments[1]
+          : null;
+      final sourceMapExpr = 'Map<String, dynamic>.from($valueExpr as Map)';
+      if (valueType == null || valueType.isDynamic) {
+        return sourceMapExpr;
+      }
+      final valueDeserializeExpr = _deserializeFromMapExpression(
+        'v',
+        valueType,
+      );
+      return '$sourceMapExpr.map((k, v) => MapEntry(k, $valueDeserializeExpr))';
     }
 
     if (type.isDynamic) {
@@ -215,7 +226,17 @@ class ModelGenerator {
     }
 
     if (type.isMap || type.isDynamic) {
-      return valueExpr;
+      if (type.isDynamic) {
+        return valueExpr;
+      }
+      final valueType = type.typeArguments.length > 1
+          ? type.typeArguments[1]
+          : null;
+      if (valueType == null || valueType.isDynamic) {
+        return valueExpr;
+      }
+      final valueSerializeExpr = _serializeToMapExpression('v', valueType);
+      return '$valueExpr.map((k, v) => MapEntry(k, $valueSerializeExpr))';
     }
 
     // Custom model type

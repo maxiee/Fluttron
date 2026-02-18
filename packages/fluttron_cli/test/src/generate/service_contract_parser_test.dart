@@ -131,6 +131,88 @@ abstract class TestService {
         final method = result.contracts.first.methods.first;
         expect(method.documentation, contains('Returns a greeting'));
       });
+
+      test('reports error for non-abstract contract class', () {
+        final result = parser.parseString('''
+class FluttronServiceContract {
+  final String namespace;
+  const FluttronServiceContract({required this.namespace});
+}
+
+@FluttronServiceContract(namespace: 'test')
+class TestService {
+  Future<String> ping() async => 'ok';
+}
+''');
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errors,
+          contains(
+            'Service contract "TestService" must be declared as abstract.',
+          ),
+        );
+      });
+
+      test('reports error for non-Future return type', () {
+        final result = parser.parseString('''
+class FluttronServiceContract {
+  final String namespace;
+  const FluttronServiceContract({required this.namespace});
+}
+
+@FluttronServiceContract(namespace: 'test')
+abstract class TestService {
+  String ping();
+}
+''');
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errors,
+          contains('Method "TestService.ping" must return Future<T>.'),
+        );
+      });
+
+      test('reports error for generic contract method', () {
+        final result = parser.parseString('''
+class FluttronServiceContract {
+  final String namespace;
+  const FluttronServiceContract({required this.namespace});
+}
+
+@FluttronServiceContract(namespace: 'test')
+abstract class TestService {
+  Future<T> transform<T>(String input);
+}
+''');
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errors,
+          contains(
+            'Method "TestService.transform" must not declare type parameters.',
+          ),
+        );
+      });
+
+      test('reports error for non-string map keys', () {
+        final result = parser.parseString('''
+class FluttronServiceContract {
+  final String namespace;
+  const FluttronServiceContract({required this.namespace});
+}
+
+@FluttronServiceContract(namespace: 'test')
+abstract class TestService {
+  Future<Map<int, String>> getData();
+}
+''');
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errors,
+          contains(
+            'Unsupported return type of "TestService.getData": map keys must be String, got "int".',
+          ),
+        );
+      });
     });
 
     group('parameter parsing', () {
@@ -483,6 +565,43 @@ class UserModel {
         expect(result.isSuccess, isTrue);
         final model = result.models.first;
         expect(model.documentation, contains('user model'));
+      });
+
+      test('extracts field documentation from model fields', () {
+        final result = parser.parseString('''
+class FluttronModel {
+  const FluttronModel();
+}
+
+@FluttronModel()
+class UserModel {
+  /// User id.
+  final String id;
+
+  const UserModel({required this.id});
+}
+''');
+        expect(result.isSuccess, isTrue);
+        final model = result.models.first;
+        expect(model.fields.single.documentation, contains('User id.'));
+      });
+
+      test('reports error when model field is not final', () {
+        final result = parser.parseString('''
+class FluttronModel {
+  const FluttronModel();
+}
+
+@FluttronModel()
+class MutableModel {
+  String id = '';
+}
+''');
+        expect(result.isSuccess, isFalse);
+        expect(
+          result.errors,
+          contains('Model field "MutableModel.id" must be final.'),
+        );
       });
     });
 
