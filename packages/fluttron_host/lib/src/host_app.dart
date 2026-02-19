@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -18,7 +20,23 @@ Future<void> runFluttronHost({ServiceRegistry? registry}) async {
 
   final serviceRegistry = registry ?? createDefaultServiceRegistry();
 
-  runApp(FluttronHostApp(registry: serviceRegistry));
+  // Catch uncaught Flutter framework errors (widget build errors, etc.)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    final message = details.exceptionAsString();
+    final stack = details.stack?.toString() ?? '(no stack trace)';
+    // ignore: avoid_print
+    print('[Fluttron] [ERROR] Uncaught Flutter error: $message\n$stack');
+    FlutterError.presentError(details);
+  };
+
+  // Catch uncaught async/Dart errors thrown outside the Flutter framework
+  runZonedGuarded(
+    () => runApp(FluttronHostApp(registry: serviceRegistry)),
+    (Object error, StackTrace stack) {
+      // ignore: avoid_print
+      print('[Fluttron] [ERROR] Uncaught async error: $error\n$stack');
+    },
+  );
 }
 
 ServiceRegistry createDefaultServiceRegistry() {

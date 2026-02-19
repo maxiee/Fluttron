@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 void runFluttronUi({
@@ -5,7 +7,23 @@ void runFluttronUi({
   required Widget home,
   bool debugBanner = false,
 }) {
-  runApp(FluttronUiApp(title: title, home: home, debugBanner: debugBanner));
+  // Catch uncaught Flutter framework errors (widget build errors, etc.)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint(
+      '[Fluttron] [ERROR] Uncaught Flutter error: ${details.exceptionAsString()}\n${details.stack}',
+    );
+    FlutterError.presentError(details);
+  };
+
+  // Catch uncaught async/Dart errors thrown outside the Flutter framework
+  runZonedGuarded(
+    () => runApp(
+      FluttronUiApp(title: title, home: home, debugBanner: debugBanner),
+    ),
+    (Object error, StackTrace stack) {
+      debugPrint('[Fluttron] [ERROR] Uncaught async error: $error\n$stack');
+    },
+  );
 }
 
 class FluttronUiApp extends StatelessWidget {

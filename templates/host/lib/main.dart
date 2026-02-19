@@ -12,6 +12,11 @@
 //   - WindowService  (window.*)   — window control (title/size/fullscreen…)
 //   - LoggingService (logging.*)  — structured logging with ring buffer
 //
+// Global error boundaries are set up automatically by runFluttronHost():
+//   - FlutterError.onError catches uncaught widget/framework errors
+//   - runZonedGuarded catches uncaught async Dart errors
+// All uncaught errors are logged with stack traces to host stdout.
+//
 // To add custom services:
 // 1. Create a service class extending FluttronService (see greeting_service.dart)
 // 2. Create a custom ServiceRegistry and register your services
@@ -25,7 +30,9 @@ import 'package:fluttron_host/fluttron_host.dart';
 // import 'greeting_service.dart';
 
 void main() async {
-  // Default: run with all built-in services (including WindowService + LoggingService)
+  // Default: run with all built-in services (including WindowService + LoggingService).
+  // Error boundaries (FlutterError.onError + runZonedGuarded) are set up
+  // automatically inside runFluttronHost().
   await runFluttronHost();
 
   // -----------------------------------------------------------------------
@@ -75,5 +82,4 @@ void main() async {
   //   ..register(GreetingService()); // Add your custom services here
   //
   // await runFluttronHost(registry: registry);
-}
 }

@@ -14,6 +14,8 @@ const String _templateInitialText =
 void main() {
   registerFluttronWebPackages();
   _registerTemplateWebViews();
+  // Error boundaries (FlutterError.onError + runZonedGuarded) are set up
+  // automatically inside runFluttronUi().
   runFluttronUi(title: 'Fluttron UI Template', home: const TemplateDemoPage());
 }
 
