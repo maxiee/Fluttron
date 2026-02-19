@@ -1,0 +1,27 @@
+{
+  "id": "getting-started/troubleshooting",
+  "title": "Troubleshooting",
+  "description": "Common issues and solutions when working with Fluttron.",
+  "source": "@site/docs/getting-started/troubleshooting.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/troubleshooting",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/troubleshooting",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/troubleshooting.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 99,
+  "frontMatter": {
+    "sidebar_position": 99
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Project Structure",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
+  },
+  "next": {
+    "title": "Architecture Overview",
+    "permalink": "/Fluttron/zh-CN/docs/architecture/overview"
+  }
+}

@@ -12,6 +12,7 @@ const sidebars = {
         'getting-started/quick-start',
         'getting-started/migration',
         'getting-started/project-structure',
+        'getting-started/troubleshooting',
       ],
     },
     {

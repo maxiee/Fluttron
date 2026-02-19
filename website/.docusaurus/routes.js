@@ -4,15 +4,15 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/Fluttron/zh-CN/docs',
-    component: ComponentCreator('/Fluttron/zh-CN/docs', '789'),
+    component: ComponentCreator('/Fluttron/zh-CN/docs', '319'),
     routes: [
       {
         path: '/Fluttron/zh-CN/docs',
-        component: ComponentCreator('/Fluttron/zh-CN/docs', 'd2c'),
+        component: ComponentCreator('/Fluttron/zh-CN/docs', 'a2c'),
         routes: [
           {
             path: '/Fluttron/zh-CN/docs',
-            component: ComponentCreator('/Fluttron/zh-CN/docs', 'db9'),
+            component: ComponentCreator('/Fluttron/zh-CN/docs', 'de7'),
             routes: [
               {
                 path: '/Fluttron/zh-CN/docs/api/annotations',
@@ -104,6 +104,12 @@ export default [
               {
                 path: '/Fluttron/zh-CN/docs/getting-started/quick-start',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/quick-start', '4f0'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/getting-started/troubleshooting',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/troubleshooting', 'e15'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },

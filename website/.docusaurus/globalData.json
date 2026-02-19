@@ -88,6 +88,11 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "getting-started/troubleshooting",
+              "path": "/Fluttron/zh-CN/docs/getting-started/troubleshooting",
+              "sidebar": "tutorialSidebar"
+            },
+            {
               "id": "getting-started/why-fluttron",
               "path": "/Fluttron/zh-CN/docs/getting-started/why-fluttron",
               "sidebar": "tutorialSidebar"
