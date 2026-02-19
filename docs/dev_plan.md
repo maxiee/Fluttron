@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0090 已完成，当前入口版本为 v0091**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0091 已完成，当前入口版本为 v0092**
 
 ### 当前能力基线（已具备）
 
@@ -364,7 +364,7 @@
 |---|---|---|---|---|---|
 | v0089 | 创建 `CONTRIBUTING.md`（含 Prerequisites/Setup/Project Structure/Development Workflow/Standards/Commit Messages/PR Process）与 `CODE_OF_CONDUCT.md`（Contributor Covenant v2.1 完整英文版） | `docs/feature/v1_release_roadmap.md §v0089` | v0088 | 两文件位于仓库根目录；CONTRIBUTING 覆盖 setup/workflow/standards；CoC 是完整 Contributor Covenant | ✅ 已完成 |
 | v0090 | 创建 `.github/ISSUE_TEMPLATE/bug_report.md`、`.github/ISSUE_TEMPLATE/feature_request.md`、`.github/pull_request_template.md`（技术方案文档有完整模板内容） | `docs/feature/v1_release_roadmap.md §v0090` | v0089 | 3 个模板文件存在；YAML frontmatter 正确；PR 模板含 analyze/test/docs checklist | ✅ 已完成 |
-| v0091 | 创建 `CHANGELOG.md`（含各 milestone 补录历史，从 v0001 到当前）与 `SECURITY.md`（含漏洞报告流程、响应时间线、覆盖范围） | `docs/feature/v1_release_roadmap.md §v0091` | v0090 | CHANGELOG 覆盖所有主要里程碑（v0001-v0074 + unreleased）；SECURITY 有明确报告指引；两文件位于仓库根目录 | ⬜ 待开始 |
+| v0091 | 创建 `CHANGELOG.md`（含各 milestone 补录历史，从 v0001 到当前）与 `SECURITY.md`（含漏洞报告流程、响应时间线、覆盖范围） | `docs/feature/v1_release_roadmap.md §v0091` | v0090 | CHANGELOG 覆盖所有主要里程碑（v0001-v0074 + unreleased）；SECURITY 有明确报告指引；两文件位于仓库根目录 | ✅ 已完成 |
 | v0092 | 创建 `packages/fluttron_cli/lib/src/version.dart`（`const fluttronVersion = '0.1.0-dev'`）；在 CLI `CommandRunner` 中配置 version；验证 `fluttron --version` 输出正确 | `docs/feature/v1_release_roadmap.md §v0092` | v0091 | `fluttron --version` 输出 `0.1.0-dev`；所有 pubspec 版本与 version.dart 一致 | ⬜ 待开始 |
 | v0093 | 实现 `fluttron doctor` 命令，检查 Flutter SDK / Dart SDK / Node.js / pnpm / macOS 桌面支持已启用；格式化输出 ✓/✗；exit code 0（全通过）或 1（有失败）；注册至 CLI；补测试 | `docs/feature/v1_release_roadmap.md §v0093` | v0092 | `fluttron doctor` 可运行并打印环境状态；缺失依赖明确标注；exit code 符合预期 | ⬜ 待开始 |
 | v0094 | 更新 `.gitignore` 覆盖 `.opencode/`、`.test_integration/`、`.pnpm-store/`、`.mcp_servers/` 等开发工具目录；整理仓库根目录，确保无内部专用文件暴露给外部访客 | `docs/feature/v1_release_roadmap.md §v0094` | v0093 | `.gitignore` 覆盖所有开发工具目录；仓库根目录对外部访客整洁 | ⬜ 待开始 |
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0091`（创建 CHANGELOG.md 与 SECURITY.md）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0091`
-- **最小验收**：CHANGELOG 覆盖所有主要里程碑（v0001-v0074 + unreleased）；SECURITY 有明确报告指引；两文件位于仓库根目录
+- **当前入口**：`v0092`（实现 `fluttron --version` 命令）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0092`
+- **最小验收**：`fluttron --version` 输出 `0.1.0-dev`；所有 pubspec 版本与 version.dart 一致
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议
