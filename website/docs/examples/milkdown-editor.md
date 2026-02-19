@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Milkdown Editor
 
 This example demonstrates how to integrate `fluttron_milkdown`, a full-featured WYSIWYG Markdown editor web package, into your Fluttron app.

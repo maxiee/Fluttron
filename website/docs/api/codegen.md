@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Code Generation Reference
 
 The `fluttron generate services` command generates type-safe Host/Client code from Dart service contracts.

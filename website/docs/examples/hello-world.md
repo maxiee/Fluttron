@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Hello World Example
 
 This example uses the CLI template and the built-in demo UI.

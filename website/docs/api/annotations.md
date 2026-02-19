@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Annotations Reference
 
 Fluttron provides two annotations for defining service contracts and models in `fluttron_shared`.

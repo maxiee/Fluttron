@@ -11,14 +11,17 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/web-packages.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Web Views API Reference",
     "permalink": "/Fluttron/zh-CN/docs/api/web-views"
   },
   "next": {
-    "title": "Hello World Example",
-    "permalink": "/Fluttron/zh-CN/docs/examples/hello-world"
+    "title": "Code Generation Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/codegen"
   }
 }

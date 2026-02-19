@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Bridge Communication
 
 Bridge communication is the IPC mechanism between Host and Renderer using `flutter_inappwebview` JavaScript handlers.

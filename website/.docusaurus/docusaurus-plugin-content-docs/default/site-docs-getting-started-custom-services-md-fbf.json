@@ -11,5 +11,17 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/custom-services.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Project Structure",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
+  },
+  "next": {
+    "title": "Migration: App Clients to Framework Clients",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/migration"
+  }
 }

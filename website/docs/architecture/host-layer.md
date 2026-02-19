@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Host Layer
 
 The Host layer is a Flutter Desktop application that exposes native services and loads the Renderer in a WebView.

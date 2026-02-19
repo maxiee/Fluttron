@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Migration: App Clients to Framework Clients
 
 This guide migrates UI code from app-level service wrappers to built-in clients from `fluttron_ui`.

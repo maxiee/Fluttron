@@ -17,8 +17,8 @@
   },
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Project Structure",
-    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
+    "title": "Migration: App Clients to Framework Clients",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/migration"
   },
   "next": {
     "title": "Architecture Overview",

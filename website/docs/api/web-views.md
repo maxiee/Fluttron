@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Web Views API Reference
 
 This document describes the Web View APIs available in Fluttron for embedding Web content into Flutter Web applications.

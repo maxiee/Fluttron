@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Renderer Layer
 
 The Renderer layer is a Flutter Web application running inside the Host WebView.

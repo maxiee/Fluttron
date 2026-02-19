@@ -11,7 +11,10 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/web-views.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Services API Reference",

@@ -11,7 +11,10 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/architecture/renderer-layer.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Host Layer",

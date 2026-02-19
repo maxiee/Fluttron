@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Custom Host Services
 
 This tutorial shows how to create and use custom Host services in Fluttron.

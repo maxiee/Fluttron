@@ -11,7 +11,10 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/architecture/bridge-communication.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Renderer Layer",

@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Services API Reference
 
 Fluttron provides six built-in Host services with typed Dart clients in `fluttron_ui`.

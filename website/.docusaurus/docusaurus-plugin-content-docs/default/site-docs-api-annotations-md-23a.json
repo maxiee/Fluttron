@@ -11,5 +11,17 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/annotations.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Code Generation Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/codegen"
+  },
+  "next": {
+    "title": "Hello World Example",
+    "permalink": "/Fluttron/zh-CN/docs/examples/hello-world"
+  }
 }

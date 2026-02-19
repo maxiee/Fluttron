@@ -4,25 +4,27 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/Fluttron/zh-CN/docs',
-    component: ComponentCreator('/Fluttron/zh-CN/docs', '319'),
+    component: ComponentCreator('/Fluttron/zh-CN/docs', '921'),
     routes: [
       {
         path: '/Fluttron/zh-CN/docs',
-        component: ComponentCreator('/Fluttron/zh-CN/docs', 'a2c'),
+        component: ComponentCreator('/Fluttron/zh-CN/docs', '033'),
         routes: [
           {
             path: '/Fluttron/zh-CN/docs',
-            component: ComponentCreator('/Fluttron/zh-CN/docs', 'de7'),
+            component: ComponentCreator('/Fluttron/zh-CN/docs', 'f13'),
             routes: [
               {
                 path: '/Fluttron/zh-CN/docs/api/annotations',
-                component: ComponentCreator('/Fluttron/zh-CN/docs/api/annotations', '89b'),
-                exact: true
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/annotations', 'd04'),
+                exact: true,
+                sidebar: "tutorialSidebar"
               },
               {
                 path: '/Fluttron/zh-CN/docs/api/codegen',
-                component: ComponentCreator('/Fluttron/zh-CN/docs/api/codegen', '1f6'),
-                exact: true
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/codegen', 'f00'),
+                exact: true,
+                sidebar: "tutorialSidebar"
               },
               {
                 path: '/Fluttron/zh-CN/docs/api/services',
@@ -80,8 +82,9 @@ export default [
               },
               {
                 path: '/Fluttron/zh-CN/docs/getting-started/custom-services',
-                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/custom-services', '4a4'),
-                exact: true
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/custom-services', 'd1f'),
+                exact: true,
+                sidebar: "tutorialSidebar"
               },
               {
                 path: '/Fluttron/zh-CN/docs/getting-started/installation',

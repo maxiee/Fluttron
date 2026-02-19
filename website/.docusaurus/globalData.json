@@ -12,11 +12,13 @@
           "docs": [
             {
               "id": "api/annotations",
-              "path": "/Fluttron/zh-CN/docs/api/annotations"
+              "path": "/Fluttron/zh-CN/docs/api/annotations",
+              "sidebar": "tutorialSidebar"
             },
             {
               "id": "api/codegen",
-              "path": "/Fluttron/zh-CN/docs/api/codegen"
+              "path": "/Fluttron/zh-CN/docs/api/codegen",
+              "sidebar": "tutorialSidebar"
             },
             {
               "id": "api/services",
@@ -65,7 +67,8 @@
             },
             {
               "id": "getting-started/custom-services",
-              "path": "/Fluttron/zh-CN/docs/getting-started/custom-services"
+              "path": "/Fluttron/zh-CN/docs/getting-started/custom-services",
+              "sidebar": "tutorialSidebar"
             },
             {
               "id": "getting-started/installation",

@@ -11,7 +11,10 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/examples/milkdown-editor.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Hello World Example",

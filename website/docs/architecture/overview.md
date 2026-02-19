@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Architecture Overview
 
 Fluttron uses a dual-layer model: a native Host (Flutter Desktop) and a Renderer (Flutter Web) running inside a WebView.

@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Quick Start
 
 This guide creates and runs a Fluttron app using the CLI.

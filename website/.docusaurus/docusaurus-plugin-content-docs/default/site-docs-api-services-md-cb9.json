@@ -11,7 +11,10 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/services.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Bridge Communication",

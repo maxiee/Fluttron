@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Installation
 
 This guide sets up Fluttron for local development on macOS (initial focus).

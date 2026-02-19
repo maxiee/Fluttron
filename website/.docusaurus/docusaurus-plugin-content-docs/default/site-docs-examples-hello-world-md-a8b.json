@@ -11,11 +11,14 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/examples/hello-world.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Web Packages",
-    "permalink": "/Fluttron/zh-CN/docs/api/web-packages"
+    "title": "Annotations Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/annotations"
   },
   "next": {
     "title": "Milkdown Editor",

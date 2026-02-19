@@ -11,5 +11,17 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/codegen.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {}
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Web Packages",
+    "permalink": "/Fluttron/zh-CN/docs/api/web-packages"
+  },
+  "next": {
+    "title": "Annotations Reference",
+    "permalink": "/Fluttron/zh-CN/docs/api/annotations"
+  }
 }

@@ -11,14 +11,17 @@
   "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/quick-start.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2
+  },
   "sidebar": "tutorialSidebar",
   "previous": {
     "title": "Installation",
     "permalink": "/Fluttron/zh-CN/docs/getting-started/installation"
   },
   "next": {
-    "title": "Migration: App Clients to Framework Clients",
-    "permalink": "/Fluttron/zh-CN/docs/getting-started/migration"
+    "title": "Project Structure",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
   }
 }
