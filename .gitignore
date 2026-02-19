@@ -7,7 +7,17 @@
 .buildlog/
 .history
 
+# Development tool directories
 .test_integration
+.mcp_servers/
+.opencode/
+.pnpm-store/
+
+# Editor settings
+.vscode/
+
+# AI coding assistant local settings
+.claude/settings.local.json
 
 # Node modules (all projects)
 node_modules/
@@ -18,7 +28,6 @@ node_modules/
 
 website/node_modules/
 playground/
-.mcp_servers/
 
 # Flutter repo-specific
 /bin/cache/
