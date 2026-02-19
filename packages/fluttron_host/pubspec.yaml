@@ -2,7 +2,7 @@ name: fluttron_host
 description: "Fluttron Host runtime — WebView container, service registry, and built-in services."
 publish_to: 'none'
 
-version: 0.1.0-dev
+version: 0.1.0-alpha
 
 environment:
   sdk: ^3.10.4

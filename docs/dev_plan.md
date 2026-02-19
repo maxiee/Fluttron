@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0101 已完成，Phase D 已全部完成，当前入口版本为 v0102**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0102 已完成，Phase E 已开始，当前入口版本为 v0103**
 
 ### 当前能力基线（已具备）
 
@@ -385,7 +385,7 @@
 
 | 版本 | 最小可执行任务 | 技术方案必读章节 | 依赖 | 最小验收 | 状态 |
 |---|---|---|---|---|---|
-| v0102 | 将所有 pubspec.yaml 与 `version.dart` 版本升至 `0.1.0-alpha`；更新 CHANGELOG.md（补充 Phase A-D 所有变更）；全量测试扫描（CLI/shared/host/ui）与 analyze 扫描；逐一构建运行 3 个示例 app | `docs/feature/v1_release_roadmap.md §v0102` | v0101 | 所有版本为 `0.1.0-alpha`；所有测试通过；所有 analyze 干净；playground/markdown_editor/host_service_demo 均可构建运行 | ⬜ 待开始 |
+| v0102 | 将所有 pubspec.yaml 与 `version.dart` 版本升至 `0.1.0-alpha`；更新 CHANGELOG.md（补充 Phase A-D 所有变更）；全量测试扫描（CLI/shared/host/ui）与 analyze 扫描；逐一构建运行 3 个示例 app | `docs/feature/v1_release_roadmap.md §v0102` | v0101 | 所有版本为 `0.1.0-alpha`；所有测试通过；所有 analyze 干净；playground/markdown_editor/host_service_demo 均可构建运行 | ✅ 已完成 |
 | v0103 | 创建 `scripts/smoke_test.sh`（链式验证：install CLI → create app → build → doctor → create web_package → create host_service → package）；执行至全部通过 | `docs/feature/v1_release_roadmap.md §v0103` | v0102 | `scripts/smoke_test.sh` 无人工干预端到端全通过 | ⬜ 待开始 |
 | v0104 | 撰写发布博客草稿：`docs/launch/blog_post_en.md`（英文，含问题/方案/功能/演示/代码样例/快速入门/Roadmap）与 `docs/launch/blog_post_zh.md`（中文版，适配微信/知乎平台） | `docs/feature/v1_release_roadmap.md §v0104` | v0103 | 两份博客草稿完整；技术内容准确；含 GitHub 与文档链接 | ⬜ 待开始 |
 | v0105 | 撰写社媒文案草稿：`docs/launch/social_media.md`（含 Twitter/X、微博、Reddit r/FlutterDev、Hacker News 四平台） | `docs/feature/v1_release_roadmap.md §v0105` | v0104 | 所有平台文案在字符限制内；信息一致且有说服力；含 GitHub 链接 | ⬜ 待开始 |
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0102`（版本升 0.1.0-alpha + 全量测试扫描）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0102`
-- **最小验收**：所有版本为 `0.1.0-alpha`；所有测试通过；所有 analyze 干净；playground/markdown_editor/host_service_demo 均可构建运行
+- **当前入口**：`v0103`（Smoke Test 脚本创建与执行）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0103`
+- **最小验收**：`scripts/smoke_test.sh` 无人工干预端到端全通过
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议

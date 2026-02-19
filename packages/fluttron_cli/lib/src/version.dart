@@ -1,1 +1,1 @@
-const String fluttronVersion = '0.1.0-dev';
+const String fluttronVersion = '0.1.0-alpha';

@@ -1,7 +1,7 @@
 name: fluttron_milkdown
 description: "Milkdown WYSIWYG markdown editor as a Fluttron web package."
 
-version: 0.1.0-dev
+version: 0.1.0-alpha
 publish_to: none
 
 # This tag identifies the package as a Fluttron web package.

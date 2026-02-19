@@ -2,7 +2,7 @@ name: fluttron_ui
 description: "Fluttron UI framework — Flutter Web widgets, service clients, and bridge utilities."
 publish_to: 'none'
 
-version: 0.1.0-dev
+version: 0.1.0-alpha
 
 environment:
   sdk: ^3.10.4

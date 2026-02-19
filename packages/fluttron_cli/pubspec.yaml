@@ -1,6 +1,6 @@
 name: fluttron_cli
 description: Command-line tool for creating, building, and running Fluttron applications.
-version: 0.1.0-dev
+version: 0.1.0-alpha
 publish_to: none
 repository: https://github.com/maxiee/Fluttron
 

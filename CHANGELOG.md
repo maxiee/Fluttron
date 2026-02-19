@@ -4,22 +4,69 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [0.1.0-alpha] - 2026-02-19
 
-### Added
-- WindowService for programmatic window control (resize/minimize/maximize/title/fullscreen)
-- LoggingService for structured logging with ring buffer
-- `fluttron package` command for macOS `.app` bundling
-- `fluttron package --dmg` flag for `.dmg` generation via `hdiutil`
-- Global error boundary (`runZonedGuarded` + `FlutterError.onError`) in host and UI
-- CI pipeline with GitHub Actions (4 jobs: test-cli, test-shared, test-host, test-ui)
-- CONTRIBUTING.md and CODE_OF_CONDUCT.md (Contributor Covenant v2.1)
-- GitHub Issue templates (bug report, feature request) and PR template
-- CHANGELOG.md (this file) and SECURITY.md
+### Added (Phase E: Release Preparation)
+- Bumped all framework package versions to `0.1.0-alpha`
+
+### Added (Phase D: Documentation & Presentation, v0095–v0101)
+- Rewrote `README.md` (English): tagline, CI/version/license badges, comparison table
+  (Fluttron vs Electron vs Tauri vs Flutter Desktop), Quick Start, Architecture Mermaid
+  diagram, examples, contributing, and license sections
+- Added `README-zh.md` — full Chinese translation with language-switcher links
+- Added `website/docs/getting-started/why-fluttron.md` — problem statement, solution,
+  detailed comparison table, when-to-use / when-not-to-use guidance
+- Added `website/docs/getting-started/troubleshooting.md` — ≥8 Q&A covering build issues,
+  runtime issues, CLI issues, and FAQ
+- Completed `website/sidebars.js` navigation (all docs pages linked, no broken navigation)
+- Added/rewrote package-level `README.md` for `fluttron_cli`, `fluttron_shared`,
+  `fluttron_host`, `fluttron_ui`, and `fluttron_milkdown`
+- Added `docs/screenshots/` with markdown editor screenshot and CLI demo GIF
+
+### Added (Phase C: Open Source Infrastructure, v0089–v0094)
+- `CONTRIBUTING.md` (prerequisites, setup, project structure, workflow, standards, commit
+  messages, PR process)
+- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1 (English)
+- GitHub Issue templates: bug report, feature request
+- GitHub PR template with analyze / test / docs checklist
+- `CHANGELOG.md` (this file) with retroactive history from v0001 to current
+- `SECURITY.md` with vulnerability reporting process and response timeline
+- `fluttron --version` command reporting version from `version.dart`
+- `fluttron doctor` diagnostic command (checks Flutter / Dart / Node.js / pnpm / macOS
+  desktop support; exit code 0 = all pass, 1 = failures)
+- Updated `.gitignore` to cover `.opencode/`, `.test_integration/`, `.pnpm-store/`,
+  `.mcp_servers/` and other dev-tool directories
+
+### Added (Phase B: Table-Stakes Features, v0080–v0088)
+- `WindowService` (host) — 9 methods: `setTitle`, `setSize`, `getSize`, `minimize`,
+  `maximize`, `setFullScreen`, `isFullScreen`, `center`, `setMinSize`; backed by
+  `window_manager ^0.4.0`
+- `WindowServiceClient` (UI) — typed wrapper for all 9 window methods; exported from
+  `fluttron_ui`
+- `LoggingService` (host) — ring-buffer logger (default 1000 entries); methods: `log`,
+  `getLogs`, `clear`; writes to stdout with timestamp and level
+- `LoggingServiceClient` (UI) — typed `debug()`, `info()`, `warn()`, `error()` helpers
+- Global error boundary in host: `runZonedGuarded` + `FlutterError.onError`
+- Global error boundary in UI: uncaught async / framework errors are caught and logged
+- `fluttron package -p <path>` — chains build → `flutter build macos --release` → copies
+  `.app` to `<path>/dist/`; prints bundle path and size
+- `fluttron package --dmg` — generates `.dmg` via `hdiutil create`
+- Updated `examples/markdown_editor` to use `WindowServiceClient` (dynamic window title)
+  and `LoggingServiceClient` (key operation logging)
+
+### Added (Phase A: Quality & CI Foundation, v0075–v0079)
+- GitHub Actions CI pipeline with 4 jobs: `test-cli`, `test-shared`, `test-host`,
+  `test-ui` (using `dart-lang/setup-dart@v1` and `subosito/flutter-action@v2`)
+- `docs/performance_baseline.md` — macOS release bundle sizes for playground and
+  markdown_editor, with comparison context vs Electron / Tauri / Flutter Desktop
 
 ### Changed
-- Standardized all package versions to `0.1.0-dev`
-- Fixed all lint warnings (`dart analyze` reports 0 issues)
+- All framework package versions unified: `fluttron_cli`, `fluttron_shared`,
+  `fluttron_host`, `fluttron_ui`, `fluttron_milkdown` — from `0.1.0-dev` to `0.1.0-alpha`
+- Fixed all lint warnings (`dart analyze` reports 0 issues across all packages)
+- Updated all package `pubspec.yaml` descriptions to be meaningful (removed "A new
+  Flutter project" placeholders)
+- `WindowService` and `LoggingService` registered by default in host app template
 
 ## [0.0.74] - 2026-02-18
 
@@ -98,10 +145,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `fluttron_shared` manifest and `WindowConfig` models
 - Initial website (Docusaurus) with architecture documentation
 
-[Unreleased]: https://github.com/fluttron/fluttron/compare/v0.0.74...HEAD
-[0.0.74]: https://github.com/fluttron/fluttron/compare/v0.0.60...v0.0.74
-[0.0.60]: https://github.com/fluttron/fluttron/compare/v0.0.50...v0.0.60
-[0.0.50]: https://github.com/fluttron/fluttron/compare/v0.0.41...v0.0.50
-[0.0.41]: https://github.com/fluttron/fluttron/compare/v0.0.31...v0.0.41
-[0.0.31]: https://github.com/fluttron/fluttron/compare/v0.0.19...v0.0.31
-[0.0.19]: https://github.com/fluttron/fluttron/releases/tag/v0.0.19
+[0.1.0-alpha]: https://github.com/maxiee/Fluttron/compare/v0.0.74...v0.1.0-alpha
+[0.0.74]: https://github.com/maxiee/Fluttron/compare/v0.0.60...v0.0.74
+[0.0.60]: https://github.com/maxiee/Fluttron/compare/v0.0.50...v0.0.60
+[0.0.50]: https://github.com/maxiee/Fluttron/compare/v0.0.41...v0.0.50
+[0.0.41]: https://github.com/maxiee/Fluttron/compare/v0.0.31...v0.0.41
+[0.0.31]: https://github.com/maxiee/Fluttron/compare/v0.0.19...v0.0.31
+[0.0.19]: https://github.com/maxiee/Fluttron/releases/tag/v0.0.19
