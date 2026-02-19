@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0087 已完成，当前入口版本为 v0088**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0088 已完成，当前入口版本为 v0089**
 
 ### 当前能力基线（已具备）
 
@@ -356,7 +356,7 @@
 | v0085 | 在 host 入口增加 `runZonedGuarded` + `FlutterError.onError` 全局错误边界；在 UI 入口增加同等边界；更新 host 与 UI 模板同步 | `docs/feature/v1_release_roadmap.md §v0085` | v0084 | 未捕获错误有 stack trace 日志输出；Bridge 错误有有意义提示；模板包含错误边界 | ✅ 已完成 |
 | v0086 | 实现 `fluttron package -p <path>` CLI 命令（链式：build → `flutter build macos --release` → 拷贝 .app 至 `<path>/dist/`，打印路径与大小）；注册至 CLI | `docs/feature/v1_release_roadmap.md §v0086` | v0085 | `fluttron package -p playground` 在 `dist/` 生成 .app；.app 可正常启动；bundle 大小打印至 stdout | ✅ 已完成 |
 | v0087 | 为 `PackageCommand` 增加 `--dmg` flag，调用 `hdiutil create` 生成 .dmg 文件 | `docs/feature/v1_release_roadmap.md §v0087` | v0086 | `fluttron package -p playground --dmg` 生成 .dmg；DMG 可挂载并包含 app；大小打印至 stdout | ✅ 已完成 |
-| v0088 | 更新 `examples/markdown_editor`：使用 `WindowServiceClient` 在打开文件时动态设置窗口标题（`Fluttron Editor - filename.md`）；使用 `LoggingServiceClient` 记录关键操作日志 | `docs/feature/v1_release_roadmap.md §v0088` | v0083, v0084 | 打开文件时窗口标题动态变化；host 控制台可见操作日志；原有 markdown_editor 功能无回归 | ⬜ 待开始 |
+| v0088 | 更新 `examples/markdown_editor`：使用 `WindowServiceClient` 在打开文件时动态设置窗口标题（`Fluttron Editor - filename.md`）；使用 `LoggingServiceClient` 记录关键操作日志 | `docs/feature/v1_release_roadmap.md §v0088` | v0083, v0084 | 打开文件时窗口标题动态变化；host 控制台可见操作日志；原有 markdown_editor 功能无回归 | ✅ 已完成 |
 
 #### Phase C: Open Source Infrastructure（v0089-v0094）
 
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0088`（`markdown_editor` 示例接入 WindowService + LoggingService）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0088`
-- **最小验收**：打开文件时窗口标题动态变化；host 控制台可见操作日志；原有 markdown_editor 功能无回归
+- **当前入口**：`v0089`（创建 `CONTRIBUTING.md` 与 `CODE_OF_CONDUCT.md`）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0089`
+- **最小验收**：两文件位于仓库根目录；CONTRIBUTING 覆盖 setup/workflow/standards；CoC 是完整 Contributor Covenant
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议

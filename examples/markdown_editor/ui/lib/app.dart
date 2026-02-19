@@ -45,6 +45,8 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
   late final FileServiceClient _fileClient;
   late final DialogServiceClient _dialogClient;
   late final StorageServiceClient _storageClient;
+  late final WindowServiceClient _windowClient;
+  late final LoggingServiceClient _logger;
 
   late EditorState _state = EditorState.initial(
     initialContent: _welcomeMarkdown,
@@ -60,6 +62,8 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
     _fileClient = FileServiceClient(_client);
     _dialogClient = DialogServiceClient(_client);
     _storageClient = StorageServiceClient(_client);
+    _windowClient = WindowServiceClient(_client);
+    _logger = LoggingServiceClient(_client);
     _loadSavedTheme();
   }
 
@@ -135,10 +139,14 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         );
         _statusMessage = 'Opened ${mdFiles.length} markdown files';
       });
+
+      unawaited(_logger.info('Folder opened', data: {'path': path, 'fileCount': mdFiles.length}));
+      unawaited(_windowClient.setTitle('Fluttron Editor'));
     } catch (error) {
       if (!mounted) {
         return;
       }
+      unawaited(_logger.error('Failed to open folder', data: {'error': error.toString()}));
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
@@ -310,10 +318,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         );
         _statusMessage = 'Created $finalFileName';
       });
+
+      unawaited(_logger.info('File created', data: {'path': newFilePath}));
     } catch (error) {
       if (!mounted) {
         return;
       }
+      unawaited(_logger.error('Failed to create file', data: {'path': newFilePath, 'error': error.toString()}));
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
@@ -412,10 +423,14 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         );
         _statusMessage = 'Opened ${file.name}';
       });
+
+      unawaited(_windowClient.setTitle('Fluttron Editor - ${file.name}'));
+      unawaited(_logger.info('File opened', data: {'path': file.path}));
     } catch (error) {
       if (!mounted) {
         return;
       }
+      unawaited(_logger.error('Failed to open file', data: {'path': file.path, 'error': error.toString()}));
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
@@ -493,10 +508,13 @@ class _MarkdownEditorAppState extends State<MarkdownEditorApp> {
         );
         _statusMessage = 'Saved ${p.basename(resolvedTargetPath)}';
       });
+
+      unawaited(_logger.info('File saved', data: {'path': resolvedTargetPath}));
     } catch (error) {
       if (!mounted) {
         return;
       }
+      unawaited(_logger.error('Save failed', data: {'error': error.toString()}));
       setState(() {
         _state = _state.copyWith(
           isLoading: false,
