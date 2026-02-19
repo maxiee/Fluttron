@@ -386,6 +386,13 @@ MilkdownEditor(
 )
 ```
 
+## Documentation
+
+Full documentation: <https://maxiee.github.io/Fluttron/>
+
+- [Web Packages Guide](https://maxiee.github.io/Fluttron/docs/architecture/web-packages)
+- [Architecture Overview](https://maxiee.github.io/Fluttron/docs/architecture/overview)
+
 ## License
 
 MIT

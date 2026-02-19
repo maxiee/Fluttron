@@ -45,7 +45,7 @@
 - Phase D（v0095-v0101）：文档与展示层——README 重写（EN+ZH）、Why Fluttron 页面、故障排查文档、包级 README、截图与 GIF
 - Phase E（v0102-v0107）：发布准备——版本升 0.1.0-alpha、全量测试扫描、Smoke Test、Blog/社媒草稿、发布 checklist、Tag & Publish
 
-**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0094 已完成，Phase D 进行中（v0095-v0099 已完成），当前入口版本为 v0100**
+**当前状态：Phase A 已全部完成（v0075-v0079），v0080-v0094 已完成，Phase D 进行中（v0095-v0100 已完成），当前入口版本为 v0101**
 
 ### 当前能力基线（已具备）
 
@@ -378,7 +378,7 @@
 | v0097 | 创建 `website/docs/getting-started/why-fluttron.md`（问题陈述/解决方案/详细对比表/适合场景/不适合场景）；更新 `website/sidebars.js` 将其置于 getting-started 第一位 | `docs/feature/v1_release_roadmap.md §v0097` | v0096 | Why Fluttron 页面存在并在 sidebar；对比表完整；`npm run build`（website）成功 | ✅ 已完成 |
 | v0098 | 创建 `website/docs/getting-started/troubleshooting.md`（≥8 个 Q&A，覆盖 Build Issues / Runtime Issues / CLI Issues / FAQ）；更新 sidebar | `docs/feature/v1_release_roadmap.md §v0098` | v0097 | 故障排查页面存在并在 sidebar；≥8 条 Q&A；website 构建成功 | ✅ 已完成 |
 | v0099 | 审计 `website/docs/` 所有 .md 文件，补全 `website/sidebars.js` 中缺失页面（含 `custom-services.md`、`codegen.md`、`annotations.md`）；为缺失 frontmatter 的页面补 `sidebar_position` | `docs/feature/v1_release_roadmap.md §v0099` | v0098 | 所有 .md 文件在 sidebar 中有对应项；无 broken 导航链接；website 构建成功 | ✅ 已完成 |
-| v0100 | 为 `fluttron_cli`、`fluttron_shared`、`fluttron_host`、`fluttron_ui` 分别创建/重写 `README.md`（含 description/installation/usage/API 概览/文档链接）；确认 `fluttron_milkdown` README 已完善 | `docs/feature/v1_release_roadmap.md §v0100` | v0099 | 5 个包均有有意义 README（无 "A new Flutter project" / TODO 占位符）；每个 README 链向 website | ⬜ 待开始 |
+| v0100 | 为 `fluttron_cli`、`fluttron_shared`、`fluttron_host`、`fluttron_ui` 分别创建/重写 `README.md`（含 description/installation/usage/API 概览/文档链接）；确认 `fluttron_milkdown` README 已完善 | `docs/feature/v1_release_roadmap.md §v0100` | v0099 | 5 个包均有有意义 README（无 "A new Flutter project" / TODO 占位符）；每个 README 链向 website | ✅ 已完成 |
 | v0101 | 构建运行 `examples/markdown_editor`，截图保存至 `docs/screenshots/`；录制 CLI create-build-run 流程 GIF（使用 `vhs` 或 `asciinema`）；更新 README.md 引用截图/GIF | `docs/feature/v1_release_roadmap.md §v0101` | v0100 | ≥1 张截图 + ≥1 个 GIF 存在于 `docs/screenshots/`；README.md 展示视觉资产；单文件 <2MB | ⬜ 待开始 |
 
 #### Phase E: Release Preparation（v0102-v0107）
@@ -436,9 +436,9 @@
 
 ## 立即下一步（执行入口）
 
-- **当前入口**：`v0100`（包级 README 文件）
-- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0100`
-- **最小验收**：5 个包均有有意义 README（无 "A new Flutter project" / TODO 占位符）；每个 README 链向 website
+- **当前入口**：`v0101`（截图与 demo GIF）
+- **技术方案参阅**：`docs/feature/v1_release_roadmap.md §v0101`
+- **最小验收**：≥1 张截图 + ≥1 个 GIF 存在于 `docs/screenshots/`；README.md 展示视觉资产；单文件 <2MB
 - 已完成的重大能力：
   - ✅ CLI create/build/run 主链路
   - ✅ Host ↔ UI Bridge 协议
