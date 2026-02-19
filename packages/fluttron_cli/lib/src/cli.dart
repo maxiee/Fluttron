@@ -8,8 +8,14 @@ import 'commands/generate.dart';
 import 'commands/package.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
+import 'version.dart';
 
 Future<int> runCli(List<String> args) async {
+  if (args.contains('--version') || args.contains('-v')) {
+    stdout.writeln(fluttronVersion);
+    return 0;
+  }
+
   final runner =
       CommandRunner<int>('fluttron', 'Fluttron command-line interface.')
         ..addCommand(CreateCommand())
