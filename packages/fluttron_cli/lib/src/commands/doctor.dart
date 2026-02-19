@@ -201,8 +201,16 @@ class DoctorCommand extends Command<int> {
       );
     }
     final combined = '${result.stdout}\n${result.stderr}';
-    final enabled =
+    // Modern Flutter (3.x+) enables macOS desktop by default on macOS;
+    // the flag shows as "(Not set)" rather than "true" in `flutter config --list`.
+    // Accept either explicit "true" or the default "(Not set)" case.
+    final explicitlyEnabled =
         RegExp(r'enable-macos-desktop:\s*true').hasMatch(combined);
+    final notSet =
+        RegExp(r'enable-macos-desktop:\s*\(Not set\)').hasMatch(combined);
+    final explicitlyDisabled =
+        RegExp(r'enable-macos-desktop:\s*false').hasMatch(combined);
+    final enabled = explicitlyEnabled || (notSet && !explicitlyDisabled);
     if (enabled) {
       return const _CheckResult(
         name: 'macOS desktop support',
