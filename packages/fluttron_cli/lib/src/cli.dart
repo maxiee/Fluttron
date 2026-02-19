@@ -5,6 +5,7 @@ import 'package:args/command_runner.dart';
 import 'commands/build.dart';
 import 'commands/create.dart';
 import 'commands/generate.dart';
+import 'commands/package.dart';
 import 'commands/packages.dart';
 import 'commands/run.dart';
 
@@ -15,7 +16,8 @@ Future<int> runCli(List<String> args) async {
         ..addCommand(BuildCommand())
         ..addCommand(RunCommand())
         ..addCommand(PackagesCommand())
-        ..addCommand(GenerateCommand());
+        ..addCommand(GenerateCommand())
+        ..addCommand(PackageCommand());
 
   try {
     final result = await runner.run(args);
