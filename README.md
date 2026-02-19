@@ -8,6 +8,8 @@
 
 [中文](README-zh.md)
 
+![Fluttron CLI Demo](docs/screenshots/demo.gif)
+
 ---
 
 ## What is Fluttron?
@@ -181,6 +183,8 @@ A production-grade Markdown editor demonstrating:
 - Operation logging via `LoggingServiceClient`
 - Theme switching with persistence via `StorageServiceClient`
 - Rich text editing via the `fluttron_milkdown` Web Package
+
+![Fluttron Markdown Editor](docs/screenshots/markdown_editor.png)
 
 ```
 examples/markdown_editor/

@@ -8,6 +8,8 @@
 
 [English](README.md)
 
+![Fluttron CLI Demo](docs/screenshots/demo.gif)
+
 ---
 
 ## Fluttron 是什么？
@@ -181,6 +183,8 @@ graph TD
 - 通过 `LoggingServiceClient` 记录关键操作日志
 - 通过 `StorageServiceClient` 持久化主题偏好
 - 通过 `fluttron_milkdown` Web Package 实现富文本编辑
+
+![Fluttron Markdown Editor](docs/screenshots/markdown_editor.png)
 
 ```
 examples/markdown_editor/
