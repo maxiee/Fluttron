@@ -1,7 +1,0 @@
-{
-    "github.copilot.chat.commitMessageGeneration.instructions": [
-        {
-            "text": "Write Git commit messages in English using Conventional Commits format."
-        }
-    ]
-}
