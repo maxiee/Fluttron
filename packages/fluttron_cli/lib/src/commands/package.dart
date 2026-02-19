@@ -6,13 +6,13 @@ import 'package:path/path.dart' as p;
 import '../utils/manifest_loader.dart';
 import '../utils/ui_build_pipeline.dart';
 
-/// `fluttron package -p <path>`
+/// `fluttron package -p <path> [--dmg]`
 ///
 /// Steps:
 /// 1. Run the UI build pipeline (same as `fluttron build`)
 /// 2. Run `flutter build macos --release` in the host directory
 /// 3. Copy the .app bundle to `<project>/dist/`
-/// 4. Print the output path and bundle size
+/// 4. (Optional) Create a .dmg disk image via `hdiutil` when `--dmg` is set
 class PackageCommand extends Command<int> {
   @override
   String get name => 'package';
@@ -20,7 +20,8 @@ class PackageCommand extends Command<int> {
   @override
   String get description =>
       'Build and package the app for distribution. '
-      'Produces a .app bundle in <project>/dist/.';
+      'Produces a .app bundle in <project>/dist/. '
+      'Use --dmg to also create a .dmg disk image.';
 
   PackageCommand() {
     argParser.addOption(
@@ -30,19 +31,26 @@ class PackageCommand extends Command<int> {
       defaultsTo: '.',
       valueHelp: 'path',
     );
+    argParser.addFlag(
+      'dmg',
+      help: 'Also create a .dmg disk image (macOS only, requires hdiutil).',
+      negatable: false,
+    );
   }
 
   @override
   Future<int> run() async {
     final projectPath = argResults?['project'] as String? ?? '.';
     final projectDir = Directory(p.normalize(projectPath));
+    final createDmg = argResults?['dmg'] as bool? ?? false;
+    final totalSteps = createDmg ? 4 : 3;
 
     try {
       final loaded = ManifestLoader.load(projectDir);
       final manifest = loaded.manifest;
 
       // Step 1: Build UI (flutter web + asset sync)
-      stdout.writeln('[1/3] Building UI...');
+      stdout.writeln('[1/$totalSteps] Building UI...');
       final pipeline = UiBuildPipeline();
       final buildExitCode = await pipeline.build(
         projectDir: projectDir,
@@ -66,7 +74,7 @@ class PackageCommand extends Command<int> {
         return 2;
       }
 
-      stdout.writeln('[2/3] Building macOS release bundle...');
+      stdout.writeln('[2/$totalSteps] Building macOS release bundle...');
       stdout.writeln('      Host: ${p.normalize(hostProjectDir.path)}');
       final flutterExitCode = await _runFlutterBuildMacos(hostProjectDir);
       if (flutterExitCode != 0) {
@@ -86,8 +94,8 @@ class PackageCommand extends Command<int> {
         return 2;
       }
 
-      // Step 4: Copy .app to <project>/dist/
-      stdout.writeln('[3/3] Copying to dist/...');
+      // Step 3: Copy .app to <project>/dist/
+      stdout.writeln('[3/$totalSteps] Copying .app to dist/...');
       final distDir = Directory(p.join(projectDir.path, 'dist'));
       distDir.createSync(recursive: true);
 
@@ -108,9 +116,39 @@ class PackageCommand extends Command<int> {
       final sizeMb = (sizeBytes / (1024 * 1024)).toStringAsFixed(1);
 
       stdout.writeln('');
+      stdout.writeln('  .app → ${p.normalize(destApp.path)}');
+      stdout.writeln('  Size: $sizeMb MB');
+
+      // Step 4 (optional): Create .dmg
+      if (createDmg) {
+        stdout.writeln('');
+        stdout.writeln('[4/$totalSteps] Creating DMG...');
+
+        final appName = p.basenameWithoutExtension(destApp.path);
+        final dmgFile = File(p.join(distDir.path, '$appName.dmg'));
+        if (dmgFile.existsSync()) {
+          dmgFile.deleteSync();
+        }
+
+        final dmgExitCode = await _runHdiutil(
+          volname: appName,
+          srcfolder: destApp.path,
+          output: dmgFile.path,
+        );
+        if (dmgExitCode != 0) {
+          stderr.writeln('hdiutil failed (exit code $dmgExitCode).');
+          return dmgExitCode;
+        }
+
+        final dmgSizeBytes = dmgFile.lengthSync();
+        final dmgSizeMb = (dmgSizeBytes / (1024 * 1024)).toStringAsFixed(1);
+
+        stdout.writeln('  .dmg → ${p.normalize(dmgFile.path)}');
+        stdout.writeln('  Size: $dmgSizeMb MB');
+      }
+
+      stdout.writeln('');
       stdout.writeln('Package complete!');
-      stdout.writeln('  Output: ${p.normalize(destApp.path)}');
-      stdout.writeln('  Size:   $sizeMb MB');
       return 0;
     } on ManifestException catch (error) {
       stderr.writeln(error);
@@ -127,6 +165,29 @@ class PackageCommand extends Command<int> {
       ['build', 'macos', '--release'],
       workingDirectory: hostDir.path,
       runInShell: true,
+    );
+    await stdout.addStream(process.stdout);
+    await stderr.addStream(process.stderr);
+    return process.exitCode;
+  }
+
+  /// Wraps `hdiutil create` to produce a compressed .dmg from an .app bundle.
+  Future<int> _runHdiutil({
+    required String volname,
+    required String srcfolder,
+    required String output,
+  }) async {
+    final process = await Process.start(
+      'hdiutil',
+      [
+        'create',
+        '-volname', volname,
+        '-srcfolder', srcfolder,
+        '-ov',
+        '-format', 'UDZO',
+        output,
+      ],
+      runInShell: false,
     );
     await stdout.addStream(process.stdout);
     await stderr.addStream(process.stderr);

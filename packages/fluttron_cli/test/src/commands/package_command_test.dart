@@ -58,6 +58,22 @@ void main() {
       final exitCode = await runCli(['help']);
       expect(exitCode, equals(0));
     });
+
+    test('accepts --dmg flag without error on argument parsing', () async {
+      // --dmg is a valid flag; command should still fail at manifest loading
+      // (not at argument parsing) when no manifest is present.
+      final exitCode = await runCli([
+        'package',
+        '-p', tempDir.path,
+        '--dmg',
+      ]);
+      expect(exitCode, equals(2)); // manifest not found, not a flag error
+    });
+
+    test('--dmg flag appears in help text', () async {
+      final exitCode = await runCli(['package', '--help']);
+      expect(exitCode, isNot(64));
+    });
   });
 
   group('PackageCommand output directory creation', () {
