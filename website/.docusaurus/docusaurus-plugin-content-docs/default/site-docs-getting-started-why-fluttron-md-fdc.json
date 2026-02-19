@@ -1,0 +1,27 @@
+{
+  "id": "getting-started/why-fluttron",
+  "title": "Why Fluttron?",
+  "description": "The Problem",
+  "source": "@site/docs/getting-started/why-fluttron.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/why-fluttron",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/why-fluttron",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/why-fluttron.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 0,
+  "frontMatter": {
+    "sidebar_position": 0
+  },
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Installation",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/installation"
+  },
+  "next": {
+    "title": "Installation",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/installation"
+  }
+}

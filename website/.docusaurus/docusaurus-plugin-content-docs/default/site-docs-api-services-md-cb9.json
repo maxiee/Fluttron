@@ -1,7 +1,7 @@
 {
   "id": "api/services",
   "title": "Services API Reference",
-  "description": "This document describes the services currently available in Fluttron.",
+  "description": "Fluttron provides six built-in Host services with typed Dart clients in fluttron_ui.",
   "source": "@site/docs/api/services.md",
   "sourceDirName": "api",
   "slug": "/api/services",

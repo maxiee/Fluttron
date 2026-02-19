@@ -1,0 +1,24 @@
+{
+  "id": "getting-started/migration",
+  "title": "Migration: App Clients to Framework Clients",
+  "description": "This guide migrates UI code from app-level service wrappers to built-in clients from fluttron_ui.",
+  "source": "@site/docs/getting-started/migration.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/migration",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/migration",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/migration.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "tutorialSidebar",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/quick-start"
+  },
+  "next": {
+    "title": "Project Structure",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/project-structure"
+  }
+}

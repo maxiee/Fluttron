@@ -7,6 +7,7 @@ const sidebars = {
       label: 'Getting Started',
       link: {type: 'doc', id: 'getting-started/installation'},
       items: [
+        'getting-started/why-fluttron',
         'getting-started/installation',
         'getting-started/quick-start',
         'getting-started/migration',

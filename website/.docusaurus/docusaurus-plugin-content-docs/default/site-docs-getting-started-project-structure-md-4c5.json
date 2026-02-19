@@ -14,8 +14,8 @@
   "frontMatter": {},
   "sidebar": "tutorialSidebar",
   "previous": {
-    "title": "Quick Start",
-    "permalink": "/Fluttron/zh-CN/docs/getting-started/quick-start"
+    "title": "Migration: App Clients to Framework Clients",
+    "permalink": "/Fluttron/zh-CN/docs/getting-started/migration"
   },
   "next": {
     "title": "Architecture Overview",

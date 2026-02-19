@@ -1,0 +1,15 @@
+{
+  "id": "getting-started/custom-services",
+  "title": "Custom Host Services",
+  "description": "This tutorial shows how to create and use custom Host services in Fluttron.",
+  "source": "@site/docs/getting-started/custom-services.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/custom-services",
+  "permalink": "/Fluttron/zh-CN/docs/getting-started/custom-services",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/getting-started/custom-services.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

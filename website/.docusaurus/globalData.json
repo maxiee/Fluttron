@@ -11,6 +11,14 @@
           "mainDocId": "intro",
           "docs": [
             {
+              "id": "api/annotations",
+              "path": "/Fluttron/zh-CN/docs/api/annotations"
+            },
+            {
+              "id": "api/codegen",
+              "path": "/Fluttron/zh-CN/docs/api/codegen"
+            },
+            {
               "id": "api/services",
               "path": "/Fluttron/zh-CN/docs/api/services",
               "sidebar": "tutorialSidebar"
@@ -56,8 +64,17 @@
               "sidebar": "tutorialSidebar"
             },
             {
+              "id": "getting-started/custom-services",
+              "path": "/Fluttron/zh-CN/docs/getting-started/custom-services"
+            },
+            {
               "id": "getting-started/installation",
               "path": "/Fluttron/zh-CN/docs/getting-started/installation",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started/migration",
+              "path": "/Fluttron/zh-CN/docs/getting-started/migration",
               "sidebar": "tutorialSidebar"
             },
             {
@@ -68,6 +85,11 @@
             {
               "id": "getting-started/quick-start",
               "path": "/Fluttron/zh-CN/docs/getting-started/quick-start",
+              "sidebar": "tutorialSidebar"
+            },
+            {
+              "id": "getting-started/why-fluttron",
+              "path": "/Fluttron/zh-CN/docs/getting-started/why-fluttron",
               "sidebar": "tutorialSidebar"
             },
             {

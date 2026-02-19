@@ -1,0 +1,15 @@
+{
+  "id": "api/codegen",
+  "title": "Code Generation Reference",
+  "description": "The fluttron generate services command generates type-safe Host/Client code from Dart service contracts.",
+  "source": "@site/docs/api/codegen.md",
+  "sourceDirName": "api",
+  "slug": "/api/codegen",
+  "permalink": "/Fluttron/zh-CN/docs/api/codegen",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/codegen.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

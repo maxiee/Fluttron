@@ -1,0 +1,15 @@
+{
+  "id": "api/annotations",
+  "title": "Annotations Reference",
+  "description": "Fluttron provides two annotations for defining service contracts and models in fluttron_shared.",
+  "source": "@site/docs/api/annotations.md",
+  "sourceDirName": "api",
+  "slug": "/api/annotations",
+  "permalink": "/Fluttron/zh-CN/docs/api/annotations",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/maxiee/Fluttron/tree/main/website/docs/api/annotations.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {}
+}

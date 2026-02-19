@@ -4,16 +4,26 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 export default [
   {
     path: '/Fluttron/zh-CN/docs',
-    component: ComponentCreator('/Fluttron/zh-CN/docs', '034'),
+    component: ComponentCreator('/Fluttron/zh-CN/docs', '789'),
     routes: [
       {
         path: '/Fluttron/zh-CN/docs',
-        component: ComponentCreator('/Fluttron/zh-CN/docs', 'cb5'),
+        component: ComponentCreator('/Fluttron/zh-CN/docs', 'd2c'),
         routes: [
           {
             path: '/Fluttron/zh-CN/docs',
-            component: ComponentCreator('/Fluttron/zh-CN/docs', '6a9'),
+            component: ComponentCreator('/Fluttron/zh-CN/docs', 'db9'),
             routes: [
+              {
+                path: '/Fluttron/zh-CN/docs/api/annotations',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/annotations', '89b'),
+                exact: true
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/api/codegen',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/api/codegen', '1f6'),
+                exact: true
+              },
               {
                 path: '/Fluttron/zh-CN/docs/api/services',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/api/services', 'a92'),
@@ -69,8 +79,19 @@ export default [
                 sidebar: "tutorialSidebar"
               },
               {
+                path: '/Fluttron/zh-CN/docs/getting-started/custom-services',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/custom-services', '4a4'),
+                exact: true
+              },
+              {
                 path: '/Fluttron/zh-CN/docs/getting-started/installation',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/installation', 'e4a'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/getting-started/migration',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/migration', 'a2d'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
@@ -83,6 +104,12 @@ export default [
               {
                 path: '/Fluttron/zh-CN/docs/getting-started/quick-start',
                 component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/quick-start', '4f0'),
+                exact: true,
+                sidebar: "tutorialSidebar"
+              },
+              {
+                path: '/Fluttron/zh-CN/docs/getting-started/why-fluttron',
+                component: ComponentCreator('/Fluttron/zh-CN/docs/getting-started/why-fluttron', 'c7c'),
                 exact: true,
                 sidebar: "tutorialSidebar"
               },
